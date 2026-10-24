@@ -145,4 +145,25 @@ await page.waitForSelector('.stats')
 await shot('11-me')
 await page.goto(BASE + '#/rules')
 await shot('12-rules', false)
+
+if (process.env.ADMIN) {
+  await page.setViewportSize({ width: 1280, height: 900 })
+  const ids = await page.evaluate(async () => {
+    const r = await window.__devdb.query("select t.slug, t.id, t.game_id from public.tournaments t where slug in ('bgmi-s1', 'valorant-s1')")
+    return Object.fromEntries(r.rows.map((x) => [x.slug, x]))
+  })
+  const visit = async (hash, name, sel = '.admin-layout') => {
+    await page.goto(BASE + '#/admin' + hash)
+    await page.waitForSelector(sel, { timeout: 20_000 })
+    await shot(name)
+  }
+  await visit('', '20-admin-overview')
+  await visit('/events', '21-admin-events')
+  await visit(`/events/${ids['valorant-s1'].id}`, '22-admin-event-edit')
+  await visit(`/events/${ids['bgmi-s1'].id}/registrations`, '23-admin-registrations')
+  await visit(`/events/${ids['bgmi-s1'].id}/results`, '24-admin-results')
+  await visit(`/games/${ids['bgmi-s1'].game_id}`, '25-admin-game-edit')
+  await visit('/players', '26-admin-players')
+  await visit('/audit', '27-admin-audit')
+}
 await browser.close()

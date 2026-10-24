@@ -1,0 +1,19 @@
+name: Keep Supabase awake
+# Free Supabase projects pause after 7 days without activity.
+on:
+  schedule:
+    - cron: '17 3 */3 * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ping:
+    if: vars.VITE_SUPABASE_URL != ''
+    runs-on: ubuntu-latest
+    steps:
+      - run: >
+          curl -fsS "$URL/rest/v1/games?select=id&limit=1"
+          -H "apikey: $KEY" -o /dev/null -w "%{http_code}\n"
+        env:
+          URL: ${{ vars.VITE_SUPABASE_URL }}
+          KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
