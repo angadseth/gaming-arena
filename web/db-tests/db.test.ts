@@ -102,7 +102,7 @@ describe('row level security', () => {
     await expectHint(db.rpc('admin_search_users', { p_query: 'bob' }), 'FORBIDDEN')
     await expectHint(db.rpc('superadmin_set_role', { p_user_id: alice, p_role: 'admin', p_grant: true }), 'FORBIDDEN')
   })
-  it('username and email are frozen even for the table owner', async () => {
+  it('username (outside update_my_profile) and email are frozen even for the table owner', async () => {
     await db.as('postgres')
     await expect(db.query(`update public.profiles set username = 'alicia' where id = $1`, [alice])).rejects.toThrow(/cannot be changed/)
   })

@@ -80,6 +80,8 @@ export interface MyProfile {
   whatsapp: string
   status: 'active' | 'suspended' | 'banned'
   created_at: string
+  /** When the next username change is allowed; null = allowed now. */
+  username_next_change: string | null
   roles: Role[]
 }
 

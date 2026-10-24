@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { ChevronRight, LogOut, MessageCircle, Shield } from 'lucide-react'
+import { ChevronRight, LogOut, MessageCircle, PencilLine, Shield } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EntryPanel } from '../components/event'
-import { Button, Empty, ErrorBox, Field, Flap, GameCover, HouseTag, Sheet, Skeleton, StatusPill } from '../components/ui'
+import { Button, Empty, ErrorBox, Field, Flap, GameCover, HouseTag, NameWarning, Sheet, Skeleton, StatusPill } from '../components/ui'
 import { errorText, useApi, useAuth, useHouseName, useMyEntries, useRegionName, useToast } from '../lib/app'
 import { fmtDate } from '../lib/format'
 
@@ -16,9 +16,9 @@ export default function Me() {
   const entries = useMyEntries()
   const houseName = useHouseName()
   const regionName = useRegionName()
-  const [waOpen, setWaOpen] = useState(false)
-  const [wa, setWa] = useState('')
-  const [waErr, setWaErr] = useState<string | null>(null)
+  const [editOpen, setEditOpen] = useState(false)
+  const [form, setForm] = useState({ username: '', full_name: '', whatsapp: '' })
+  const [editErr, setEditErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
   if (!profile) return <div className="page"><Skeleton h={160} /></div>
@@ -28,16 +28,27 @@ export default function Me() {
   const past = list.filter((e) => ['completed', 'cancelled'].includes(e.tournament.status))
   const captains = list.filter((e) => e.is_captain && e.game.team_size > 1).length
 
-  async function saveWa() {
+  // A username change is allowed once every 30 days; the server enforces it too.
+  const nextRename = profile.username_next_change && new Date(profile.username_next_change) > new Date() ? profile.username_next_change : null
+
+  function openEdit() {
+    setForm({ username: profile!.username, full_name: profile!.full_name, whatsapp: profile!.whatsapp })
+    setEditErr(null)
+    setEditOpen(true)
+  }
+
+  async function saveProfile() {
     setBusy(true)
-    setWaErr(null)
+    setEditErr(null)
     try {
-      await api.rpc('update_my_whatsapp', { p_whatsapp: wa })
+      await api.rpc('update_my_profile', { p_username: form.username, p_full_name: form.full_name, p_whatsapp: form.whatsapp })
       await qc.invalidateQueries({ queryKey: ['me'] })
-      setWaOpen(false)
-      toast({ kind: 'success', text: 'WhatsApp number updated' })
+      await qc.invalidateQueries({ queryKey: ['my-entries'] })
+      await qc.invalidateQueries({ queryKey: ['standings'] })
+      setEditOpen(false)
+      toast({ kind: 'success', text: 'Profile saved' })
     } catch (e) {
-      setWaErr(errorText(e))
+      setEditErr(errorText(e))
     } finally {
       setBusy(false)
     }
@@ -58,14 +69,14 @@ export default function Me() {
             </span>
           </div>
         </div>
+        <Button size="sm" style={{ alignSelf: 'flex-start' }} onClick={openEdit} disabled={profile.status !== 'active'}>
+          <PencilLine size={16} aria-hidden /> Edit profile
+        </Button>
         <dl className="kv">
           <dt>Name</dt><dd>{profile.full_name}</dd>
           <dt>Email</dt><dd>{profile.email}</dd>
           <dt>WhatsApp</dt>
-          <dd className="row" style={{ gap: 8 }}>
-            <span className="num">{profile.whatsapp}</span>
-            <button className="btn btn-ghost btn-sm" style={{ height: 28, padding: '0 8px' }} onClick={() => { setWa(profile.whatsapp); setWaOpen(true) }}>Change</button>
-          </dd>
+          <dd className="num">{profile.whatsapp}</dd>
           <dt>Joined</dt><dd>{fmtDate(profile.created_at, false)}</dd>
         </dl>
         {profile.status !== 'active' && <p className="error-text">Your account is {profile.status}. Contact the organisers.</p>}
@@ -136,16 +147,37 @@ export default function Me() {
         <LogOut size={18} aria-hidden /> Sign out
       </Button>
 
-      <Sheet open={waOpen} onClose={() => setWaOpen(false)} title="WhatsApp number">
-        <div className="stack">
-          <Field label="WhatsApp number" htmlFor="wa" error={waErr} hint="Organisers use this to send lobby details. Nobody else sees it.">
-            <input id="wa" className="input" type="tel" inputMode="tel" maxLength={18} value={wa} onChange={(e) => setWa(e.target.value)} />
+      <Sheet open={editOpen} onClose={() => setEditOpen(false)} title="Edit profile">
+        <form className="stack" onSubmit={(e) => { e.preventDefault(); saveProfile() }} noValidate>
+          <Field
+            label="Username"
+            htmlFor="ed-username"
+            hint={nextRename ? `You changed it recently. Next change allowed on ${fmtDate(nextRename, false)}.` : 'Shown publicly on leaderboards. You can change it once every 30 days.'}
+          >
+            <input
+              id="ed-username"
+              className="input"
+              autoCapitalize="none"
+              spellCheck={false}
+              maxLength={20}
+              disabled={!!nextRename}
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') })}
+            />
           </Field>
+          <NameWarning />
+          <Field label="Full name" htmlFor="ed-name" hint="As on your IITM records. Only organisers see it.">
+            <input id="ed-name" className="input" autoComplete="name" maxLength={60} value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
+          </Field>
+          <Field label="WhatsApp number" htmlFor="ed-wa" hint="Organisers use this to send lobby details. Nobody else sees it.">
+            <input id="ed-wa" className="input" type="tel" inputMode="tel" autoComplete="tel" maxLength={18} value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} />
+          </Field>
+          {editErr && <p className="error-text" role="alert">{editErr}</p>}
           <div className="row" style={{ justifyContent: 'flex-end' }}>
-            <Button kind="ghost" onClick={() => setWaOpen(false)}>Cancel</Button>
-            <Button kind="primary" busy={busy} onClick={saveWa}>Save</Button>
+            <Button kind="ghost" type="button" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button kind="primary" type="submit" busy={busy}>Save changes</Button>
           </div>
-        </div>
+        </form>
       </Sheet>
     </div>
   )

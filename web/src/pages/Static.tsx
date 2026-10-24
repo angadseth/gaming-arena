@@ -13,7 +13,8 @@ export function Rulebook() {
         <ol>
           <li>Open only to current IIT Madras BS students. You sign in with your verified student email (@ds.study.iitm.ac.in or @es.study.iitm.ac.in).</li>
           <li>One account per person. Duplicate accounts get every one of them banned.</li>
-          <li>Your username and house are set once. Organisers can correct your name, house or region if they are wrong.</li>
+          <li>Your house is set once; organisers can correct your house or region if they are wrong. You can change your username once every 30 days, and your full name and WhatsApp number from your profile.</li>
+          <li>Usernames must be respectful. If we find a username offensive in any way, that account is banned from every event for the rest of the player's time in the programme. Renaming it afterwards does not undo the ban: every change is logged.</li>
           <li>One registration per person per event: you cannot be on two teams in the same event, even as a sub.</li>
           <li>An in-game ID can be registered by only one person per event, and it must be your own account.</li>
         </ol>

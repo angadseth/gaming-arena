@@ -1798,3 +1798,22 @@ table.data .select {
   max-width: 420px;
   overflow-wrap: anywhere;
 }
+
+/* ---------- caution note (username rules) ---------- */
+.caution {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--danger-tint);
+  box-shadow: inset 3px 0 0 var(--danger);
+  color: var(--text-1);
+  font-size: 14px;
+  line-height: 20px;
+}
+.caution svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--danger);
+}

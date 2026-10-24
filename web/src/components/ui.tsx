@@ -1,4 +1,4 @@
-import { Check, Gamepad2, LoaderCircle, Lock } from 'lucide-react'
+import { Check, Gamepad2, LoaderCircle, Lock, TriangleAlert } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useApi } from '../lib/app'
@@ -134,6 +134,19 @@ export function Field({
       <label htmlFor={htmlFor}>{label}</label>
       {children}
       {error ? <span className="error-text" role="alert">{error}</span> : hint ? <span className="hint">{hint}</span> : null}
+    </div>
+  )
+}
+
+/** Shown wherever a player picks a username. */
+export function NameWarning() {
+  return (
+    <div className="caution" role="note">
+      <TriangleAlert size={18} strokeWidth={2} aria-hidden />
+      <p>
+        Keep your username respectful. If we find it offensive in any way, your account will be banned from every
+        event for the rest of your time in the programme.
+      </p>
     </div>
   )
 }

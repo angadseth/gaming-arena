@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Check, TriangleAlert } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
-import { Button, Field, Locked } from '../components/ui'
+import { Button, Field, Locked, NameWarning } from '../components/ui'
 import { errorCode, errorText, useApi, useAuth, useHouses, useRegions } from '../lib/app'
 
 const USERNAME_RE = /^[a-z][a-z0-9_]{2,19}$/
@@ -103,7 +103,7 @@ export default function Onboarding() {
         <div className="stack" style={{ gap: 8 }}>
           <p className="tag-type t3">Step 2 of 2</p>
           <h1 className="h1">Set up your player profile</h1>
-          <p className="lead">This is how you appear on every leaderboard. You only do this once.</p>
+          <p className="lead">This is how you appear on every leaderboard.</p>
         </div>
 
         <Locked label="IITM email (verified)">{session?.email}</Locked>
@@ -137,6 +137,7 @@ export default function Onboarding() {
             placeholder="e.g. tigerclaw_24"
           />
         </Field>
+        <NameWarning />
 
         <Field label="Full name" htmlFor="fullname" error={errors.full_name} hint="Only organisers see this.">
           <input id="fullname" className="input" autoComplete="name" maxLength={60} value={fullName} aria-invalid={!!errors.full_name} onChange={(e) => setFullName(e.target.value)} />
@@ -168,7 +169,7 @@ export default function Onboarding() {
         <div className="panel row" style={{ alignItems: 'flex-start', padding: 16 }}>
           <TriangleAlert size={20} strokeWidth={1.75} className="t2" style={{ flex: 'none', marginTop: 1 }} aria-hidden />
           <p className="small t2">
-            Your <strong style={{ color: 'var(--text-1)' }}>username</strong> and <strong style={{ color: 'var(--text-1)' }}>house</strong> are permanent. Check them before you continue. If something is wrong later, organisers can correct your name, house or region.
+            Your <strong style={{ color: 'var(--text-1)' }}>house</strong> is permanent, so check it before you continue. You can change your username (once every 30 days), full name and WhatsApp number later from your profile. If your house or region is wrong, the organisers can correct it.
           </p>
         </div>
 
