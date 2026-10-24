@@ -34,8 +34,9 @@ DONE ~17:50: folder MOVED to tools_unique/PUGMARK (old iitm-esports locked by VS
  Test account 25f2003321 (sagar_rathore, friend): delete SQL PREPARED in Supabase SQL tab, Angad must press Run
  (I may not hard-delete data). Also unverified sagar6969rathor@ds... exists (never signed in).
 NEXT:
- 0. Brand rename asked 24 Oct: "pugmark ajib lag raha, game jaisa chakachond naam". Await his pick, then rename
-    everywhere (UI, footer, emails sender name, templates, title; repo/URL rename only if he wants).
+ 0. DONE ~18:15: renamed to GAMING ARENA + theme v3 "Super Club" (5cd4ed7; v2 at tag theme-holo-v2, v1 at
+    theme-ranger-v1). Still says Pugmark: Supabase SMTP sender name + email templates in dashboard (otp.html file
+    updated, paste it), repo/URL /pugmark (rename only if he asks). Ask how it looks on his phone.
  1. Ask Angad how v2 feels on his phone; tune from his words (keep v1 tag for "pehle wala").
  2. Remind Angad: rotate the Gmail App Password he pasted in chat; 2FA on GitHub (Supabase login) + IITM Google.
  3. Check Access by email panel visually on live site (as angad_seth).
