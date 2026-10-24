@@ -128,7 +128,7 @@ interface Form {
 const EMPTY: Form = {
   game_id: '', slug: '', title: '', season: 'S1', summary: '', status: 'draft', reg_opens_at: '', reg_closes_at: '',
   starts_at: '', max_entries: '', same_house_teams: false, placement_points: '', kill_points: '',
-  house_points: '{"1": 10, "2": 7, "3": 5, "4": 4, "5-8": 2, "9-16": 1}', contact_note: '',
+  house_points: '{"1": 1000, "2": 700, "3": 500, "4": 400, "5-8": 200, "9-16": 100}', contact_note: '',
 }
 
 function toForm(t: Tournament): Form {

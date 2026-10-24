@@ -77,7 +77,8 @@ describe('event lobby', () => {
     const l = await db.rpc<Lobby>('event_lobby', { p_tournament_id: event })
     expect(l.registered).toBe(true)
     expect(l.meet_url).toBe('https://meet.google.com/abc-defg-hij')
-    expect(l.room_code).toBe('SG4821')
+    // The room code itself waits for check-in (next block).
+    expect(l.room_code).toBeNull()
   })
   it('players cannot set the lobby; bad links are refused', async () => {
     await db.as(ravi)
@@ -116,5 +117,49 @@ describe('notices', () => {
     const admin_view = await db.rpc<{ recipients: number; emails: string[] }>('admin_lobby', { p_tournament_id: event })
     expect(admin_view.recipients).toBe(1)
     expect(admin_view.emails).toEqual(['23f1000021@ds.study.iitm.ac.in'])
+  })
+})
+
+describe('check-in and the fixed Meet link', () => {
+  type L = Lobby & { checkin_open?: boolean; checked_in?: boolean; my_ig_id?: string; has_room?: boolean }
+  it('uses the one fixed Meet link when the event has none', async () => {
+    await db.as(admin)
+    await db.rpc('admin_set_default_meet', { p_url: 'https://meet.google.com/fix-edli-nkk' })
+    await db.rpc('admin_set_lobby', { p_tournament_id: event, p: { room_code: 'SG1111' }, p_notify: false })
+    await db.as(ravi)
+    expect((await db.rpc<L>('event_lobby', { p_tournament_id: event })).meet_url).toBe('https://meet.google.com/fix-edli-nkk')
+  })
+  it('hides the room code until the player checks in, and check-in waits for organisers', async () => {
+    await db.as(ravi)
+    const l = await db.rpc<L>('event_lobby', { p_tournament_id: event })
+    expect(l.room_code).toBeNull()
+    expect(l.has_room).toBe(true)
+    await expectHint(db.rpc('check_in', { p_tournament_id: event, p_ig_id: 'RaviStumbles' }), 'CHECKIN_CLOSED')
+  })
+  it('check-in can fix the in-game name; changes are audited and must stay unique', async () => {
+    await db.as(admin)
+    await db.rpc('admin_set_checkin', { p_tournament_id: event, p_open: true, p_notify: true })
+    await db.as(ravi)
+    await db.rpc('check_in', { p_tournament_id: event, p_ig_id: 'Ravi_SG' })
+    const l = await db.rpc<L>('event_lobby', { p_tournament_id: event })
+    expect(l.checked_in).toBe(true)
+    expect(l.my_ig_id).toBe('Ravi_SG')
+    expect(l.room_code).toBe('SG1111')
+    await db.as(admin)
+    const a = await db.rpc<{ checked_in_count: number; roster: { username: string; ig_id: string; ig_changes: number }[] }>('admin_lobby', { p_tournament_id: event })
+    expect(a.checked_in_count).toBe(1)
+    expect(a.roster[0]).toMatchObject({ username: 'ravi', ig_id: 'Ravi_SG', ig_changes: 1 })
+  })
+  it('players outside the event cannot check in', async () => {
+    await db.as(meera)
+    await expectHint(db.rpc('check_in', { p_tournament_id: event, p_ig_id: 'Meera' }), 'NOT_REGISTERED')
+  })
+  it('points are x100: Stumble Guys pays 1000 for a win', async () => {
+    await db.as(admin)
+    await db.rpc('admin_record_match', {
+      p_tournament_id: event, p_label: 'Heat 1 Game 1', p_played_at: null,
+      p_rows: [{ ig_id: 'ravi_sg', placement: 1 }], p_replace: false })
+    const s = await db.query<{ points: string }>('select points from public.tournament_standings($1)', [event])
+    expect(Number(s.rows[0].points)).toBe(1000)
   })
 })

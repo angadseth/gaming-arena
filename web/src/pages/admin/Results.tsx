@@ -227,7 +227,7 @@ export default function Results() {
                                 .filter((e) => e.entry_id === r.entry_id || !used.has(e.entry_id))
                                 .map((e) => (
                                   <option key={e.entry_id} value={e.entry_id}>
-                                    {e.name}
+                                    {e.name} · {(e.members ?? []).map((m) => m.ig_id).join(', ')}
                                   </option>
                                 ))}
                             </select>

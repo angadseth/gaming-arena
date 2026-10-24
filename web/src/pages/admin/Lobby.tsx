@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { Copy, ExternalLink, Mail, Megaphone, Save, Trash2, Video } from 'lucide-react'
+import { Check, Copy, ExternalLink, Mail, Megaphone, Save, Trash2, UserCheck, Video } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { NOTICE_LABEL } from '../../components/Lobby'
-import { Button, Empty, ErrorBox, Field, Skeleton } from '../../components/ui'
-import { useAction, useApi, useCatalog, useToast } from '../../lib/app'
+import { Button, Empty, ErrorBox, Field, HouseTag, Skeleton } from '../../components/ui'
+import { useAction, useApi, useAuth, useCatalog, useToast } from '../../lib/app'
 import { fmtDate, relative } from '../../lib/format'
 import type { AdminLobby, NoticeKind } from '../../lib/types'
 import { AdminHeader, ConfirmSheet, gap } from './shared'
@@ -39,11 +39,14 @@ export default function Lobby() {
   const [msg, setMsg] = useState<{ kind: NoticeKind; title: string; body: string }>({ kind: 'info', title: '', body: '' })
   const [lastPosted, setLastPosted] = useState<{ title: string; body: string } | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [fixedMeet, setFixedMeet] = useState<string | null>(null)
+  const [who, setWho] = useState('')
+  const { isAdmin } = useAuth()
 
   useEffect(() => {
     if (!q.data) return
     setRoom({
-      meet_url: q.data.meet_url ?? '', chat_url: q.data.chat_url ?? '', room_code: q.data.room_code ?? '',
+      meet_url: q.data.event_meet_url ?? '', chat_url: q.data.chat_url ?? '', room_code: q.data.room_code ?? '',
       room_password: q.data.room_password ?? '', note: q.data.note ?? '',
     })
   }, [q.data])
@@ -52,6 +55,8 @@ export default function Lobby() {
   const save = useAction((a, n: boolean) => a.rpc('admin_set_lobby', { p_tournament_id: id, p: room, p_notify: n }), inv)
   const post = useAction((a, m: typeof msg) => a.rpc('admin_post_notice', { p_tournament_id: id, p_kind: m.kind, p_title: m.title, p_body: m.body }), inv)
   const del = useAction((a, nid: string) => a.rpc('admin_delete_notice', { p_id: nid }), inv)
+  const setDefaultMeet = useAction((a, url: string) => a.rpc('admin_set_default_meet', { p_url: url }), inv)
+  const setCheckin = useAction((a, open: boolean) => a.rpc('admin_set_checkin', { p_tournament_id: id, p_open: open, p_notify: true }), inv)
 
   if (cat.loading || q.isPending) return <Skeleton h={400} />
   if (!t) return <Empty title="Event not found" text="It may have been removed." />
@@ -66,6 +71,9 @@ export default function Lobby() {
   for (let i = 0; i < d.emails.length; i += BCC_CHUNK) chunks.push(d.emails.slice(i, i + BCC_CHUNK))
   const gmail = (bcc: string[], m: { title: string; body: string }) =>
     `https://mail.google.com/mail/?view=cm&fs=1&bcc=${encodeURIComponent(bcc.join(','))}&su=${encodeURIComponent(`${t.title}: ${m.title}`)}&body=${encodeURIComponent(`${m.title}\n${m.body}\n\nOpen the lobby: ${page}`)}`
+  const needle = who.trim().toLowerCase()
+  const roster = d.roster.filter((r) => !needle || [r.ig_id, r.username, r.full_name, r.entry].some((v) => v.toLowerCase().includes(needle)))
+  const fixed = fixedMeet ?? d.default_meet_url ?? ''
   const outside = lastPosted ?? (d.notices?.[0] ? { title: d.notices[0].title, body: d.notices[0].body } : { title: 'Lobby details are up', body: '' })
 
   return (
@@ -79,15 +87,71 @@ export default function Lobby() {
       <div className="stat-chips">
         <span><b className="num">{d.recipients}</b> registered</span>
         <span><b className="num">{d.agreed_count}</b> accepted lobby rules</span>
+        <span><b className="num">{d.checked_in_count}</b> checked in</span>
         <span><b className="num">{d.notices?.length ?? 0}</b> notices</span>
       </div>
+
+      {isAdmin && (
+        <section className="lobby-card fixed-meet">
+          <div className="grow">
+            <h3 className="lobby-h">Fixed Meet link (all events)</h3>
+            <p className="small t3">Every lobby uses this unless an event sets its own.</p>
+          </div>
+          <input className="input" aria-label="Fixed Meet link" placeholder="https://meet.google.com/xxx-xxxx-xxx" value={fixed} onChange={(e) => setFixedMeet(e.target.value)} />
+          <Button size="sm" busy={setDefaultMeet.isPending} onClick={() => setDefaultMeet.mutate(fixed, { onSuccess: () => toast({ kind: 'success', text: 'Fixed Meet link saved' }) })}>
+            <Save size={14} aria-hidden /> Save
+          </Button>
+        </section>
+      )}
+
+      <section className="lobby-card">
+        <div className="spread wrap" style={{ gap: 10 }}>
+          <div>
+            <h3 className="lobby-h">Check-in &amp; roster</h3>
+            <p className="small t3">Let into the game room only names that are checked in here.</p>
+          </div>
+          <div className="row wrap" style={gap(8)}>
+            <span className={`pill ${d.checkin_open ? 'pill-open' : 'pill-closed'}`}>{d.checkin_open ? 'Check-in open' : 'Check-in closed'}</span>
+            <Button size="sm" kind={d.checkin_open ? 'secondary' : 'primary'} busy={setCheckin.isPending} onClick={() => setCheckin.mutate(!d.checkin_open, { onSuccess: () => toast({ kind: 'success', text: d.checkin_open ? 'Check-in closed' : 'Check-in open, players pinged' }) })}>
+              <UserCheck size={14} aria-hidden /> {d.checkin_open ? 'Close check-in' : 'Open check-in'}
+            </Button>
+            <Button size="sm" kind="ghost" onClick={() => copy(d.roster.filter((r) => r.checked_in_at).map((r) => r.ig_id).join(', '), 'Checked-in names')}>
+              <Copy size={14} aria-hidden /> Names
+            </Button>
+          </div>
+        </div>
+        {d.roster.length > 6 && (
+          <input className="input" placeholder="Search in-game name, username, team" value={who} onChange={(e) => setWho(e.target.value)} aria-label="Search roster" />
+        )}
+        {d.roster.length === 0 ? (
+          <p className="small t3">Nobody registered yet.</p>
+        ) : (
+          <div className="table-wrap">
+            <table className="data roster">
+              <thead>
+                <tr><th>In-game name</th><th>Player</th><th>House</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                {roster.map((r) => (
+                  <tr key={r.username} className={r.checked_in_at ? 'is-in' : undefined}>
+                    <td><b>{r.ig_id}</b>{r.ig_changes > 0 && <span className="tag-type changed" title="Changed at check-in"> edited</span>}</td>
+                    <td className="small">@{r.username}{r.entry !== r.username ? ` · ${r.entry}` : ''}<br /><span className="t3">{r.full_name}</span></td>
+                    <td><HouseTag id={r.house_id} /></td>
+                    <td className="small">{r.entry_status === 'disqualified' ? 'DQ' : r.checked_in_at ? <span className="in-tick"><Check size={13} strokeWidth={2.5} aria-hidden /> {relative(r.checked_in_at)}</span> : <span className="t3">Not in</span>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       <div className="admin-two">
         <section className="lobby-card">
           <h3 className="lobby-h">Room details</h3>
-          <p className="small t3">Only registered players who accepted the rules see these.</p>
-          <Field label="Google Meet link" htmlFor="l-meet" hint={<a href="https://meet.google.com/new" target="_blank" rel="noopener noreferrer">Create a new Meet <ExternalLink size={11} /></a>}>
-            <input id="l-meet" className="input" placeholder="https://meet.google.com/abc-defg-hij" value={room.meet_url} onChange={(e) => setRoom({ ...room, meet_url: e.target.value })} />
+          <p className="small t3">Room code shows only to checked-in players.</p>
+          <Field label="This event's own Meet (optional)" htmlFor="l-meet" hint={d.default_meet_url ? 'Empty = the fixed Meet link' : <a href="https://meet.google.com/new" target="_blank" rel="noopener noreferrer">Create a new Meet <ExternalLink size={11} /></a>}>
+            <input id="l-meet" className="input" placeholder="https://meet.google.com/xxx-xxxx-xxx" value={room.meet_url} onChange={(e) => setRoom({ ...room, meet_url: e.target.value })} />
           </Field>
           <Field label="Group chat link (optional)" htmlFor="l-chat">
             <input id="l-chat" className="input" placeholder="https://chat.whatsapp.com/..." value={room.chat_url} onChange={(e) => setRoom({ ...room, chat_url: e.target.value })} />

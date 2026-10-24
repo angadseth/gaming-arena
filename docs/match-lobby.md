@@ -13,6 +13,35 @@ Asked for Stumble Guys first; it works for every game.
 Registration itself now needs an "I agree" tick (rules, rulebook, notices).
 After registering, the success screen opens the Lobby.
 
+## Who is who: site account vs in-game account (migration 0011)
+
+The site account (IITM email -> username) and the game account (Stumble Guys name) are different.
+The bridge is the in-game name, and it is checked three times:
+
+1. **Registration**: the player types their in-game name. One name per event; a second player
+   cannot register the same name.
+2. **Check-in** (organiser presses "Open check-in", players get pinged): the player confirms or
+   fixes the exact in-game name and ticks "this is my own account". Fixes are audited and show as
+   "edited" on the roster. **Only checked-in players get the room code.**
+3. **In the room**: the organiser's roster lists in-game name <-> @username <-> house. Anyone in
+   the game room whose name is not checked in gets kicked. With the Meet limited to IITM accounts,
+   the Meet tile also shows the person's IITM name: a second check.
+
+Results are entered by in-game name (Results dropdown shows "username · in-game name"). A name in
+the final screenshot that is not on the roster gets nothing. Disputes: the player shows their
+in-game profile on the Meet; organiser decides.
+
+## Points (x100)
+
+Every table is x100 (1 old point = 100). Stumble Guys per game: 1st 1000, 2nd 700, 3rd 500,
+4th 400, 5-8 250, 9-16 100, everyone else in the room 50. A heat adds up its games.
+House points default: 1000 / 700 / 500 / 400 / 200 / 100.
+
+## One fixed Meet link
+
+Admin > any event > Lobby & notices > "Fixed Meet link (all events)". Every lobby uses it unless
+that event fills in its own Meet.
+
 ## How players get notified
 
 1. **Bell + Notices page** (`/inbox`): unread badge, polled every 60 s.
@@ -47,15 +76,16 @@ GitHub Pages (React)                     Supabase Postgres (RLS on, grant-nothin
 
 ## Organiser runbook: a Stumble Guys match
 
-1. **Day before**: Admin > Events > event > *Lobby & notices*. "Create a new Meet", paste
-   the link, add the WhatsApp group link, note e.g. `Region: Asia · 5 games · top 8 to final`.
+1. **Day before**: Admin > Events > event > *Lobby & notices*. Fixed Meet is already set;
+   add the WhatsApp group link, note e.g. `Region: Asia · 5 games · top 8 to final`.
    Save (notify ticked). Post the "Tomorrow" template. Press "Email all".
 2. **30 min before**: open the Meet as host. In Stumble Guys: Party > Create, copy the code.
-3. **15 min before**: put the code in "Room code", Save with notify. Players get
-   "Room code is up". Post "15 min" if you like.
-4. **Start**: check names in the room against Registrations (in-game name column);
-   kick unknown names. Post "Room live".
-5. **After**: record results in Results, post "Results".
+3. **30 min before**: press "Open check-in" (players get pinged).
+4. **15 min before**: put the code in "Room code", Save with notify. Only checked-in
+   players see it.
+5. **Start**: compare names in the game room with the roster; kick names that are not
+   checked in. Post "Room live".
+6. **After**: record results in Results, post "Results".
 
 Stumble Guys custom parties hold up to 32. With more players, run heats: one code per
 heat, change the code and save again between heats.

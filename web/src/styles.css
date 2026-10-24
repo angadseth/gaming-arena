@@ -2805,3 +2805,40 @@ body {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
+.checkin.is-open {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-tint), 0 0 24px var(--accent-tint);
+}
+.ig-now {
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+.ig-now b {
+  color: var(--text-1);
+}
+.fixed-meet {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 900px) {
+  .fixed-meet {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto;
+    align-items: center;
+  }
+}
+.roster td {
+  vertical-align: middle;
+}
+.roster tr.is-in td:first-child {
+  box-shadow: inset 3px 0 0 var(--success);
+}
+.roster .changed {
+  color: var(--accent);
+  margin-left: 6px;
+}
+.in-tick {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--success);
+}

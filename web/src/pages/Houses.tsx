@@ -52,7 +52,7 @@ export default function Houses() {
           })}
         </div>
       )}
-      <p className="small t3">Points: 1st 10 · 2nd 7 · 3rd 5 · 4th 4 · 5th–8th 2 · 9th–16th 1 by default; each event lists its own table.</p>
+      <p className="small t3">Points: 1st 1000 · 2nd 700 · 3rd 500 · 4th 400 · 5th–8th 200 · 9th–16th 100 by default; each event lists its own table.</p>
     </div>
   )
 }

@@ -1,14 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query'
 import {
   Bell, BellRing, CalendarPlus, Check, Copy, Gamepad2, Globe, KeyRound, Laptop, Lock, MessageCircle, Monitor,
-  ShieldCheck, Smartphone, Video,
+  ShieldCheck, Smartphone, UserCheck, Video,
 } from 'lucide-react'
 import { useState, type ComponentType } from 'react'
 import { Link } from 'react-router-dom'
 import { useAction, useAuth, useLobby, useToast } from '../lib/app'
 import { relative } from '../lib/format'
 import type { Game, Notice, NoticeKind, PlayKind, Tournament } from '../lib/types'
-import { Button, Skeleton } from './ui'
+import { Button, Field, Skeleton } from './ui'
 
 const PLAY_ICON: Record<PlayKind, ComponentType<{ size?: number; strokeWidth?: number }>> = {
   web: Globe, android: Smartphone, ios: Smartphone, pc: Monitor, mac: Laptop, console: Gamepad2,
@@ -49,6 +49,7 @@ export function LobbyTab({ t, game }: { t: Tournament; game: Game }) {
           <AgreeCard t={t} hasRoom={!!lobby.data.has_room} />
         ) : (
           <>
+            {!lobby.data.checked_in && <CheckInCard t={t} game={game} open={!!lobby.data.checkin_open} igId={lobby.data.my_ig_id ?? ''} />}
             <RoomCard t={t} game={game} lobby={lobby.data} />
             <Notices items={lobby.data.notices ?? []} />
           </>
@@ -141,6 +142,55 @@ function AgreeCard({ t, hasRoom }: { t: Tournament; hasRoom: boolean }) {
   )
 }
 
+/** The link between this site account and the in-game account: the player confirms the exact in-game name. */
+function CheckInCard({ t, game, open, igId }: { t: Tournament; game: Game; open: boolean; igId: string }) {
+  const qc = useQueryClient()
+  const toast = useToast()
+  const [name, setName] = useState(igId)
+  const [sure, setSure] = useState(false)
+  const checkIn = useAction((a, v: string) => a.rpc('check_in', { p_tournament_id: t.id, p_ig_id: v }))
+  return (
+    <section className={`lobby-card checkin${open ? ' is-open' : ''}`}>
+      <div className="row" style={{ gap: 10 }}>
+        <span className="lobby-badge"><UserCheck size={18} strokeWidth={2} /></span>
+        <div className="grow">
+          <h3 className="lobby-h">Check in</h3>
+          <p className="small t3">{open ? 'Confirm the name you play with. Room code unlocks after this.' : 'Opens before the match. You get a notice.'}</p>
+        </div>
+        {!open && <span className="pill pill-upcoming">Not open</span>}
+      </div>
+      {open ? (
+        <>
+          <Field label={`${game.ig_id_label} in ${game.short || game.title}`} hint="Exactly as it shows in the game, same capitals" htmlFor="ci-name">
+            <input id="ci-name" className="input" maxLength={64} value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
+          </Field>
+          <label className="check">
+            <input type="checkbox" checked={sure} onChange={(e) => setSure(e.target.checked)} />
+            <span>This is my own account. A wrong or borrowed name gets no points.</span>
+          </label>
+          <Button
+            kind="primary"
+            disabled={!sure || !name.trim()}
+            busy={checkIn.isPending}
+            onClick={() => checkIn.mutate(name.trim(), {
+              onSuccess: () => {
+                toast({ kind: 'success', text: `Checked in as ${name.trim()}` })
+                qc.invalidateQueries({ queryKey: ['lobby', t.id] })
+              },
+            })}
+          >
+            Check in
+          </Button>
+        </>
+      ) : (
+        <div className="ig-now small">
+          <span className="t3">Registered as</span> <b>{igId}</b>
+        </div>
+      )}
+    </section>
+  )
+}
+
 function RoomCard({ t, game, lobby }: { t: Tournament; game: Game; lobby: NonNullable<ReturnType<typeof useLobby>['data']> }) {
   const toast = useToast()
   const copy = (v: string, what: string) =>
@@ -154,7 +204,11 @@ function RoomCard({ t, game, lobby }: { t: Tournament; game: Game; lobby: NonNul
     <section className="lobby-card">
       <div className="spread">
         <h3 className="lobby-h">Match lobby</h3>
-        {lobby.updated_at && <span className="small t3">Updated {relative(lobby.updated_at)}</span>}
+        {lobby.checked_in ? (
+          <span className="pill pill-open"><Check size={12} strokeWidth={2.5} aria-hidden /> In as {lobby.my_ig_id}</span>
+        ) : lobby.updated_at ? (
+          <span className="small t3">Updated {relative(lobby.updated_at)}</span>
+        ) : null}
       </div>
 
       <div className="room-row">
@@ -164,6 +218,8 @@ function RoomCard({ t, game, lobby }: { t: Tournament; game: Game; lobby: NonNul
             <button className="room-code" onClick={() => copy(lobby.room_code!, 'Room code')} title="Copy">
               {lobby.room_code} <Copy size={14} aria-hidden />
             </button>
+          ) : lobby.has_room && !lobby.checked_in ? (
+            <span className="small t2">Ready. Check in above to see it.</span>
           ) : (
             <span className="small t2">Shows here about 10 min before start</span>
           )}

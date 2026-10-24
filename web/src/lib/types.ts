@@ -75,6 +75,11 @@ export interface Lobby {
   registered: boolean
   agreed?: boolean
   has_room?: boolean
+  checkin_open?: boolean
+  /** Room code and password come back only after the player checks in. */
+  checked_in?: boolean
+  checked_in_at?: string | null
+  my_ig_id?: string
   meet_url?: string | null
   chat_url?: string | null
   room_code?: string | null
@@ -84,10 +89,26 @@ export interface Lobby {
   notices?: Notice[]
 }
 
+export interface RosterRow {
+  username: string
+  full_name: string
+  house_id: number
+  entry: string
+  entry_status: string
+  role: string
+  ig_id: string
+  checked_in_at: string | null
+  ig_changes: number
+}
+
 export interface AdminLobby extends Lobby {
+  event_meet_url: string | null
+  default_meet_url: string | null
   recipients: number
   agreed_count: number
+  checked_in_count: number
   emails: string[]
+  roster: RosterRow[]
 }
 
 export interface InboxItem extends Notice {

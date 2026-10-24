@@ -78,7 +78,7 @@ interface Form {
 const EMPTY: Form = {
   slug: '', title: '', short: '', description: '', platforms: 'android, ios', mode: 'solo', team_size: '1', max_subs: '0',
   ig_id_label: 'In-game ID', ig_id_pattern: '^.{2,40}$', ig_id_hint: '', extra_fields: '[]', rules: '', scoring: '',
-  placement_points: '{"1": 10, "2": 7, "3": 5, "4": 4, "5-8": 2, "9-16": 1}', kill_points: '0', match_minutes: '',
+  placement_points: '{"1": 1000, "2": 700, "3": 500, "4": 400, "5-8": 200, "9-16": 100}', kill_points: '0', match_minutes: '',
   verify_note: '', cover_path: '', accent: '', is_active: true, sort_order: '0',
 }
 
@@ -286,7 +286,7 @@ function GameForm({ id }: { id: string | undefined }) {
           </Field>
           {text('scoring', 'Scoring summary')}
           <div className="form-grid two">
-            <Field label="Default placement points (JSON)" error={errs.placement_points} hint='Ranges allowed: {"1": 10, "5-8": 2}' htmlFor="g-pp">
+            <Field label="Default placement points (JSON)" error={errs.placement_points} hint='Ranges allowed: {"1": 1000, "5-8": 200}' htmlFor="g-pp">
               <input id="g-pp" className="input num" value={f.placement_points} disabled={!isAdmin} onChange={(e) => set('placement_points', e.target.value)} />
             </Field>
             {text('kill_points', 'Points per kill', 'Copied to new events', { mono: true })}
