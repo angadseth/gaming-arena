@@ -27,7 +27,15 @@ DONE ~17:30: THEME v2 "Holo League" LIVE (1267211..a1482e3+): holo foil event ca
  numbers (Houses/Leaderboards/Me), pugmark cursor trail + magnetic primary buttons (lib/fx.ts), keycap buttons,
  SiteFooter credit "Website made by ANGAD JANGIR" (he asked: Jangir, not Seth). Plan: docs/research/design-v2.md.
  Old theme = git tag theme-ranger-v1. Phone width not yet eyeballed (frames blocked, window would not resize).
+DONE ~17:50: folder MOVED to tools_unique/PUGMARK (old iitm-esports locked by VS Code, has MOVED-TO-PUGMARK.txt;
+ delete it once free). memory/ = local copies of global notes. Migration 0007 profile_edit LIVE (2d40e11):
+ update_my_profile (username 1x/30 days, not while live, audited; full name 3/30d; WhatsApp 5/day) + red
+ "keep username respectful or banned for the whole tenure" warning on onboarding + Edit profile sheet. 43/43 tests.
+ Test account 25f2003321 (sagar_rathore, friend): delete SQL PREPARED in Supabase SQL tab, Angad must press Run
+ (I may not hard-delete data). Also unverified sagar6969rathor@ds... exists (never signed in).
 NEXT:
+ 0. Brand rename asked 24 Oct: "pugmark ajib lag raha, game jaisa chakachond naam". Await his pick, then rename
+    everywhere (UI, footer, emails sender name, templates, title; repo/URL rename only if he wants).
  1. Ask Angad how v2 feels on his phone; tune from his words (keep v1 tag for "pehle wala").
  2. Remind Angad: rotate the Gmail App Password he pasted in chat; 2FA on GitHub (Supabase login) + IITM Google.
  3. Check Access by email panel visually on live site (as angad_seth).
