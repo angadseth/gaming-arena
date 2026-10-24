@@ -3140,3 +3140,14 @@ body {
 .mypos-pts { margin-left: auto; display: grid; text-align: right; flex: none; }
 .mypos-pts b { font-size: 22px; }
 .mypos-pts small { font-size: 12px; }
+
+.footer-team {
+  margin: 10px 0 0;
+  text-align: center;
+  font: 500 16px/1.5 var(--font-sans);
+  color: var(--text-2);
+}
+.footer-team b { font-weight: 700; color: var(--text-1); }
+@media (max-width: 480px) {
+  .footer-team { font-size: 14px; }
+}

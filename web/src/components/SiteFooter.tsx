@@ -1,10 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { Flap } from './ui'
 
 const BULBS = 24
 
-/** Closing credit: a marquee of bulbs lights up, then the maker's name spins in on slot reels. */
+/** Closing credit: a marquee of bulbs lights up, then the team's names. */
 export function SiteFooter() {
   const ref = useRef<HTMLElement>(null)
 
@@ -35,15 +34,9 @@ export function SiteFooter() {
           <span>GAMING</span>
           <span>ARENA</span>
         </p>
-        <div className="footer-credit">
-          <span className="footer-made">Website made by</span>
-          <a className="footer-name" href="https://github.com/angadseth" target="_blank" rel="noreferrer">
-            <Flap value="ANGAD JANGIR" tiles />
-          </a>
-          <p className="footer-crew">
-            Crafted with <b>Abhimanyu</b> &amp; <b>Sagar Rathore</b>
-          </p>
-        </div>
+        <p className="footer-team">
+          Made by <b>Angad Jangir</b>, <b>Abhimanyu</b> and <b>Sagar Rathore</b>
+        </p>
         <nav className="footer-links" aria-label="Footer">
           <Link to="/rules">Rulebook</Link>
           <Link to="/privacy">Privacy</Link>
