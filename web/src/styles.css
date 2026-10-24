@@ -914,6 +914,27 @@ p {
     radial-gradient(circle, color-mix(in srgb, var(--tone) 42%, transparent) 1.3px, transparent 1.9px) 0 0 / 9px 9px,
     radial-gradient(120% 90% at 85% 0%, color-mix(in srgb, var(--tone) 38%, var(--surface-2)) 0%, var(--surface-1) 70%);
 }
+/* The game's photo sits faintly under the halftone dots and the outlined name. */
+.cover-gen .cover-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  opacity: 0.55;
+  filter: saturate(1.2) contrast(1.05);
+}
+.cover-gen:has(.cover-photo)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(circle, color-mix(in srgb, var(--tone) 55%, transparent) 1.3px, transparent 1.9px) 0 0 / 9px 9px;
+}
+.hero .cover-gen .cover-photo {
+  opacity: 0.68;
+}
 .cover-gen .mono {
   position: absolute;
   left: 5%;
@@ -2168,5 +2189,95 @@ body {
   }
   .footer-print {
     opacity: 1;
+  }
+}
+
+/* ---------- festive: fairy lights + fireworks canvas ---------- */
+.fx-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 58;
+  pointer-events: none;
+}
+.bulb {
+  --c: var(--accent);
+  width: 8px;
+  height: 11px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 40% 35%, #fff 0 18%, var(--c) 45%);
+  box-shadow:
+    0 0 6px 1px var(--c),
+    0 0 16px 2px color-mix(in srgb, var(--c) 55%, transparent);
+  animation: twinkle 1.6s ease-in-out var(--d) infinite alternate;
+}
+@keyframes twinkle {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.35;
+    box-shadow: 0 0 2px var(--c);
+  }
+}
+/* A sagging wire under the top bar with bulbs hanging from it. */
+.garland-top {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -14px;
+  height: 14px;
+  display: flex;
+  justify-content: space-around;
+  pointer-events: none;
+  overflow: hidden;
+  background: radial-gradient(60% 9px at 50% -3px, transparent 96%, rgba(255, 246, 232, 0.35) 98%, transparent 100%) 0 0 / 46px 14px repeat-x;
+}
+.garland-top .bulb {
+  margin-top: 3px;
+  width: 6px;
+  height: 9px;
+}
+.garland-top .bulb:nth-child(n + 23) {
+  display: none;
+}
+@media (min-width: 720px) {
+  .garland-top .bulb:nth-child(n + 23) {
+    display: block;
+  }
+}
+/* Strings of lights down both sides, only where the screen has room beside the content. */
+.garland-side {
+  display: none;
+}
+@media (min-width: 1400px) {
+  .garland-side {
+    position: fixed;
+    top: calc(var(--top-h) + 24px);
+    bottom: 24px;
+    z-index: 5;
+    width: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+    background: linear-gradient(rgba(255, 246, 232, 0.28), rgba(255, 246, 232, 0.28)) center / 1px 100% no-repeat;
+  }
+  .garland-l {
+    left: calc((100vw - var(--max-w)) / 4 - 14px);
+  }
+  .garland-r {
+    right: calc((100vw - var(--max-w)) / 4 - 14px);
+  }
+  .garland-side .bulb:nth-child(odd) {
+    transform: translateX(-7px) rotate(20deg);
+  }
+  .garland-side .bulb:nth-child(even) {
+    transform: translateX(7px) rotate(-20deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bulb {
+    animation: none;
   }
 }

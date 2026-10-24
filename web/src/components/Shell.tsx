@@ -2,7 +2,9 @@ import { CalendarRange, ListOrdered, Shield, Trees, UserRound } from 'lucide-rea
 import { useEffect, type ReactNode } from 'react'
 import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useApi, useAuth } from '../lib/app'
+import { startFireworks } from '../lib/fireworks'
 import { startFx } from '../lib/fx'
+import { SideGarlands, TopGarland } from './Festive'
 import { SiteFooter } from './SiteFooter'
 import { Brand, Spinner } from './ui'
 
@@ -18,6 +20,7 @@ export function Shell() {
   const loc = useLocation()
 
   useEffect(() => startFx(), [])
+  useEffect(() => startFireworks(), [])
 
   // A signed-in student without a profile finishes onboarding first.
   if (session && profile === null && loc.pathname !== '/welcome') {
@@ -57,7 +60,9 @@ export function Shell() {
             )}
           </div>
         </div>
+        <TopGarland />
       </header>
+      <SideGarlands />
       <main id="main">
         <Outlet />
       </main>

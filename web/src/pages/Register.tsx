@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { CircleCheck } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { celebrate } from '../lib/fireworks'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { checkGameFields, GameFields, InviteCode } from '../components/event'
 import { Button, ErrorBox, Field, GameCover, HouseTag, Locked, Skeleton, StatusPill } from '../components/ui'
@@ -145,6 +146,7 @@ function RegisterForm({ t, g, onDone }: { t: Tournament; g: Game; onDone: (d: { 
 }
 
 function Success({ t, g, invite, teamName }: { t: Tournament; g: Game; invite?: string; teamName?: string }) {
+  useEffect(() => celebrate(), [])
   return (
     <div className="page stack" style={{ gap: 20, maxWidth: 560, paddingTop: 40 }}>
       <CircleCheck size={48} strokeWidth={1.5} style={{ color: 'var(--success)' }} aria-hidden />

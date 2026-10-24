@@ -300,7 +300,7 @@ function GameForm({ id }: { id: string | undefined }) {
             <h2>Card art</h2>
           </div>
           <div className="game-card" style={{ maxWidth: 280, '--hue': gameHue({ slug: f.slug, accent: f.accent || null }) } as CSSProperties}>
-            <GameCover game={{ title: f.title || 'Game', short: f.short, cover_path: f.cover_path || null }} />
+            <GameCover game={{ title: f.title || 'Game', short: f.short, cover_path: f.cover_path || null, slug: f.slug }} />
             <div className="game-card-body">
               <span className="game-card-title">{f.short || f.title || 'Game'}</span>
             </div>

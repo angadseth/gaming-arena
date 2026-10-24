@@ -100,7 +100,7 @@ export default function Me() {
           active.map((e) => (
             <div key={e.entry_id} className="panel stack" style={{ gap: 14 }}>
               <Link to={`/e/${e.tournament.slug}`} className="row">
-                <div className="thumb"><GameCover game={{ title: e.game.title, short: '', cover_path: e.game.cover_path }} /></div>
+                <div className="thumb"><GameCover game={{ title: e.game.title, short: '', cover_path: e.game.cover_path, slug: e.game.slug }} /></div>
                 <span className="grow stack" style={{ gap: 4, minWidth: 0 }}>
                   <span className="ellipsis" style={{ fontWeight: 650 }}>{e.tournament.title}</span>
                   <span className="small t3">{e.tournament.starts_at ? `Starts ${fmtDate(e.tournament.starts_at)}` : 'Dates to be announced'}</span>

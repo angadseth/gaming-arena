@@ -36,6 +36,18 @@ const GAME_HUE: Record<string, string> = {
   chess: '#e8e1cf',
   skribbl: '#6fc8ff',
 }
+/**
+ * Background photo for each game's card (web/public/art, sources in CREDITS.md) and the
+ * horizontal focus point used when a wide image is cropped into a tall card.
+ */
+const GAME_ART: Record<string, string> = {
+  bgmi: '75%', 'ff-max': '35%', codm: '55%', 'clash-royale': '72%', 'brawl-stars': '78%',
+  'pokemon-unite': '60%', efootball: '62%', 'real-cricket': '28%', 'asphalt-legends': '50%',
+  'stumble-guys': '50%', 'ludo-king': '50%', valorant: '50%', cs2: '80%', chess: '50%', skribbl: '50%',
+}
+export const gameArt = (slug: string | undefined) =>
+  slug && slug in GAME_ART ? { src: `${import.meta.env.BASE_URL}art/${slug}.webp`, focus: GAME_ART[slug] } : null
+
 export const gameHue = (g: { slug?: string; accent?: string | null } | null | undefined) =>
   (g?.accent && /^#[0-9a-f]{6}$/i.test(g.accent) ? g.accent : g?.slug ? GAME_HUE[g.slug] : undefined) ?? '#ffc23d'
 

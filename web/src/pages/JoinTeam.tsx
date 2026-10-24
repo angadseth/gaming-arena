@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { CircleCheck } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
+import { celebrate } from '../lib/fireworks'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { checkGameFields, GameFields } from '../components/event'
 import { Button, Field, HouseTag } from '../components/ui'
@@ -24,6 +25,9 @@ export default function JoinTeam() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [busy, setBusy] = useState(false)
   const [joined, setJoined] = useState(false)
+  useEffect(() => {
+    if (joined) celebrate()
+  }, [joined])
 
   async function lookup(value = code) {
     const c = value.trim().toUpperCase()

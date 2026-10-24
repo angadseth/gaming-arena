@@ -2,7 +2,7 @@ import { Check, Gamepad2, LoaderCircle, Lock, TriangleAlert } from 'lucide-react
 import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useApi } from '../lib/app'
-import { houseCode, houseColor, STATUS_LABEL } from '../lib/format'
+import { gameArt, houseCode, houseColor, STATUS_LABEL } from '../lib/format'
 import type { Game, TournamentStatus } from '../lib/types'
 import { OTP_LENGTH } from '../lib/api/types'
 
@@ -93,7 +93,7 @@ export function MetaLine({ parts }: { parts: (string | false | null | undefined)
 }
 
 /** Game key art, or a generated monogram cover when none is uploaded. */
-export function GameCover({ game, eager }: { game: Pick<Game, 'title' | 'short' | 'cover_path'>; eager?: boolean }) {
+export function GameCover({ game, eager }: { game: Pick<Game, 'title' | 'short' | 'cover_path'> & { slug?: string }; eager?: boolean }) {
   const api = useApi()
   const [broken, setBroken] = useState(false)
   const src = game.cover_path && !broken ? api.artUrl(game.cover_path) : ''
@@ -101,6 +101,7 @@ export function GameCover({ game, eager }: { game: Pick<Game, 'title' | 'short' 
   const mono = words.join('\n')
   // Font size scales with the longest word so every name fills the card without breaking.
   const fit = { '--len': Math.max(3, ...words.map((w) => w.length)) } as CSSProperties
+  const photo = gameArt(game.slug)
   return (
     <div className="cover">
       {src ? (
@@ -115,6 +116,16 @@ export function GameCover({ game, eager }: { game: Pick<Game, 'title' | 'short' 
         />
       ) : (
         <div className="cover-gen cover-art" style={fit} aria-hidden>
+          {photo && (
+            <img
+              className="cover-photo"
+              src={photo.src}
+              alt=""
+              loading={eager ? 'eager' : 'lazy'}
+              decoding="async"
+              style={{ objectPosition: `${photo.focus} 50%` }}
+            />
+          )}
           <span className="mono">{mono}</span>
           <span className="mono mono-fill">{mono}</span>
           <span className="glyph">
