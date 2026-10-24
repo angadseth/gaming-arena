@@ -132,7 +132,7 @@ export default function SignIn() {
         {step === 'email' ? (
           <form className="stack" onSubmit={send} noValidate>
             <h2 className="h2">Sign in</h2>
-            <p className="t2">We'll email a {OTP_LENGTH}-digit code to your IITM BS student inbox. No passwords.</p>
+            <p className="t2">We'll email an {OTP_LENGTH}-digit code to your IITM BS student inbox. No passwords.</p>
             <Field label="IITM BS email" htmlFor="email" error={emailError} hint="Your roll number works too, e.g. 24f1001234">
               <input
                 id="email"
