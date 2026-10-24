@@ -1,0 +1,386 @@
+[
+  {
+    "slug": "bgmi",
+    "title": "Battlegrounds Mobile India",
+    "short": "BGMI",
+    "platforms": ["android", "ios"],
+    "teamSize": 4,
+    "mode": "squad",
+    "format": "Custom-room battle royale, 3-4 maps (Erangel/Miramar/Sanhok), up to 16 squads per lobby; groups -> semis -> final when >16 squads",
+    "igIdLabel": "BGMI Character ID",
+    "igIdPattern": "^\\d{9,12}$",
+    "igIdHint": "Numeric ID under your name in Profile (usually 9-10 digits). Length range unverified - allow 9-12.",
+    "extraFields": [
+      { "key": "ign", "label": "In-game name", "pattern": "^.{2,20}$", "hint": "Exactly as shown in kill feed" },
+      { "key": "teamName", "label": "Squad name", "pattern": "^.{3,24}$", "hint": "3-24 characters" }
+    ],
+    "rules": [
+      "4 players + max 1 sub; sub may swap only between maps",
+      "Phone only - no emulators, no iPads unless the event says so",
+      "Room ID/password shared 10-15 min before start; match starts on time",
+      "Captain uploads end-of-match Results screen within 15 min",
+      "Teaming, hacks, GFX/file mods = DQ + platform ban",
+      "Tiebreak: WWCDs > placement points > finishes > last-match rank"
+    ],
+    "scoring": "BGIS standard: placement 1st 10, 2nd 6, 3rd 5, 4th 4, 5th 3, 6th 2, 7th-8th 1, 9th-16th 0; +1 per finish (verified, BGIS 2024-2026)",
+    "matchMinutes": 30,
+    "verify": "screenshot + room-host standings",
+    "primaryStat": "kills",
+    "tier": "flagship"
+  },
+  {
+    "slug": "ff-max",
+    "title": "Free Fire MAX",
+    "short": "FF MAX",
+    "platforms": ["android", "ios"],
+    "teamSize": 4,
+    "mode": "squad",
+    "format": "Custom-room battle royale, 12 squads per lobby, 3-6 matches (Bermuda/Purgatory/Kalahari); optional Champion Rush final",
+    "igIdLabel": "Free Fire UID",
+    "igIdPattern": "^\\d{8,12}$",
+    "igIdHint": "Numeric UID under your nickname on the profile (usually 9-10 digits)",
+    "extraFields": [
+      { "key": "ign", "label": "In-game name", "pattern": "^.{2,20}$", "hint": "As shown in game" },
+      { "key": "teamName", "label": "Squad name", "pattern": "^.{3,24}$", "hint": "3-24 characters" }
+    ],
+    "rules": [
+      "Free Fire MAX only (original Free Fire is blocked in India; Free Fire India not launched as of Oct 2026)",
+      "4 players + max 1 sub; phone only, no emulators",
+      "Captain uploads result screen within 15 min",
+      "Teaming/hacks = DQ + ban",
+      "Tiebreak: Booyahs > placement points > eliminations > last-match rank"
+    ],
+    "scoring": "FFMIC 2026 table: 1st 12, 2nd 9, 3rd 8, 4th 7, 5th 6, 6th 5, 7th 4, 8th 3, 9th 2, 10th 1, 11th-12th 0; +1 per elimination",
+    "matchMinutes": 20,
+    "verify": "screenshot",
+    "primaryStat": "kills",
+    "tier": "flagship"
+  },
+  {
+    "slug": "codm",
+    "title": "Call of Duty: Mobile",
+    "short": "CODM",
+    "platforms": ["android", "ios"],
+    "teamSize": 5,
+    "mode": "team",
+    "format": "5v5 Multiplayer private match, Bo3 (Hardpoint / Search & Destroy / Control), single elimination, Bo5 final",
+    "igIdLabel": "CODM UID",
+    "igIdPattern": "^\\d{10,20}$",
+    "igIdHint": "Long number under your name in Player Profile (up to ~20 digits)",
+    "extraFields": [
+      { "key": "ign", "label": "In-game name", "pattern": "^.{2,20}$", "hint": "As shown in game" },
+      { "key": "teamName", "label": "Team name", "pattern": "^.{3,24}$", "hint": "3-24 characters" }
+    ],
+    "rules": [
+      "5 players + max 1 sub, swaps only between maps",
+      "Phone/tablet only, no emulators",
+      "Restricted weapons/perks list published on the event page",
+      "Winning captain uploads scoreboard within 15 min",
+      "DC in first 60 s = one restart; after that the map stands"
+    ],
+    "scoring": "Series = map wins; group tiebreak map diff > round diff > head-to-head; individual stats kills/deaths",
+    "matchMinutes": 40,
+    "verify": "scoreboard screenshot",
+    "primaryStat": "mapWins",
+    "tier": "standard"
+  },
+  {
+    "slug": "clash-royale",
+    "title": "Clash Royale",
+    "short": "Clash Royale",
+    "platforms": ["android", "ios"],
+    "teamSize": 1,
+    "mode": "solo",
+    "format": "Qualifier via in-game Private Tournament (password), then Bo3 friendly-battle single-elim bracket, Bo5 final",
+    "igIdLabel": "Player Tag",
+    "igIdPattern": "^#?[0289PYLQGRJCUVpylqgrjcuv]{3,12}$",
+    "igIdHint": "Starts with #, e.g. #2PQ8RJ0L. Letter O is zero.",
+    "extraFields": [
+      { "key": "trophies", "label": "Trophies (for seeding)", "pattern": "^\\d{1,5}$", "hint": "Optional" }
+    ],
+    "rules": [
+      "Tournament Standard levels in friendly battles",
+      "Deck changes allowed between games",
+      "Winner uploads screenshot; admin may confirm via battle log",
+      "No-show 10 min after pairing = forfeit"
+    ],
+    "scoring": "Bo3 game wins; qualifier ranked by in-game tournament wins",
+    "matchMinutes": 15,
+    "verify": "battle log (official API) + screenshot",
+    "primaryStat": "wins",
+    "tier": "standard"
+  },
+  {
+    "slug": "brawl-stars",
+    "title": "Brawl Stars",
+    "short": "Brawl Stars",
+    "platforms": ["android", "ios"],
+    "teamSize": 3,
+    "mode": "team",
+    "format": "3v3 Friendly Game room, Bo3 across Gem Grab / Brawl Ball / Knockout, single or double elimination",
+    "igIdLabel": "Player Tag",
+    "igIdPattern": "^#?[0289PYLQGRJCUVpylqgrjcuv]{3,12}$",
+    "igIdHint": "Starts with #, found on your profile. Letter O is zero.",
+    "extraFields": [
+      { "key": "teamName", "label": "Team name", "pattern": "^.{3,24}$", "hint": "3-24 characters" }
+    ],
+    "rules": [
+      "3 players + max 1 sub",
+      "Blind pick, no duplicate brawlers within a team",
+      "Map pool published before the event",
+      "Captain uploads result within 15 min"
+    ],
+    "scoring": "Bo3 game wins",
+    "matchMinutes": 10,
+    "verify": "battle log (official API) + screenshot",
+    "primaryStat": "wins",
+    "tier": "standard"
+  },
+  {
+    "slug": "pokemon-unite",
+    "title": "Pokemon UNITE",
+    "short": "Pokemon UNITE",
+    "platforms": ["android", "ios", "switch"],
+    "teamSize": 5,
+    "mode": "team",
+    "format": "5v5 custom battle, draft mode, Bo3 double elimination, Bo5 grand final (mirrors WCS 2026 India Qualifier)",
+    "igIdLabel": "Trainer ID",
+    "igIdPattern": "^[A-Za-z0-9]{7}$",
+    "igIdHint": "7-character letters+numbers code on your Trainer Info screen",
+    "extraFields": [
+      { "key": "teamName", "label": "Team name", "pattern": "^.{3,24}$", "hint": "3-24 characters" }
+    ],
+    "rules": [
+      "5 players + max 1 sub",
+      "Draft mode, no duplicate Pokemon",
+      "Custom-lobby flow on mobile UNVERIFIED - test before launch",
+      "Captain uploads result screen within 15 min"
+    ],
+    "scoring": "Series = game wins; team score as tiebreak",
+    "matchMinutes": 30,
+    "verify": "screenshot",
+    "primaryStat": "wins",
+    "tier": "standard"
+  },
+  {
+    "slug": "efootball",
+    "title": "eFootball",
+    "short": "eFootball",
+    "platforms": ["android", "ios", "pc", "console"],
+    "teamSize": 1,
+    "mode": "solo",
+    "format": "1v1 Friend Match; groups of 4 (3/1/0) then two-leg knockout; 10-min matches",
+    "igIdLabel": "eFootball User ID",
+    "igIdPattern": "^[A-Za-z]{4}-?\\d{3}-?\\d{3}-?\\d{3}$",
+    "igIdHint": "From User Information in game, e.g. ABCD-123-456-789 (format UNVERIFIED - also upload profile screenshot)",
+    "extraFields": [
+      { "key": "ign", "label": "In-game name", "pattern": "^.{2,24}$", "hint": "As shown in game" }
+    ],
+    "rules": [
+      "Organiser fixes team rule per event (Authentic teams or Dream Team)",
+      "DC in first 5 in-game minutes at level score = replay",
+      "Winner uploads final-score screenshot within 15 min",
+      "Group tiebreak: points > goal difference > goals scored > head-to-head"
+    ],
+    "scoring": "Win 3, draw 1, loss 0 in groups; aggregate goals in knockout",
+    "matchMinutes": 15,
+    "verify": "screenshot",
+    "primaryStat": "goalDiff",
+    "tier": "standard"
+  },
+  {
+    "slug": "real-cricket",
+    "title": "Real Cricket 24",
+    "short": "Real Cricket",
+    "platforms": ["android", "ios"],
+    "teamSize": 1,
+    "mode": "solo",
+    "format": "1v1 Play with Friends, 2 overs per side in groups, 5 overs in knockouts",
+    "igIdLabel": "In-game name",
+    "igIdPattern": "^.{2,24}$",
+    "igIdHint": "Your Real Cricket 24 player name",
+    "extraFields": [],
+    "rules": [
+      "Pro difficulty; same team allowed",
+      "Tie = Super Over (or 1-over replay)",
+      "Winner uploads scorecard screenshot within 15 min",
+      "Friend-match room flow UNVERIFIED - fallback title World Cricket Championship 3"
+    ],
+    "scoring": "Match wins; net run rate as tiebreak",
+    "matchMinutes": 20,
+    "verify": "screenshot",
+    "primaryStat": "wins",
+    "tier": "casual"
+  },
+  {
+    "slug": "asphalt-legends",
+    "title": "Asphalt Legends Unite",
+    "short": "Asphalt",
+    "platforms": ["android", "ios", "pc", "console"],
+    "teamSize": 1,
+    "mode": "solo",
+    "format": "Private room heats of 8 racers, 4 races per heat, top 2 advance to final",
+    "igIdLabel": "In-game name",
+    "igIdPattern": "^.{2,24}$",
+    "igIdHint": "Your Asphalt Legends Unite racer name",
+    "extraFields": [],
+    "rules": [
+      "Car class cap announced per event for fairness",
+      "Host uploads each race result screenshot",
+      "Tiebreak: race wins > best finish in last race"
+    ],
+    "scoring": "Per race: 10, 8, 6, 5, 4, 3, 2, 1 for places 1-8",
+    "matchMinutes": 15,
+    "verify": "screenshot",
+    "primaryStat": "points",
+    "tier": "casual"
+  },
+  {
+    "slug": "stumble-guys",
+    "title": "Stumble Guys",
+    "short": "Stumble Guys",
+    "platforms": ["android", "ios", "pc"],
+    "teamSize": 1,
+    "mode": "solo",
+    "format": "Custom party heats (max 32), 5 games per heat, top 25% advance",
+    "igIdLabel": "Username",
+    "igIdPattern": "^.{2,24}$",
+    "igIdHint": "Your Stumble Guys name",
+    "extraFields": [],
+    "rules": [
+      "Teaming or griefing in custom party = DQ",
+      "Host uploads final-round screenshot each game"
+    ],
+    "scoring": "Per game: winner 10, 2nd 7, 3rd 5, reached final round 2",
+    "matchMinutes": 30,
+    "verify": "screenshot",
+    "primaryStat": "points",
+    "tier": "casual"
+  },
+  {
+    "slug": "ludo-king",
+    "title": "Ludo King",
+    "short": "Ludo",
+    "platforms": ["android", "ios", "web"],
+    "teamSize": 1,
+    "mode": "solo",
+    "format": "Private room 4-player tables, table winner advances, final table full game",
+    "igIdLabel": "In-game name",
+    "igIdPattern": "^.{2,24}$",
+    "igIdHint": "Your Ludo King name",
+    "extraFields": [],
+    "rules": [
+      "Classic or Quick mode fixed per event",
+      "No stakes, side bets or paid boosts (Online Gaming Act 2025)",
+      "Host uploads win screen"
+    ],
+    "scoring": "Table win advances; placement 1-4 recorded",
+    "matchMinutes": 25,
+    "verify": "screenshot",
+    "primaryStat": "wins",
+    "tier": "casual"
+  },
+  {
+    "slug": "valorant",
+    "title": "VALORANT",
+    "short": "Valorant",
+    "platforms": ["pc"],
+    "teamSize": 5,
+    "mode": "team",
+    "format": "5v5 custom game, Tournament Mode on, Mumbai server; Bo1 groups/Ro16, Bo3 semis and final, map veto",
+    "igIdLabel": "Riot ID",
+    "igIdPattern": "^[^#]{3,16}#[A-Za-z0-9]{3,5}$",
+    "igIdHint": "Name#TAG, e.g. Angad#IITM (name 3-16, tag 3-5 letters/numbers)",
+    "extraFields": [
+      { "key": "rank", "label": "Current rank (seeding)", "pattern": "^.{2,20}$", "hint": "Optional, self-reported" },
+      { "key": "teamName", "label": "Team name", "pattern": "^.{3,24}$", "hint": "3-24 characters" }
+    ],
+    "rules": [
+      "5 players + max 1 sub",
+      "Play on the registered Riot ID only - no smurfs",
+      "Vanguard needs TPM 2.0 + Secure Boot on Windows 11 - check before registering",
+      "Winning captain uploads scoreboard; match history checked",
+      "Standard first to 13, overtime win by 2"
+    ],
+    "scoring": "Series = map wins; tiebreak round differential; individual ACS/K/D",
+    "matchMinutes": 45,
+    "verify": "scoreboard + match history",
+    "primaryStat": "mapWins",
+    "tier": "flagship"
+  },
+  {
+    "slug": "cs2",
+    "title": "Counter-Strike 2",
+    "short": "CS2",
+    "platforms": ["pc"],
+    "teamSize": 5,
+    "mode": "team",
+    "format": "5v5 private lobby, MR12, active-duty map pool with veto; Bo1 then Bo3",
+    "igIdLabel": "SteamID64",
+    "igIdPattern": "^7656119\\d{10}$",
+    "igIdHint": "17-digit number starting 7656119 (from your Steam profile URL or steamid.io)",
+    "extraFields": [
+      { "key": "teamName", "label": "Team name", "pattern": "^.{3,24}$", "hint": "3-24 characters" }
+    ],
+    "rules": [
+      "Run only if 8+ teams register (needs mid/high-spec PC)",
+      "5 players + max 1 sub",
+      "Demo (.dem) must be kept and provided on request",
+      "VAC/game bans on the account = ineligible"
+    ],
+    "scoring": "Series = map wins; tiebreak round differential",
+    "matchMinutes": 50,
+    "verify": "scoreboard + demo",
+    "primaryStat": "mapWins",
+    "tier": "standard"
+  },
+  {
+    "slug": "chess",
+    "title": "Chess (lichess.org)",
+    "short": "Chess",
+    "platforms": ["web", "android", "ios"],
+    "teamSize": 1,
+    "mode": "solo",
+    "format": "lichess team Swiss, 7 rounds, 5+3 blitz (or Arena 60-90 min, 3+2), team-members only",
+    "igIdLabel": "lichess username",
+    "igIdPattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,28}[A-Za-z0-9]$",
+    "igIdHint": "Your lichess.org username (must join the IITM BS Esports lichess team)",
+    "extraFields": [
+      { "key": "chesscom", "label": "chess.com username (backup)", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,23}[A-Za-z0-9]$", "hint": "Optional" }
+    ],
+    "rules": [
+      "Must be an approved member of the lichess team",
+      "Results imported automatically from lichess API - no manual upload",
+      "Any lichess fair-play/TOS mark = DQ + platform ban",
+      "No engines, books or second device"
+    ],
+    "scoring": "lichess Swiss points (1/0.5/0), tiebreak Sonneborn-Berger then performance; Arena uses lichess arena points",
+    "matchMinutes": 15,
+    "verify": "lichess API (/api/swiss/{id}/results, /api/tournament/{id}/results)",
+    "primaryStat": "score",
+    "tier": "flagship"
+  },
+  {
+    "slug": "skribbl",
+    "title": "skribbl.io",
+    "short": "skribbl",
+    "platforms": ["web"],
+    "teamSize": 1,
+    "mode": "solo",
+    "format": "Private room heats (~12 players), 3-5 rounds, 80 s draw time, top 3 per room to final room",
+    "igIdLabel": "Display name",
+    "igIdPattern": "^.{2,20}$",
+    "igIdHint": "Use the same name as your platform profile",
+    "extraFields": [],
+    "rules": [
+      "No typing the answer in chat, no letters in drawings",
+      "One tab per person",
+      "Host uploads final scoreboard"
+    ],
+    "scoring": "In-game points; placement in room decides advance",
+    "matchMinutes": 20,
+    "verify": "screenshot",
+    "primaryStat": "points",
+    "tier": "casual"
+  }
+]
