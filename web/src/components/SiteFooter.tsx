@@ -40,6 +40,9 @@ export function SiteFooter() {
           <a className="footer-name" href="https://github.com/angadseth" target="_blank" rel="noreferrer">
             <Flap value="ANGAD JANGIR" tiles />
           </a>
+          <p className="footer-crew">
+            Crafted with <b>Abhimanyu</b> &amp; <b>Sagar Rathore</b>
+          </p>
         </div>
         <nav className="footer-links" aria-label="Footer">
           <Link to="/rules">Rulebook</Link>

@@ -3101,3 +3101,42 @@ body {
   .rs-label { max-width: none; width: 100%; }
   .rs-more { margin-left: 0; }
 }
+
+.footer-crew {
+  margin: 6px 0 0;
+  font: 500 12px/1.4 var(--font-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.footer-crew b { font-weight: 650; color: var(--text-2); }
+
+/* Event standings: the signed-in player's own position */
+.mypos {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(120deg, var(--accent-tint), transparent 70%);
+}
+.mypos-rank {
+  flex: none;
+  min-width: 56px;
+  height: 56px;
+  padding: 0 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  font: 900 24px/1 var(--font-display);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--text-1) 8%, transparent);
+}
+.mypos.p1 .mypos-rank { background: #ffc23d; color: #2a1400; }
+.mypos.p2 .mypos-rank { background: #d9dde6; color: #1d1d28; }
+.mypos.p3 .mypos-rank { background: #e0975a; color: #2a1400; }
+.mypos > .stack { flex: 1; }
+.mypos-pts { margin-left: auto; display: grid; text-align: right; flex: none; }
+.mypos-pts b { font-size: 22px; }
+.mypos-pts small { font-size: 12px; }

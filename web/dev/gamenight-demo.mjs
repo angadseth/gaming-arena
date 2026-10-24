@@ -81,4 +81,7 @@ console.log('saved', JSON.stringify(await sql(`select r.placement, r.points from
 await shot('07-results-saved')
 await page.click('.rs-game >> text=Edit')
 await shot('08-results-edit', false)
+await page.goto(BASE + '#/e/stumble-guys-s1?tab=standings')
+await page.waitForSelector('.mypos')
+await shot('09-standings-mypos')
 await browser.close()

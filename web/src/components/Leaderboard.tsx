@@ -73,6 +73,7 @@ export function Leaderboard({ t, game }: { t: Tournament; game: Game }) {
 
   return (
     <div className="stack" style={{ gap: 12 }}>
+      {mine && <MyPosition mine={mine} rows={q.data} scored={scored} />}
       <div className="row">
         <div style={{ position: 'relative' }} className="grow">
           <Search size={18} className="t3" style={{ position: 'absolute', left: 12, top: 15 }} aria-hidden />
@@ -99,7 +100,7 @@ export function Leaderboard({ t, game }: { t: Tournament; game: Game }) {
             .filter((r) => r.status === 'active' && r.rank != null)
             .map((r) => ({
               key: r.entry_id, rank: r.rank!, name: r.name, avatar: r.avatar, house_id: r.house_id,
-              points: fmtPoints(r.points), sub: game.team_size > 1 ? `${r.wins} wins · ${r.kills} kills` : `${r.wins} wins`, mine: r.is_mine,
+              points: fmtPoints(r.points), sub: `${r.wins} ${r.wins === 1 ? "win" : "wins"}${game.team_size > 1 ? ` · ${r.kills} kills` : ""}`, mine: r.is_mine,
             }))}
         />
       )}
@@ -204,5 +205,35 @@ function Row({
         </div>
       )}
     </div>
+  )
+}
+
+/** The signed-in player's own spot, always at the top: rank, points and the gap to the next place. */
+function MyPosition({ mine, rows, scored }: { mine: StandingRow; rows: StandingRow[]; scored: boolean }) {
+  const active = rows.filter((r) => r.status === 'active')
+  const r = mine.rank
+  let gap = ''
+  if (scored && r != null && mine.status === 'active') {
+    if (r === 1) {
+      const next = active.find((x) => x.rank === 2)
+      gap = next ? `Leading by ${fmtPoints(mine.points - next.points)} pts` : 'Leading'
+    } else {
+      const above = active.filter((x) => x.rank != null && x.rank < r).sort((a, b) => b.rank! - a.rank!)[0]
+      if (above) gap = `${fmtPoints(above.points - mine.points)} pts to #${above.rank}`
+    }
+  }
+  return (
+    <section className={`mypos${r != null && r <= 3 && scored ? ` p${r}` : ''}`} aria-label="Your position">
+      <span className="mypos-rank num">{mine.status === 'disqualified' ? 'DQ' : scored && r ? `#${r}` : '–'}</span>
+      <span className="stack" style={{ gap: 2, minWidth: 0 }}>
+        <span className="tag-type t3">Your position{scored && r ? ` of ${active.length}` : ''}</span>
+        <b className="ellipsis">{mine.name}</b>
+        <small className="t3">{scored ? `${mine.matches} ${mine.matches === 1 ? 'game' : 'games'} · ${mine.wins} ${mine.wins === 1 ? 'win' : 'wins'}` : 'Ranks start after the first game'}</small>
+      </span>
+      <span className="mypos-pts">
+        <b className="num">{fmtPoints(mine.points)}</b>
+        <small className="t3">{gap || 'points'}</small>
+      </span>
+    </section>
   )
 }
