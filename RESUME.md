@@ -23,9 +23,13 @@ DONE ~16:45: Angad signed in -> username angad_seth, superadmin; bootstrap list 
  Organisers can now record/delete match results (952f4ea + live patch applied). 36/36 tests.
  Live audit: 0 write grants on public tables, RLS on all, no realtime, storage admin-only, roles = only angad_seth;
  Security Advisor 0 errors (warnings = SECURITY DEFINER RPCs by design + leaked-password n/a).
+DONE ~17:30: THEME v2 "Holo League" LIVE (1267211..a1482e3+): holo foil event cards per game hue, split-flap
+ numbers (Houses/Leaderboards/Me), pugmark cursor trail + magnetic primary buttons (lib/fx.ts), keycap buttons,
+ SiteFooter credit "Website made by ANGAD JANGIR" (he asked: Jangir, not Seth). Plan: docs/research/design-v2.md.
+ Old theme = git tag theme-ranger-v1. Phone width not yet eyeballed (frames blocked, window would not resize).
 NEXT:
- 1. THEME REDO: Angad 24 Oct: "visibility bahut kam, theme maza nahi aaya". Raise contrast + more energy;
-    ask/confirm direction, keep old version recoverable (git tag before redesign).
+ 1. Ask Angad how v2 feels on his phone; tune from his words (keep v1 tag for "pehle wala").
  2. Remind Angad: rotate the Gmail App Password he pasted in chat; 2FA on GitHub (Supabase login) + IITM Google.
  3. Check Access by email panel visually on live site (as angad_seth).
- 4. Later: Turnstile captcha (needs Cloudflare acct), real regions list, game art uploads, auto status cron.
+ 4. Later: auto status cron (pg_cron: upcoming->open->closed by time), Turnstile captcha (needs Cloudflare
+    acct), real regions list, game art uploads.
