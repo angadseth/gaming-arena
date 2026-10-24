@@ -7,25 +7,7 @@ import { join } from 'node:path'
 
 const MIGRATIONS = join(__dirname, '..', '..', 'supabase', 'migrations')
 
-const SUPABASE_STUB = `
-create role anon nologin;
-create role authenticated nologin;
-create role service_role nologin bypassrls;
-create role supabase_auth_admin nologin;
-grant usage on schema public to anon, authenticated, service_role;
-
-create schema auth;
-grant usage on schema auth to anon, authenticated;
-create table auth.users (
-  id uuid primary key default gen_random_uuid(),
-  email text,
-  raw_user_meta_data jsonb default '{}'
-);
-create function auth.uid() returns uuid language sql stable as $$
-  select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
-$$;
-grant execute on function auth.uid() to anon, authenticated;
-`
+const SUPABASE_STUB = readFileSync(join(__dirname, '..', 'dev', 'supabase-stub.sql'), 'utf8')
 
 export type Db = PGlite & {
   as: (who: string | null) => Promise<void>
