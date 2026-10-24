@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { ChevronRight, LogOut, MessageCircle, PencilLine, Shield } from 'lucide-react'
+import { Check, ChevronRight, LogOut, MessageCircle, PencilLine, Shield, Shuffle } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Avatar, AVATAR_STYLES, avatarKey } from '../components/Avatar'
 import { EntryPanel } from '../components/event'
 import { Button, Empty, ErrorBox, Field, Flap, GameCover, HouseTag, NameWarning, Sheet, Skeleton, StatusPill } from '../components/ui'
 import { errorText, useApi, useAuth, useHouseName, useMyEntries, useRegionName, useToast } from '../lib/app'
@@ -20,6 +21,9 @@ export default function Me() {
   const [form, setForm] = useState({ username: '', full_name: '', whatsapp: '' })
   const [editErr, setEditErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [picOpen, setPicOpen] = useState(false)
+  const [picSeed, setPicSeed] = useState(() => Math.random().toString(36).slice(2, 6))
+  const [picBusy, setPicBusy] = useState<string | null>(null)
 
   if (!profile) return <div className="page"><Skeleton h={160} /></div>
 
@@ -35,6 +39,22 @@ export default function Me() {
     setForm({ username: profile!.username, full_name: profile!.full_name, whatsapp: profile!.whatsapp })
     setEditErr(null)
     setEditOpen(true)
+  }
+
+  async function pickAvatar(key: string) {
+    setPicBusy(key)
+    try {
+      await api.rpc('set_my_avatar', { p_avatar: key })
+      await qc.invalidateQueries({ queryKey: ['me'] })
+      await qc.invalidateQueries({ queryKey: ['player-rankings'] })
+      await qc.invalidateQueries({ queryKey: ['standings'] })
+      setPicOpen(false)
+      toast({ kind: 'success', text: 'Profile picture updated' })
+    } catch (e) {
+      toast({ kind: 'error', text: errorText(e) })
+    } finally {
+      setPicBusy(null)
+    }
   }
 
   async function saveProfile() {
@@ -58,9 +78,10 @@ export default function Me() {
     <div className="page stack" style={{ gap: 24 }}>
       <header className="panel stack" style={{ gap: 14 }}>
         <div className="row" style={{ gap: 14 }}>
-          <div className="thumb contour" style={{ width: 64, height: 64, display: 'grid', placeItems: 'center' }}>
-            <span className="h2" aria-hidden>{profile.username.slice(0, 2).toUpperCase()}</span>
-          </div>
+          <button className="avatar-btn" onClick={() => setPicOpen(true)} aria-label="Change profile picture" disabled={profile.status !== 'active'}>
+            <Avatar value={avatarKey(profile.avatar, profile.username)} size={72} ring="var(--accent)" />
+            <span className="avatar-edit" aria-hidden><PencilLine size={14} /></span>
+          </button>
           <div className="stack grow" style={{ gap: 4, minWidth: 0 }}>
             <h1 className="h2 ellipsis" style={{ textTransform: 'none' }}>{profile.username}</h1>
             <span className="row wrap" style={{ gap: 8 }}>
@@ -146,6 +167,35 @@ export default function Me() {
       <Button kind="danger" style={{ alignSelf: 'flex-start' }} onClick={async () => { await api.signOut(); qc.clear(); nav('/') }}>
         <LogOut size={18} aria-hidden /> Sign out
       </Button>
+
+      <Sheet open={picOpen} onClose={() => setPicOpen(false)} title="Profile picture">
+        <div className="stack">
+          <p className="small t2">Pick any avatar. It shows on leaderboards and the top-player cards.</p>
+          {AVATAR_STYLES.map((st) => (
+            <div key={st.key} className="stack" style={{ gap: 8 }}>
+              <span className="tag-type t3">{st.label}</span>
+              <div className="avatar-grid">
+                {Array.from({ length: 6 }, (_, i) => {
+                  const key = `${st.key}:${picSeed}${i}`
+                  const current = profile.avatar === key
+                  return (
+                    <button key={key} className="avatar-pick" aria-pressed={current} aria-label={`${st.label} avatar ${i + 1}`} disabled={!!picBusy} onClick={() => pickAvatar(key)}>
+                      <Avatar value={key} size={56} />
+                      {(current || picBusy === key) && <span className="avatar-check" aria-hidden><Check size={14} /></span>}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+          <div className="row" style={{ justifyContent: 'space-between' }}>
+            <Button kind="ghost" onClick={() => setPicSeed(Math.random().toString(36).slice(2, 6))}>
+              <Shuffle size={16} aria-hidden /> Show more
+            </Button>
+            {profile.avatar && <Button kind="ghost" onClick={() => pickAvatar('')}>Use default</Button>}
+          </div>
+        </div>
+      </Sheet>
 
       <Sheet open={editOpen} onClose={() => setEditOpen(false)} title="Edit profile">
         <form className="stack" onSubmit={(e) => { e.preventDefault(); saveProfile() }} noValidate>

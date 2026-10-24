@@ -1,10 +1,12 @@
 import { ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Empty, ErrorBox, GameCover, MetaLine, Skeleton, StatusPill } from '../components/ui'
-import { useCatalog, useCounts } from '../lib/app'
-import { fmtShort, teamSizeLabel } from '../lib/format'
-import type { TournamentStatus } from '../lib/types'
+import { Avatar } from '../components/Avatar'
+import { Podium } from '../components/Podium'
+import { Empty, ErrorBox, Flap, GameCover, HouseTag, MetaLine, Skeleton, StatusPill } from '../components/ui'
+import { useCatalog, useCounts, usePlayerRankings } from '../lib/app'
+import { fmtPoints, fmtShort, teamSizeLabel } from '../lib/format'
+import type { RankFormat, TournamentStatus } from '../lib/types'
 
 const ORDER: Partial<Record<TournamentStatus, number>> = { live: 0, closed: 1, open: 2, completed: 3, upcoming: 4 }
 
@@ -25,8 +27,12 @@ export default function Leaderboards() {
     <div className="page stack" style={{ gap: 20 }}>
       <section className="stack" style={{ gap: 6 }}>
         <h1 className="h1">Leaderboards</h1>
-        <p className="t2">Standings for every event. Live and recently played events come first.</p>
+        <p className="t2">Top players across every finished event, then the standings for each event.</p>
       </section>
+
+      <TopPlayers />
+
+      <div className="section-head"><h2>Event standings</h2></div>
 
       <select className="select" style={{ maxWidth: 360 }} value={game} onChange={(e) => setGame(e.target.value)} aria-label="Filter by game">
         <option value="all">All games</option>
@@ -62,5 +68,74 @@ export default function Leaderboards() {
         </div>
       )}
     </div>
+  )
+}
+
+const FORMATS: { key: RankFormat; label: string }[] = [
+  { key: 'all', label: 'All games' },
+  { key: 'solo', label: 'Solo' },
+  { key: 'small', label: 'Duo & 3v3' },
+  { key: 'squad', label: 'Squads & 5v5' },
+]
+
+/** Overall player rankings: podium of three, the rest as rows, and my own rank pinned. */
+function TopPlayers() {
+  const [format, setFormat] = useState<RankFormat>('all')
+  const q = usePlayerRankings(format)
+  const rows = q.data ?? []
+  const me = rows.find((r) => r.is_me)
+  const rest = rows.filter((r) => r.rank > 3 && r.rank <= 100)
+  return (
+    <section className="stack" style={{ gap: 14 }}>
+      <div className="section-head"><h2>Top players</h2></div>
+      <div className="chips" role="group" aria-label="Game format">
+        {FORMATS.map((f) => (
+          <button key={f.key} className="chip" aria-pressed={format === f.key} onClick={() => setFormat(f.key)}>{f.label}</button>
+        ))}
+      </div>
+      {q.error ? (
+        <ErrorBox error={q.error} retry={() => q.refetch()} />
+      ) : q.isPending ? (
+        <Skeleton h={240} r={16} />
+      ) : rows.length === 0 ? (
+        <Empty title="No champions yet" text="Rankings fill up as events finish. Win one and your card goes up here." />
+      ) : (
+        <>
+          <Podium
+            rows={rows.map((r) => ({
+              key: r.username, rank: r.rank, name: r.username, avatar: r.avatar, house_id: r.house_id,
+              points: fmtPoints(r.points), sub: `${r.firsts} wins · ${r.podiums} podiums`, mine: r.is_me,
+            }))}
+          />
+          {me && (
+            <div className="my-rank" aria-live="polite">
+              <Avatar value={me.avatar} size={44} />
+              <span className="grow stack" style={{ gap: 2 }}>
+                <span className="small t2">Your rank</span>
+                <strong className="my-rank-num">#{me.rank}</strong>
+              </span>
+              <span className="stat"><Flap value={fmtPoints(me.points)} tiles /><small>{me.events} events</small></span>
+            </div>
+          )}
+          {rest.length > 0 && (
+            <div className="rows">
+              {rest.map((r) => (
+                <div key={r.username} className={`lrow${r.is_me ? ' mine' : ''}`}>
+                  <span className="rank num">{r.rank}</span>
+                  <span className="row" style={{ gap: 10, minWidth: 0 }}>
+                    <Avatar value={r.avatar} size={34} />
+                    <span className="stack" style={{ gap: 3, minWidth: 0 }}>
+                      <span className="ellipsis" style={{ fontWeight: 600 }}>{r.username}</span>
+                      <HouseTag id={r.house_id} />
+                    </span>
+                  </span>
+                  <span className="stat"><Flap value={fmtPoints(r.points)} /><small>{r.firsts} W · {r.podiums} POD</small></span>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </section>
   )
 }

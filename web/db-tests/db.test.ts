@@ -237,6 +237,31 @@ describe('results and standings', () => {
     expect(Number(pich?.points)).toBe(17) // 1st (10) + 2nd (7), both Pichavaram
   })
 
+  it('ranks players across completed events, by format, with my own row', async () => {
+    await db.as(alice)
+    const r = await db.query<{ rank: string; username: string; avatar: string; points: string; firsts: string; is_me: boolean }>(
+      `select * from public.player_rankings('solo', null)`)
+    expect(r.rows.map((x) => [Number(x.rank), x.username, Number(x.points), Number(x.firsts), x.is_me])).toEqual([
+      [1, 'bob', 10, 1, false], [2, 'alice', 7, 0, true]])
+    expect(r.rows[0].avatar).toBe('bottts:bob')
+    const squads = await db.query(`select * from public.player_rankings('squad', null)`)
+    expect(squads.rows).toHaveLength(0)
+    await db.as(null)
+    const anon = await db.query<{ is_me: boolean }>(`select * from public.player_rankings('all', null)`)
+    expect(anon.rows).toHaveLength(2)
+    expect(JSON.stringify(anon.rows)).not.toMatch(/whatsapp|@ds\.study|full_name/)
+  })
+
+  it('players pick an avatar from the generated set only', async () => {
+    await db.as(alice)
+    await db.rpc('set_my_avatar', { p_avatar: 'pixel-art:q7k2' })
+    expect((await db.rpc<{ avatar: string }>('get_my_profile')).avatar).toBe('pixel-art:q7k2')
+    await expectHint(db.rpc('set_my_avatar', { p_avatar: 'https://evil.example/x.png' }), 'BAD_INPUT')
+    await expectHint(db.rpc('set_my_avatar', { p_avatar: 'bottts:<script>' }), 'BAD_INPUT')
+    const rows = await db.query<{ name: string; avatar: string }>('select * from public.tournament_standings($1)', [soloEvent])
+    expect(rows.rows.find((x) => x.name === 'alice')?.avatar).toBe('pixel-art:q7k2')
+  })
+
   it('admins see WhatsApp in registrations; the audit log records actions', async () => {
     await db.as(admin)
     const regs = await db.rpc<Array<{ members: Array<{ whatsapp: string }> }>>('admin_registrations', { p_tournament_id: squadEvent })

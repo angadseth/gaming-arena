@@ -34,6 +34,7 @@ export const SET_RETURNING = new Set([
   'house_standings',
   'tournament_counts',
   'tournament_match_results',
+  'player_rankings',
 ])
 
 /** Digits in the emailed code; must match Supabase Auth > Email > OTP length. */

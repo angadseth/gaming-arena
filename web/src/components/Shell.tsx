@@ -4,6 +4,7 @@ import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useApi, useAuth } from '../lib/app'
 import { startFireworks } from '../lib/fireworks'
 import { startFx } from '../lib/fx'
+import { Avatar, avatarKey } from './Avatar'
 import { SideGarlands, TopGarland } from './Festive'
 import { SiteFooter } from './SiteFooter'
 import { Brand, Spinner } from './ui'
@@ -50,7 +51,7 @@ export function Shell() {
             )}
             {session ? (
               <NavLink to="/me" className="btn btn-secondary btn-sm">
-                <UserRound size={16} strokeWidth={1.75} aria-hidden />
+                {profile ? <Avatar value={avatarKey(profile.avatar, profile.username)} size={24} /> : <UserRound size={16} strokeWidth={1.75} aria-hidden />}
                 {profile?.username ?? 'Me'}
               </NavLink>
             ) : (

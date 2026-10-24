@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useStandings } from '../lib/app'
 import { fmtPoints, regOpen } from '../lib/format'
 import type { Game, StandingRow, Tournament } from '../lib/types'
+import { Podium } from './Podium'
 import { Empty, ErrorBox, Flap, HouseTag, Sheet, Skeleton } from './ui'
 
 type SortKey = 'rank' | 'wins' | 'kills' | 'name'
@@ -92,6 +93,16 @@ export function Leaderboard({ t, game }: { t: Tournament; game: Game }) {
       </div>
 
       {!scored && <p className="small t3">No matches played yet. Entries are listed by registration; ranks appear after the first result.</p>}
+      {scored && !query && (
+        <Podium
+          rows={q.data
+            .filter((r) => r.status === 'active' && r.rank != null)
+            .map((r) => ({
+              key: r.entry_id, rank: r.rank!, name: r.name, avatar: r.avatar, house_id: r.house_id,
+              points: fmtPoints(r.points), sub: game.team_size > 1 ? `${r.wins} wins · ${r.kills} kills` : `${r.wins} wins`, mine: r.is_mine,
+            }))}
+        />
+      )}
 
       {rows.length === 0 ? (
         <Empty title={`No match for '${query}'`} text="Check the spelling, or search by a teammate's username." />

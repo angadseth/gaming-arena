@@ -3,7 +3,7 @@ import { CircleAlert, CircleCheck, Info, X } from 'lucide-react'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ApiError, type Api } from './api'
 import type {
-  Game, House, HouseStanding, MatchResultRow, MyEntry, MyProfile, Region, Session, StandingRow, Tournament, TournamentCount,
+  Game, House, HouseStanding, MatchResultRow, MyEntry, MyProfile, PlayerRank, RankFormat, Region, Session, StandingRow, Tournament, TournamentCount,
 } from './types'
 
 // ---------------------------------------------------------------------
@@ -208,6 +208,23 @@ export const useMatchResults = (tournamentId: string | undefined) => {
     queryKey: ['match-results', tournamentId],
     queryFn: () => api.rpc<MatchResultRow[]>('tournament_match_results', { p_tournament_id: tournamentId }),
     enabled: !!tournamentId,
+  })
+}
+export const usePlayerRankings = (format: RankFormat) => {
+  const api = useApi()
+  const { session } = useAuth()
+  return useQuery({
+    queryKey: ['player-rankings', format, session?.userId],
+    queryFn: async () =>
+      (await api.rpc<PlayerRank[]>('player_rankings', { p_format: format, p_season: null })).map((r) => ({
+        ...r,
+        rank: Number(r.rank),
+        points: Number(r.points),
+        events: Number(r.events),
+        podiums: Number(r.podiums),
+        firsts: Number(r.firsts),
+      })),
+    staleTime: 60_000,
   })
 }
 export const useHouseStandings = (season: string | null) => {

@@ -80,6 +80,8 @@ export interface MyProfile {
   whatsapp: string
   status: 'active' | 'suspended' | 'banned'
   created_at: string
+  /** Picked avatar "style:seed"; null = default robot from the username. */
+  avatar: string | null
   /** When the next username change is allowed; null = allowed now. */
   username_next_change: string | null
   roles: Role[]
@@ -98,6 +100,20 @@ export interface StandingRow {
   best_placement: number | null
   status: 'active' | 'disqualified'
   is_mine: boolean
+  avatar: string
+}
+
+export type RankFormat = 'all' | 'solo' | 'small' | 'squad'
+export interface PlayerRank {
+  rank: number
+  username: string
+  avatar: string
+  house_id: number
+  points: number
+  events: number
+  podiums: number
+  firsts: number
+  is_me: boolean
 }
 
 export interface HouseStanding {
