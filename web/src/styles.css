@@ -915,7 +915,7 @@ p {
   font: 900 128px/0.8 var(--font-display);
   text-transform: uppercase;
   letter-spacing: -0.01em;
-  font-size: min(150px, calc(94cqw / (var(--len) * 0.5)));
+  font-size: min(150px, calc(90cqw / (var(--len) * 0.6)));
   white-space: pre;
   color: transparent;
   -webkit-text-stroke: 2px color-mix(in srgb, var(--tone) 80%, #fff);
@@ -953,7 +953,7 @@ p {
   border-radius: 13px;
 }
 .hero .cover-gen .mono {
-  font-size: min(300px, calc(60cqw / (var(--len) * 0.5)));
+  font-size: min(300px, calc(60cqw / (var(--len) * 0.6)));
 }
 /* The only ambient motion on the page: a slow sweep of foil across the featured card. */
 .hero .holo-foil {
