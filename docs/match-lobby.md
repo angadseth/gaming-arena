@@ -28,11 +28,12 @@ The bridge is the in-game name, and it is checked three times:
    host kick; the room code only goes to checked-in players, so outsiders are rare.) With the
    Meet limited to IITM accounts, the Meet tile also shows the person's IITM name.
 
-Results: Admin > Results > **Names in order**. The host types the in-game names off the results
-screen, best first, one line per place; names on one line split by commas share the place (e.g.
-everyone out in round 1). The site matches each name to its player like `ig_key` does (case,
-spaces, colour tags ignored), suggests the closest registered name for typos, and needs an
-explicit tick to skip outsiders (registered players then move up). Not listed = 0 for that game.
+Results: Admin > Results (cards, since the 24 Oct redesign). One line per player, winner first:
+`name, points` (e.g. `Rahul_07, 1000`). Points left out = the event's points table by position.
+Each line becomes a card: position, @username + house, points; a red card for a name that is not
+registered, with "Use <closest name>" for typos. Outsiders are skipped only after an explicit tick.
+Saved games show as cards (top 3) with Edit (loads it back, replace ticked) and Delete. Not listed
+= 0 for that game. Kills / team / JSON entry: "More options".
 Disputes: the player shows their in-game profile on the Meet; organiser decides.
 
 ### Every name scenario
@@ -109,7 +110,7 @@ The admin Lobby page shows this as a 4-step timeline with the real clock times.
    code, paste in "Room code", Save with notify. Only checked-in players see it.
 4. **21:00**: start when the checked-in names are in. If the party breaks or a new heat needs a
    new room: paste the new code, Save again.
-5. **After every game**: Results > Names in order > Save. Standings, the leaderboard and XP update
+5. **After every game**: Results > type `name, points` lines > Save. Standings, the leaderboard and XP update
    at once. Post the "Results" template at the end.
 
 Stumble Guys custom parties hold up to 32. With more players, run heats: one code per

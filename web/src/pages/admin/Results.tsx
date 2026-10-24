@@ -77,12 +77,13 @@ function parsePaste(text: string, entries: AdminEntry[]): { rows: Parsed[]; erro
   return { rows, error: null }
 }
 
-interface NameRow {
-  line: number
+interface Line {
+  idx: number
   said: string
+  manual: number | null
   entry: AdminEntry | null
   suggest: string | null
-  dup: boolean
+  problem: string | null
 }
 
 function editDistance(a: string, b: string): number {
@@ -99,60 +100,51 @@ function editDistance(a: string, b: string): number {
   return d[b.length]
 }
 
+/** What the organiser calls an entry: the in-game name for solo events, the team name otherwise. */
+const entryLabel = (e: AdminEntry) => ((e.members ?? []).length === 1 ? e.members![0].ig_id : e.name)
+
 /**
- * "Names in order": one line per place, best first; names on the same line split by commas share that place
- * (e.g. everyone knocked out in round 1). Names are matched like the database does (case, spaces and colour
- * tags ignored), against the in-game names players registered, or @username.
+ * Quick entry: one line per player, best first, "name, points". Points may be left out (then the
+ * event's points table decides from the position). Names match like public.ig_key: case, spaces and
+ * colour tags are ignored; @username and team names work too.
  */
-function parseNames(text: string, entries: AdminEntry[]): NameRow[] {
-  const byIg = new Map<string, AdminEntry>()
-  const byUser = new Map<string, AdminEntry>()
-  for (const e of entries)
+function parseLines(text: string, entries: AdminEntry[]): Line[] {
+  const byName = new Map<string, AdminEntry>()
+  for (const e of entries) {
+    byName.set(igNorm(e.name), e)
     for (const m of e.members ?? []) {
-      byIg.set(igNorm(m.ig_id), e)
-      byUser.set(m.username.toLowerCase(), e)
+      byName.set(igNorm(m.username), e)
+      byName.set(igNorm(m.ig_id), e)
     }
+  }
   const seen = new Set<string>()
-  const out: NameRow[] = []
-  text.split('\n').forEach((raw, i) => {
-    for (const part of raw.replace(/^\s*\d+\s*[.):-]\s*/, '').split(',')) {
-      const said = part.trim()
-      if (!said) continue
-      const key = igNorm(said)
-      const entry = said.startsWith('@') ? byUser.get(said.slice(1).toLowerCase()) ?? null : byIg.get(key) ?? byUser.get(key) ?? null
-      let suggest: string | null = null
-      if (!entry) {
-        let best = Infinity
-        for (const [k, e] of byIg) {
-          const dist = editDistance(key, k)
-          if (dist < best && dist <= Math.max(2, Math.floor(k.length / 4))) {
-            best = dist
-            suggest = (e.members ?? []).find((m) => igNorm(m.ig_id) === k)?.ig_id ?? null
-          }
+  const out: Line[] = []
+  text.split('\n').forEach((raw, idx) => {
+    const line = raw.replace(/^\s*\d+\s*[.)]\s+/, '').trim()
+    if (!line) return
+    const m = line.match(/^(.*?)\s*[,\t]\s*([-+]?\d+(?:\.\d+)?)\s*$/)
+    const said = (m ? m[1] : line).replace(/,\s*$/, '').trim()
+    const manual = m ? Number(m[2]) : null
+    const key = igNorm(said.replace(/^@/, ''))
+    const entry = byName.get(key) ?? null
+    let suggest: string | null = null
+    let problem: string | null = null
+    if (!entry) {
+      let best = Infinity
+      for (const e of entries) {
+        const name = entryLabel(e)
+        const dist = editDistance(key, igNorm(name))
+        if (dist < best && dist <= Math.max(2, Math.floor(name.length / 4))) {
+          best = dist
+          suggest = name
         }
       }
-      const dup = !!entry && seen.has(entry.entry_id)
-      if (entry) seen.add(entry.entry_id)
-      out.push({ line: i, said, entry, suggest, dup })
-    }
+      problem = 'Not registered in this event'
+    } else if (seen.has(entry.entry_id)) problem = 'Listed twice'
+    else if (manual != null && Math.abs(manual) > 100000) problem = 'Points must be within ±100000'
+    if (entry) seen.add(entry.entry_id)
+    out.push({ idx, said, manual, entry, suggest, problem })
   })
-  return out
-}
-
-/** Place = 1 + everyone listed on earlier lines (standard competition ranking). */
-function placeNames(rows: NameRow[]): { row: NameRow; placement: number }[] {
-  const out: { row: NameRow; placement: number }[] = []
-  let before = 0
-  let line = -1
-  let place = 1
-  for (const r of rows) {
-    if (r.line !== line) {
-      place = before + 1
-      line = r.line
-    }
-    out.push({ row: r, placement: place })
-    before++
-  }
   return out
 }
 
@@ -165,7 +157,7 @@ export default function Results() {
   const toast = useToast()
   const t = cat.tournaments.find((x) => x.id === id)
 
-  const [mode, setMode] = useState<'names' | 'form' | 'paste'>('names')
+  const [mode, setMode] = useState<'quick' | 'form' | 'paste'>('quick')
   const [names, setNames] = useState('')
   const [skipUnknown, setSkipUnknown] = useState(false)
   const [label, setLabel] = useState('')
@@ -179,9 +171,8 @@ export default function Results() {
   const entries = useMemo(() => (regs.data ?? []).filter((e) => e.status === 'active'), [regs.data])
   const entryById = useMemo(() => new Map((regs.data ?? []).map((e) => [e.entry_id, e])), [regs.data])
   const parsed = useMemo(() => parsePaste(paste, regs.data ?? []), [paste, regs.data])
-  const nameRows = useMemo(() => parseNames(names, entries), [names, entries])
-  const placed = useMemo(() => placeNames(nameRows.filter((r) => r.entry && !r.dup)), [nameRows])
-  const unknown = nameRows.filter((r) => !r.entry)
+  const lines = useMemo(() => parseLines(names, entries), [names, entries])
+  const unknown = lines.filter((r) => !r.entry)
 
   const record = useAction(
     (a, args: { p_tournament_id: string; p_label: string; p_played_at: string | null; p_rows: unknown[]; p_replace: boolean }) =>
@@ -210,14 +201,53 @@ export default function Results() {
     return (p != null && !(Number.isInteger(p) && p >= 1)) || !(Number.isInteger(k) && k >= 0) || (r.points !== '' && !Number.isFinite(Number(r.points)))
   })
   const pasteInvalid = !!parsed.error || parsed.rows.length === 0 || parsed.rows.some((r) => r.problem)
-  const namesInvalid = placed.length === 0 || nameRows.some((r) => r.dup) || (unknown.length > 0 && !skipUnknown)
+  const labels = new Set(grouped.map((m) => m.label.toLowerCase()))
+  let n = grouped.length + 1
+  while (labels.has(`game ${n}`)) n++
+  const nextLabel = `Game ${n}`
+  const effLabel = mode === 'quick' ? label.trim() || nextLabel : label.trim()
+  const exists = labels.has(effLabel.toLowerCase())
+  // Position = order among the lines that count (outsiders skipped only after the explicit tick).
+  const placed = lines
+    .filter((r) => r.entry && !r.problem)
+    .map((r, i) => ({ row: r, placement: i + 1, points: r.manual ?? computePoints(t, i + 1, 0, null) }))
+  const quickInvalid = placed.length === 0 || lines.some((r) => r.entry && r.problem) || (unknown.length > 0 && !skipUnknown)
   const canCommit =
-    label.trim().length > 0 && (mode === 'names' ? !namesInvalid : mode === 'form' ? formRows.length > 0 && !formInvalid : !pasteInvalid)
+    effLabel.length > 0 &&
+    (!exists || replace) &&
+    (mode === 'quick' ? !quickInvalid : mode === 'form' ? formRows.length > 0 && !formInvalid : !pasteInvalid)
+
+  const fixLine = (idx: number, name: string) =>
+    setNames((txt) =>
+      txt
+        .split('\n')
+        .map((l, i) => {
+          if (i !== idx) return l
+          const m = l.match(/[,\t]\s*[-+]?\d+(?:\.\d+)?\s*$/)
+          return m ? `${name}${l.slice(m.index)}` : name
+        })
+        .join('\n'),
+    )
+
+  function edit(m: (typeof grouped)[number]) {
+    const rowsSorted = [...m.rows].sort((a, b) => (a.placement ?? 1e9) - (b.placement ?? 1e9) || b.points - a.points)
+    setMode('quick')
+    setLabel(m.label)
+    setReplace(true)
+    setSkipUnknown(false)
+    setNames(rowsSorted.map((r) => `${entryById.get(r.entry_id) ? entryLabel(entryById.get(r.entry_id)!) : r.entry_id}, ${fmtPoints(r.points)}`).join('\n'))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   function commit() {
     const payload =
-      mode === 'names'
-        ? placed.map((p) => ({ entry_id: p.row.entry!.entry_id, placement: p.placement, kills: 0 }))
+      mode === 'quick'
+        ? placed.map((p) => ({
+            entry_id: p.row.entry!.entry_id,
+            placement: p.placement,
+            kills: 0,
+            ...(p.row.manual != null ? { points: p.row.manual } : {}),
+          }))
         : mode === 'form'
         ? formRows.map((r) => ({
             entry_id: r.entry_id,
@@ -233,7 +263,7 @@ export default function Results() {
           }))
     setServerErrors([])
     record.mutate(
-      { p_tournament_id: t!.id, p_label: label.trim(), p_played_at: istInputToIso(playedAt) || null, p_rows: payload, p_replace: replace },
+      { p_tournament_id: t!.id, p_label: effLabel, p_played_at: istInputToIso(playedAt) || null, p_rows: payload, p_replace: replace },
       {
         onSuccess: (res) => {
           if (!res?.ok) {
@@ -241,7 +271,7 @@ export default function Results() {
             toast({ kind: 'error', text: 'Nothing was saved. Fix the listed rows.' })
             return
           }
-          toast({ kind: 'success', text: `${label.trim()} saved: ${res.rows} rows.` })
+          toast({ kind: 'success', text: `${effLabel} saved: ${res.rows} ${res.rows === 1 ? 'player' : 'players'}. Leaderboard updated.` })
           setRows([])
           setPaste('')
           setNames('')
@@ -256,110 +286,136 @@ export default function Results() {
   const used = new Set(rows.map((r) => r.entry_id).filter(Boolean))
   const setRow = (i: number, patch: Partial<RowIn>) => setRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...patch } : r)))
 
+  const top = standings.data ?? []
+  const errorsBox = serverErrors.length > 0 && (
+    <div className="stack server-errors" style={gap(4)} role="alert">
+      {serverErrors.map((e, i) => (
+        <span key={i} className="error-text">
+          {e.row ? `Row ${e.row}: ` : ''}
+          {e.error}
+        </span>
+      ))}
+    </div>
+  )
+  const replaceBox = exists && (
+    <label className="check">
+      <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} />
+      <span>{effLabel} is already saved. Tick to replace it with this.</span>
+    </label>
+  )
+
   return (
     <>
       <AdminHeader
         title="Results"
         sub={
           <>
-            <Link to={`/admin/events/${t.id}`}>{t.title}</Link> · placement {JSON.stringify(t.placement_points)} · {fmtPoints(Number(t.kill_points))} per kill
+            <Link to={`/admin/events/${t.id}`}>{t.title}</Link> · {grouped.length} {grouped.length === 1 ? 'game' : 'games'} saved · {entries.length} {entries.length === 1 ? 'player' : 'players'}
           </>
         }
         actions={<StatusPill status={t.status} />}
       />
 
-      <div className="panel stack">
-        <div className="tabs" role="tablist">
-          <button role="tab" aria-selected={mode === 'names'} onClick={() => setMode('names')}>
-            Names in order
-          </button>
-          <button role="tab" aria-selected={mode === 'form'} onClick={() => setMode('form')}>
-            Enter a match
-          </button>
-          <button role="tab" aria-selected={mode === 'paste'} onClick={() => setMode('paste')}>
-            Paste JSON
-          </button>
-        </div>
-        <div className="form-grid two">
-          <Field label="Match label" hint='Unique in this event, e.g. "Match 1 - Erangel" or "Final"' htmlFor="m-label">
-            <input id="m-label" className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={60} />
-          </Field>
-          <Field label="Played at (IST)" htmlFor="m-at">
-            <input id="m-at" type="datetime-local" className="input" value={playedAt} onChange={(e) => setPlayedAt(e.target.value)} />
-          </Field>
-        </div>
-
-        {mode === 'names' ? (
-          <>
-            <Field
-              label="In-game names, best first"
-              hint="One line per place. Same line, split by commas = same place (e.g. all knocked out in round 1). Case and spaces don't matter."
-              htmlFor="m-names"
-            >
-              <textarea
-                id="m-names"
-                className="textarea"
-                style={{ minHeight: 160 }}
-                spellCheck={false}
-                placeholder={'Rahul_07\nPriya.k, Aman 22, Sid\nNeha, Ravi, Kunal, Tina, Om'}
-                value={names}
-                onChange={(e) => setNames(e.target.value)}
-              />
-            </Field>
-            {nameRows.length > 0 && (
-              <div className="table-wrap">
-                <table className="data">
-                  <thead>
-                    <tr>
-                      <th className="n">Place</th>
-                      <th>Typed</th>
-                      <th>Player</th>
-                      <th className="n">Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {nameRows.map((r, i) => {
-                      const p = placed.find((x) => x.row === r)
-                      return (
-                        <tr key={i}>
-                          <td className="n num">{p ? p.placement : '—'}</td>
-                          <td className="small">{r.said}</td>
-                          <td>
-                            {p ? (
-                              <span className="row match-ok" style={gap(6)}>
-                                <CircleCheck size={16} aria-hidden /> {r.entry!.name}
-                              </span>
-                            ) : (
-                              <span className="row match-bad" style={gap(6)}>
-                                <CircleAlert size={16} aria-hidden />
-                                {r.dup ? 'Listed twice' : r.suggest ? `Not registered. Did you mean ${r.suggest}?` : 'Not registered in this event'}
-                              </span>
-                            )}
-                          </td>
-                          <td className="n">{p ? fmtPoints(computePoints(t, p.placement, 0, null)) : '—'}</td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {unknown.length > 0 && (
-              <label className="check">
-                <input type="checkbox" checked={skipUnknown} onChange={(e) => setSkipUnknown(e.target.checked)} />
-                <span>
-                  {unknown.length} name{unknown.length > 1 ? 's are' : ' is'} not registered. Fix typos first; tick only if they are outsiders. They get
-                  nothing and registered players move up.
-                </span>
-              </label>
-            )}
-            {placed.length > 0 && (
+      {mode === 'quick' ? (
+        <section className="lobby-card rs-quick">
+          <div className="spread wrap" style={gap(10)}>
+            <div>
+              <h3 className="lobby-h">{exists ? `Edit ${effLabel}` : `Add ${effLabel}`}</h3>
               <p className="small t3">
-                {placed.length} of {entries.length} registered players listed. Anyone not listed gets no points for this match.
+                One player per line, winner first: <b>name, points</b>. No points = from the table ({Object.entries(t.placement_points ?? {}).slice(0, 3).map(([k, v]) => `${k}: ${fmtPoints(Number(v))}`).join(' · ')}…).
               </p>
+            </div>
+            <input className="input rs-label" aria-label="Game name" maxLength={60} placeholder={nextLabel} value={label} onChange={(e) => setLabel(e.target.value)} />
+          </div>
+          <textarea
+            id="m-lines"
+            className="textarea rs-lines"
+            spellCheck={false}
+            aria-label="Results, one player per line"
+            placeholder={'Rahul_07, 1000\nPriya.k, 700\nAman 22, 500\nSid'}
+            value={names}
+            onChange={(e) => setNames(e.target.value)}
+          />
+          {lines.length > 0 && (
+            <div className="rs-grid">
+              {lines.map((r) => {
+                const p = placed.find((x) => x.row === r)
+                const who = r.entry?.members?.[0]
+                return (
+                  <div key={r.idx} className={`rcard${p ? '' : ' is-bad'}${p && p.placement <= 3 ? ` is-top p${p.placement}` : ''}`}>
+                    <span className="rcard-pos num">{p ? p.placement : '!'}</span>
+                    <span className="rcard-who">
+                      <b className="ellipsis">{r.said}</b>
+                      {p ? (
+                        <small className="row" style={gap(6)}>
+                          {who ? `@${who.username}` : r.entry!.name} <HouseTag id={r.entry!.house_id} />
+                        </small>
+                      ) : (
+                        <small className="rcard-why">
+                          {r.problem}
+                          {r.suggest && (
+                            <>
+                              {' · '}
+                              <button className="link-btn" onClick={() => fixLine(r.idx, r.suggest!)}>Use {r.suggest}</button>
+                            </>
+                          )}
+                        </small>
+                      )}
+                    </span>
+                    <span className="rcard-pts num">
+                      {p ? fmtPoints(p.points) : '—'}
+                      {p && r.manual == null && <small>auto</small>}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+          {unknown.length > 0 && (
+            <label className="check">
+              <input type="checkbox" checked={skipUnknown} onChange={(e) => setSkipUnknown(e.target.checked)} />
+              <span>
+                {unknown.length} {unknown.length > 1 ? 'names are' : 'name is'} not registered. Fix typos first; tick only for outsiders. They get nothing.
+              </span>
+            </label>
+          )}
+          {replaceBox}
+          {errorsBox}
+          <div className="row wrap" style={gap(12)}>
+            <Button kind="primary" disabled={!canCommit} busy={record.isPending} onClick={commit}>
+              Save {effLabel}
+            </Button>
+            {exists && (
+              <button className="btn btn-ghost btn-sm" onClick={() => { setNames(''); setLabel(''); setReplace(false); setSkipUnknown(false) }}>
+                Cancel
+              </button>
             )}
-          </>
-        ) : mode === 'form' ? (
+            {placed.length > 0 && <span className="small t3">{placed.length} of {entries.length} listed · not listed = 0 points</span>}
+            <button className="link-btn small rs-more" onClick={() => setMode('form')}>More options: kills, teams, JSON</button>
+          </div>
+        </section>
+      ) : (
+        <div className="panel stack">
+          <div className="spread wrap" style={gap(8)}>
+            <div className="tabs" role="tablist">
+              <button role="tab" aria-selected={mode === 'form'} onClick={() => setMode('form')}>
+                Detailed form
+              </button>
+              <button role="tab" aria-selected={mode === 'paste'} onClick={() => setMode('paste')}>
+                Paste JSON
+              </button>
+            </div>
+            <button className="btn btn-ghost btn-sm" onClick={() => setMode('quick')}>Back to quick entry</button>
+          </div>
+          <div className="form-grid two">
+            <Field label="Match label" hint='Unique in this event, e.g. "Game 1" or "Final"' htmlFor="m-label">
+              <input id="m-label" className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={60} />
+            </Field>
+            <Field label="Played at (IST)" htmlFor="m-at">
+              <input id="m-at" type="datetime-local" className="input" value={playedAt} onChange={(e) => setPlayedAt(e.target.value)} />
+            </Field>
+          </div>
+          {mode === 'form' ? (
           entries.length === 0 ? (
             <p className="t3">No active entries in this event yet.</p>
           ) : (
@@ -488,124 +544,85 @@ export default function Results() {
             )}
           </>
         )}
-
-        <label className="check">
-          <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} />
-          <span>Replace the existing match with the same label</span>
-        </label>
-        {serverErrors.length > 0 && (
-          <div className="stack server-errors" style={gap(4)} role="alert">
-            {serverErrors.map((e, i) => (
-              <span key={i} className="error-text">
-                {e.row ? `Row ${e.row}: ` : ''}
-                {e.error}
-              </span>
-            ))}
+          {replaceBox}
+          {errorsBox}
+          <div className="row">
+            <Button kind="primary" disabled={!canCommit} busy={record.isPending} onClick={commit}>
+              Save match
+            </Button>
+            {!label.trim() && <span className="hint">Give the match a label first.</span>}
           </div>
-        )}
-        <div className="row">
-          <Button kind="primary" disabled={!canCommit} busy={record.isPending} onClick={commit}>
-            Save match
-          </Button>
-          {!label.trim() && <span className="hint">Give the match a label first.</span>}
         </div>
-      </div>
+      )}
 
       <div className="section-head">
-        <h2>Recorded matches</h2>
+        <h2>Games saved</h2>
         <span className="small t3">{grouped.length}</span>
       </div>
       {matches.isPending ? (
         <Skeleton h={120} />
       ) : grouped.length === 0 ? (
-        <p className="t3">No matches recorded yet.</p>
+        <p className="t3">No games yet. Add the first one above.</p>
       ) : (
-        <div className="stack" style={gap(12)}>
-          {grouped.map((m) => (
-            <details key={m.id} className="panel match-block">
-              <summary className="spread">
-                <span>
-                  <strong>{m.label}</strong> <span className="small t3">{fmtDate(m.played_at)} · {m.rows.length} rows</span>
-                </span>
-                <Button
-                  size="sm"
-                  kind="danger"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    setDeleting({ id: m.id, label: m.label })
-                  }}
-                >
-                  Delete
-                </Button>
-              </summary>
-              <div className="table-wrap" style={{ marginTop: 12 }}>
-                <table className="data">
-                  <thead>
-                    <tr>
-                      <th>Entry</th>
-                      <th className="n">Place</th>
-                      <th className="n">Kills</th>
-                      <th className="n">Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {m.rows.map((r) => (
-                      <tr key={r.entry_id}>
-                        <td>{entryById.get(r.entry_id)?.name ?? r.entry_id}</td>
-                        <td className="n">{r.placement ?? '—'}</td>
-                        <td className="n">{r.kills}</td>
-                        <td className="n">{fmtPoints(r.points)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </details>
-          ))}
+        <div className="rs-games">
+          {grouped.map((m) => {
+            const best = [...m.rows].sort((a, b) => (a.placement ?? 1e9) - (b.placement ?? 1e9) || b.points - a.points).slice(0, 3)
+            return (
+              <article key={m.id} className="lobby-card rs-game">
+                <div className="spread" style={gap(8)}>
+                  <b className="rs-game-name">{m.label}</b>
+                  <span className="small t3">{fmtDate(m.played_at)}</span>
+                </div>
+                <ol className="rs-top">
+                  {best.map((r, i) => {
+                    const e = entryById.get(r.entry_id)
+                    return (
+                      <li key={r.entry_id}>
+                        <span className={`rs-medal m${i + 1}`}>{i + 1}</span>
+                        <span className="ellipsis grow">{e ? entryLabel(e) : '—'}</span>
+                        <span className="num">{fmtPoints(r.points)}</span>
+                      </li>
+                    )
+                  })}
+                </ol>
+                <div className="spread" style={gap(8)}>
+                  <span className="small t3">{m.rows.length} {m.rows.length === 1 ? 'player' : 'players'}</span>
+                  <span className="row" style={gap(6)}>
+                    <Button size="sm" onClick={() => edit(m)}>Edit</Button>
+                    <Button size="sm" kind="danger" onClick={() => setDeleting({ id: m.id, label: m.label })}>Delete</Button>
+                  </span>
+                </div>
+              </article>
+            )
+          })}
         </div>
       )}
 
       <div className="section-head">
-        <h2>Standings now</h2>
+        <h2>Leaderboard</h2>
         <Link to={`/e/${t.slug}?tab=standings`} className="small t2">
           Public view
         </Link>
       </div>
       {standings.isPending ? (
         <Skeleton h={160} />
-      ) : !standings.data?.length ? (
-        <p className="t3">No entries yet.</p>
+      ) : !top.length ? (
+        <p className="t3">No players yet.</p>
       ) : (
-        <div className="table-wrap">
-          <table className="data">
-            <thead>
-              <tr>
-                <th className="n">#</th>
-                <th>Entry</th>
-                <th>House</th>
-                <th className="n">M</th>
-                <th className="n">Wins</th>
-                <th className="n">Kills</th>
-                <th className="n">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {standings.data.map((s) => (
-                <tr key={s.entry_id} className={s.status === 'disqualified' ? 'dq-row' : undefined}>
-                  <td className="n">{s.rank ?? 'DQ'}</td>
-                  <td>{s.name}</td>
-                  <td>
-                    <HouseTag id={s.house_id} />
-                  </td>
-                  <td className="n">{s.matches}</td>
-                  <td className="n">{s.wins}</td>
-                  <td className="n">{s.kills}</td>
-                  <td className="n">{fmtPoints(s.points)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ol className="rs-board">
+          {top.map((s) => (
+            <li key={s.entry_id} className={`${s.status === 'disqualified' ? 'is-dq' : ''}${s.rank && s.rank <= 3 ? ` is-top p${s.rank}` : ''}`}>
+              <span className="rcard-pos num">{s.rank ?? 'DQ'}</span>
+              <span className="grow ellipsis">
+                <b>{entryById.get(s.entry_id) ? entryLabel(entryById.get(s.entry_id)!) : s.name}</b>
+                <small className="t3"> @{s.name}</small>
+              </span>
+              <HouseTag id={s.house_id} />
+              <span className="small t3 rs-board-m">{s.matches} {s.matches === 1 ? 'game' : 'games'} · {s.wins} {s.wins === 1 ? 'win' : 'wins'}</span>
+              <b className="num rs-board-pts">{fmtPoints(s.points)}</b>
+            </li>
+          ))}
+        </ol>
       )}
 
       {deleting && (

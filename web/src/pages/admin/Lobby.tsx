@@ -118,7 +118,7 @@ export default function Lobby() {
           <li>
             <span className="when">After each game</span>
             <b>Post results</b>
-            <span className="t3"><Link to={`/admin/events/${id}/results`} style={{ textDecoration: 'underline' }}>Results › Names in order</Link>. Leaderboard updates at once.</span>
+            <span className="t3"><Link to={`/admin/events/${id}/results`} style={{ textDecoration: 'underline' }}>Results</Link>: one line per player, name, points. Leaderboard updates at once.</span>
           </li>
         </ol>
       </section>
