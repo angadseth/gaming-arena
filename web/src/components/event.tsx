@@ -143,7 +143,7 @@ export function InviteCode({ code, teamName, eventTitle, onRegenerate }: { code:
 /** One of my registrations: roster, invite code, and the actions allowed now. */
 export function EntryPanel({ entry, showEventLink }: { entry: MyEntry; showEventLink?: boolean }) {
   const [confirm, setConfirm] = useState<null | { kind: 'leave' } | { kind: 'kick'; username: string }>(null)
-  const inv = [['my-entries'], ['standings'], ['counts']]
+  const inv = [['my-entries'], ['standings'], ['counts'], ['lobby']]
   const leave = useAction((api, id: string) => api.rpc('leave_entry', { p_entry_id: id }), inv)
   const kick = useAction((api, a: { id: string; u: string }) => api.rpc('kick_member', { p_entry_id: a.id, p_username: a.u }), inv)
   const regen = useAction((api, id: string) => api.rpc<string>('regenerate_invite', { p_entry_id: id }), [['my-entries']])

@@ -65,7 +65,7 @@ export default function JoinTeam() {
     try {
       const clean = Object.fromEntries(Object.entries(extra).map(([k, v]) => [k, v.trim()]).filter(([, v]) => v))
       await api.rpc('join_team', { p_code: code.trim().toUpperCase(), p_ig_id: igId.trim(), p_extra: clean })
-      ;[['my-entries'], ['counts'], ['standings']].forEach((k) => qc.invalidateQueries({ queryKey: k }))
+      ;[['my-entries'], ['counts'], ['standings'], ['lobby']].forEach((k) => qc.invalidateQueries({ queryKey: k }))
       setJoined(true)
     } catch (err) {
       const c = errorCode(err)

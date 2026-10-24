@@ -122,3 +122,13 @@ export function ordinal(n: number): string {
 }
 
 export const fmtPoints = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/0+$/, '').replace(/\.$/, ''))
+
+/** Drops colour tags some games allow in names ("[color=red]Rahul[/color]"); the name itself stays. */
+export const cleanIgName = (s: string) => s.replace(/\[\/?colou?r[^\]]*\]|<\/?colou?r[^>]*>/gi, '').trim()
+
+/** Same folding as public.ig_key: NFKC, no spaces or invisible characters, lower case. */
+export const igNorm = (s: string) => cleanIgName(s.normalize('NFKC')).replace(/[\s​-‏⁠﻿­]/g, '').toLowerCase()
+
+/** Clock time in IST, e.g. "8:50 pm". */
+export const fmtClock = (ms: number) =>
+  new Date(ms).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })

@@ -91,7 +91,8 @@ export default function EventPage() {
             <div className="section-head"><h2>How it works</h2></div>
             <ol className="prose" style={{ margin: 0 }}>
               <li>Sign in with your IITM BS email and register{g.team_size > 1 ? '. The captain creates the team and shares the invite code; teammates join with it' : ''}.</li>
-              <li>Before each match, the Meet link and room code appear in the Lobby tab, and you get a notice on the bell.</li>
+              <li>Register with your {g.ig_id_label.toLowerCase()} as it shows in the game. That name is how your results reach you.</li>
+              <li>The Lobby tab then opens: how to join, the Google Meet, and on match day check-in and the room code. The bell pings you at each step.</li>
               <li>{g.verify_note ? `Results are verified by ${g.verify_note}.` : 'Captains share a result screenshot after every match.'} Organisers post results here.</li>
               <li>Standings update on this page. Final placements earn points for your house.</li>
             </ol>

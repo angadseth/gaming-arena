@@ -6,7 +6,7 @@ import {
 import { useState, type ComponentType } from 'react'
 import { Link } from 'react-router-dom'
 import { useAction, useAuth, useLobby, useToast } from '../lib/app'
-import { relative } from '../lib/format'
+import { cleanIgName, fmtClock, fmtDate, regOpen, relative } from '../lib/format'
 import type { Game, Notice, NoticeKind, PlayKind, Tournament } from '../lib/types'
 import { Button, Field, Skeleton } from './ui'
 
@@ -48,16 +48,15 @@ export function LobbyTab({ t, game }: { t: Tournament; game: Game }) {
   const d = lobby.data
   const stage = !d?.registered ? 0 : !d.agreed ? 1 : !d.checked_in ? 2 : 3
 
+  // Nothing about the lobby (links, steps, rules, Meet) shows before the player registers.
+  if (!session) return <LockedCard t={t} game={game} signedIn={false} />
+  if (lobby.isPending) return <Skeleton h={160} r={16} />
+  if (!lobby.data?.registered) return <LockedCard t={t} game={game} signedIn />
+
   return (
     <div className="lobby">
       <div className="lobby-main">
-        {!session ? (
-          <LockedCard t={t} signedIn={false} />
-        ) : lobby.isPending ? (
-          <Skeleton h={220} r={16} />
-        ) : !lobby.data?.registered ? (
-          <LockedCard t={t} signedIn />
-        ) : !lobby.data.agreed ? (
+        {!lobby.data.agreed ? (
           <AgreeCard t={t} hasRoom={!!lobby.data.has_room} />
         ) : (
           <>
@@ -117,16 +116,24 @@ export function LobbyTab({ t, game }: { t: Tournament; game: Game }) {
   )
 }
 
-function LockedCard({ t, signedIn }: { t: Tournament; signedIn: boolean }) {
-  const to = signedIn ? `/e/${t.slug}/register` : `/signin?next=${encodeURIComponent(`/e/${t.slug}?tab=lobby`)}`
+const LOCKED_PERKS = ['How to join', 'Google Meet', 'Room code', 'Points + XP']
+
+function LockedCard({ t, game, signedIn }: { t: Tournament; game: Game; signedIn: boolean }) {
+  const open = regOpen(t)
+  const to = signedIn ? `/e/${t.slug}/register` : `/signin?next=${encodeURIComponent(`/e/${t.slug}/register`)}`
   return (
-    <section className="lobby-card lobby-locked">
+    <section className="lobby-card lobby-gate">
       <span className="lobby-badge"><Lock size={18} strokeWidth={2} /></span>
       <div className="grow">
-        <h3 className="lobby-h">Meet link and room code</h3>
-        <p className="small t2">Unlock for registered players only.</p>
+        <h3 className="lobby-h">Register to open the lobby</h3>
+        <p className="small t2">
+          {open ? `Takes a minute: your ${game.ig_id_label.toLowerCase()} and one tick.` : t.status === 'upcoming' ? `Registration opens ${t.reg_opens_at ? fmtDate(t.reg_opens_at) : 'soon'}.` : 'Registration is closed for this event.'}
+        </p>
+        <div className="gate-perks">
+          {LOCKED_PERKS.map((p) => <span key={p}><Lock size={11} aria-hidden /> {p}</span>)}
+        </div>
       </div>
-      <Link className="btn btn-primary btn-sm" to={to}>{signedIn ? 'Register' : 'Sign in'}</Link>
+      {open && <Link className="btn btn-primary btn-sm" to={to}>{signedIn ? 'Register' : 'Sign in to register'}</Link>}
     </section>
   )
 }
@@ -178,13 +185,13 @@ function CheckInCard({ t, game, open, igId }: { t: Tournament; game: Game; open:
         <span className="lobby-badge"><UserCheck size={18} strokeWidth={2} /></span>
         <div className="grow">
           <h3 className="lobby-h">Check in</h3>
-          <p className="small t3">{open ? 'Confirm the name you play with. Room code unlocks after this.' : 'Opens before the match. You get a notice.'}</p>
+          <p className="small t3">{open ? 'Confirm the name you play with. Room code unlocks after this.' : t.starts_at ? `Opens at ${fmtClock(new Date(t.starts_at).getTime() - 45 * 60_000)} on match day. You get a notice.` : 'Opens before the match. You get a notice.'}</p>
         </div>
         {!open && <span className="pill pill-upcoming">Not open</span>}
       </div>
       {open ? (
         <>
-          <Field label={`${game.ig_id_label} in ${game.short || game.title}`} hint="Exactly as it shows in the game, same capitals" htmlFor="ci-name">
+          <Field label={game.ig_id_label} hint="Exactly as it shows in the game" htmlFor="ci-name">
             <input id="ci-name" className="input" maxLength={64} value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
           </Field>
           <label className="check">
@@ -195,9 +202,9 @@ function CheckInCard({ t, game, open, igId }: { t: Tournament; game: Game; open:
             kind="primary"
             disabled={!sure || !name.trim()}
             busy={checkIn.isPending}
-            onClick={() => checkIn.mutate(name.trim(), {
+            onClick={() => checkIn.mutate(cleanIgName(name), {
               onSuccess: () => {
-                toast({ kind: 'success', text: `Checked in as ${name.trim()}` })
+                toast({ kind: 'success', text: `Checked in as ${cleanIgName(name)}` })
                 qc.invalidateQueries({ queryKey: ['lobby', t.id] })
               },
             })}
@@ -244,7 +251,9 @@ function RoomCard({ t, game, lobby }: { t: Tournament; game: Game; lobby: NonNul
           ) : lobby.has_room && !lobby.checked_in ? (
             <span className="small t2">Ready. Check in above to see it.</span>
           ) : (
-            <span className="small t2">Shows here about 10 min before start</span>
+            <span className="small t2">
+              {t.starts_at ? `Organiser opens the room at ${fmtClock(new Date(t.starts_at).getTime() - 10 * 60_000)} and posts the code here` : 'Shows here about 10 min before start'}
+            </span>
           )}
           {lobby.room_password && (
             <button className="room-pass small" onClick={() => copy(lobby.room_password!, 'Password')}>

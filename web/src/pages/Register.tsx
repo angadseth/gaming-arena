@@ -6,7 +6,7 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { checkGameFields, GameFields, InviteCode } from '../components/event'
 import { Button, ErrorBox, Field, GameCover, HouseTag, Locked, Skeleton, StatusPill } from '../components/ui'
 import { errorCode, errorText, useApi, useAuth, useCatalog, useHouseName, useMyEntries } from '../lib/app'
-import { regOpen, teamSizeLabel } from '../lib/format'
+import { cleanIgName, regOpen, teamSizeLabel } from '../lib/format'
 import type { Game, Tournament } from '../lib/types'
 import NotFound from './NotFound'
 
@@ -72,7 +72,8 @@ function RegisterForm({ t, g, onDone }: { t: Tournament; g: Game; onDone: (d: { 
 
   async function submit(e: FormEvent) {
     e.preventDefault()
-    const errs = checkGameFields(g, igId, extra)
+    const ig = cleanIgName(igId)
+    const errs = checkGameFields(g, ig, extra)
     const name = teamName.trim().replace(/\s+/g, ' ')
     if (team && !/^[\p{L}\p{N}][\p{L}\p{N} ._-]{1,31}$/u.test(name)) errs.__team = 'Team name: 2–32 letters, numbers, spaces, . _ -'
     setErrors(errs)
@@ -81,13 +82,13 @@ function RegisterForm({ t, g, onDone }: { t: Tournament; g: Game; onDone: (d: { 
     setBusy(true)
     try {
       if (team) {
-        const r = await api.rpc<{ invite_code: string }>('create_team', { p_tournament_id: t.id, p_team_name: name, p_ig_id: igId.trim(), p_extra: cleanExtra })
+        const r = await api.rpc<{ invite_code: string }>('create_team', { p_tournament_id: t.id, p_team_name: name, p_ig_id: ig, p_extra: cleanExtra })
         onDone({ invite: r.invite_code, teamName: name })
       } else {
-        await api.rpc('register_solo', { p_tournament_id: t.id, p_ig_id: igId.trim(), p_extra: cleanExtra })
+        await api.rpc('register_solo', { p_tournament_id: t.id, p_ig_id: ig, p_extra: cleanExtra })
         onDone({})
       }
-      ;[['my-entries'], ['counts'], ['standings']].forEach((k) => qc.invalidateQueries({ queryKey: k }))
+      ;[['my-entries'], ['counts'], ['standings'], ['lobby']].forEach((k) => qc.invalidateQueries({ queryKey: k }))
     } catch (err) {
       const code = errorCode(err)
       const key = code === 'BAD_IG_ID' || code === 'IG_ID_TAKEN' ? '__ig' : code === 'TEAM_NAME_TAKEN' || code === 'BAD_TEAM_NAME' ? '__team' : '__form'
@@ -133,6 +134,7 @@ function RegisterForm({ t, g, onDone }: { t: Tournament; g: Game; onDone: (d: { 
       <section className="stack" style={{ gap: 12 }}>
         <div className="section-head"><h2>In-game</h2></div>
         <GameFields game={g} igId={igId} setIgId={setIgId} extra={extra} setExtra={setExtra} errors={errors} />
+        <NameHelp g={g} />
       </section>
 
       {errors.__form && <p className="error-text" role="alert">{errors.__form}</p>}
@@ -148,6 +150,28 @@ function RegisterForm({ t, g, onDone }: { t: Tournament; g: Game; onDone: (d: { 
         {team ? 'Create team' : 'Register'}
       </Button>
     </form>
+  )
+}
+
+/** Covers both cases: an existing account (type the name as it is) and a new player (get the game first). */
+function NameHelp({ g }: { g: Game }) {
+  const links = g.play_links ?? []
+  const name = g.short || g.title
+  return (
+    <div className="name-help">
+      <span><b>Already play {name}?</b> <span className="t2">Type your name exactly as the game shows it. No need to change it.</span></span>
+      {links.length > 0 && (
+        <>
+          <span><b>New to it?</b> <span className="t2">Get it free, pick a name in the game, then type that name here.</span></span>
+          <div className="play-chips">
+            {links.map((l) => (
+              <a key={l.url} className="chip" href={l.url} target="_blank" rel="noopener noreferrer">{l.label}</a>
+            ))}
+          </div>
+        </>
+      )}
+      <span className="t3">Points reach you through this name, so it must match the game.</span>
+    </div>
   )
 }
 

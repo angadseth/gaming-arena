@@ -5,7 +5,7 @@ import { Link, useParams } from 'react-router-dom'
 import { NOTICE_LABEL } from '../../components/Lobby'
 import { Button, Empty, ErrorBox, Field, HouseTag, Sheet, Skeleton } from '../../components/ui'
 import { useAction, useApi, useAuth, useCatalog, useToast } from '../../lib/app'
-import { fmtDate, relative } from '../../lib/format'
+import { fmtClock, fmtDate, relative } from '../../lib/format'
 import type { AdminLobby, NoticeKind } from '../../lib/types'
 import { AdminHeader, ConfirmSheet, gap } from './shared'
 
@@ -76,6 +76,10 @@ export default function Lobby() {
   const needle = who.trim().toLowerCase()
   const roster = d.roster.filter((r) => !needle || [r.ig_id, r.username, r.full_name, r.entry].some((v) => v.toLowerCase().includes(needle)))
   const fixed = fixedMeet ?? d.default_meet_url ?? ''
+  const g = cat.gameById.get(t.game_id)
+  const gameName = g?.short || g?.title || 'the game'
+  const start = t.starts_at ? new Date(t.starts_at).getTime() : null
+  const at = (min: number) => (start ? fmtClock(start + min * 60_000) : min === 0 ? 'Start' : `${-min} min before`)
   const outside = lastPosted ?? (d.notices?.[0] ? { title: d.notices[0].title, body: d.notices[0].body } : { title: 'Lobby details are up', body: '' })
 
   return (
@@ -92,6 +96,32 @@ export default function Lobby() {
         <span><b className="num">{d.checked_in_count}</b> checked in</span>
         <span><b className="num">{d.notices?.length ?? 0}</b> notices</span>
       </div>
+
+      <section className="lobby-card">
+        <h3 className="lobby-h">Game night, step by step</h3>
+        <ol className="night-steps">
+          <li>
+            <span className="when">{at(-45)}</span>
+            <b>Check-in opens</b>
+            <span className="t3">By itself. Players confirm their in-game name.</span>
+          </li>
+          <li>
+            <span className="when">{at(-10)}</span>
+            <b>Make the room</b>
+            <span className="t3">In {gameName}: Party › Create. Paste the code below, Save. Only checked-in players see it.</span>
+          </li>
+          <li>
+            <span className="when">{at(0)}</span>
+            <b>Start</b>
+            <span className="t3">When the checked-in names are in. New room? Paste the new code, Save again.</span>
+          </li>
+          <li>
+            <span className="when">After each game</span>
+            <b>Post results</b>
+            <span className="t3"><Link to={`/admin/events/${id}/results`} style={{ textDecoration: 'underline' }}>Results › Names in order</Link>. Leaderboard updates at once.</span>
+          </li>
+        </ol>
+      </section>
 
       {isAdmin && (
         <section className="lobby-card fixed-meet">
@@ -164,7 +194,7 @@ export default function Lobby() {
             <input id="l-chat" className="input" placeholder="https://chat.whatsapp.com/..." value={room.chat_url} onChange={(e) => setRoom({ ...room, chat_url: e.target.value })} />
           </Field>
           <div className="form-grid two">
-            <Field label="Room code" htmlFor="l-code">
+            <Field label="Room code" htmlFor="l-code" hint={`From ${gameName}: Party › Create`}>
               <input id="l-code" className="input num" maxLength={40} value={room.room_code} onChange={(e) => setRoom({ ...room, room_code: e.target.value })} />
             </Field>
             <Field label="Password (optional)" htmlFor="l-pass">

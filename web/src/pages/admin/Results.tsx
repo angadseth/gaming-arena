@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Button, Empty, ErrorBox, Field, HouseTag, Skeleton, StatusPill } from '../../components/ui'
 import { useAction, useCatalog, useMatchResults, useStandings, useToast } from '../../lib/app'
-import { fmtDate, fmtPoints } from '../../lib/format'
+import { fmtDate, fmtPoints, igNorm } from '../../lib/format'
 import type { Tournament } from '../../lib/types'
 import { useRegistrations } from './Registrations'
 import { AdminHeader, ConfirmSheet, gap, isoToIstInput, istInputToIso, pointsForRank, type AdminEntry } from './shared'
@@ -77,6 +77,85 @@ function parsePaste(text: string, entries: AdminEntry[]): { rows: Parsed[]; erro
   return { rows, error: null }
 }
 
+interface NameRow {
+  line: number
+  said: string
+  entry: AdminEntry | null
+  suggest: string | null
+  dup: boolean
+}
+
+function editDistance(a: string, b: string): number {
+  const d = Array.from({ length: b.length + 1 }, (_, j) => j)
+  for (let i = 1; i <= a.length; i++) {
+    let prev = d[0]
+    d[0] = i
+    for (let j = 1; j <= b.length; j++) {
+      const tmp = d[j]
+      d[j] = Math.min(d[j] + 1, d[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1))
+      prev = tmp
+    }
+  }
+  return d[b.length]
+}
+
+/**
+ * "Names in order": one line per place, best first; names on the same line split by commas share that place
+ * (e.g. everyone knocked out in round 1). Names are matched like the database does (case, spaces and colour
+ * tags ignored), against the in-game names players registered, or @username.
+ */
+function parseNames(text: string, entries: AdminEntry[]): NameRow[] {
+  const byIg = new Map<string, AdminEntry>()
+  const byUser = new Map<string, AdminEntry>()
+  for (const e of entries)
+    for (const m of e.members ?? []) {
+      byIg.set(igNorm(m.ig_id), e)
+      byUser.set(m.username.toLowerCase(), e)
+    }
+  const seen = new Set<string>()
+  const out: NameRow[] = []
+  text.split('\n').forEach((raw, i) => {
+    for (const part of raw.replace(/^\s*\d+\s*[.):-]\s*/, '').split(',')) {
+      const said = part.trim()
+      if (!said) continue
+      const key = igNorm(said)
+      const entry = said.startsWith('@') ? byUser.get(said.slice(1).toLowerCase()) ?? null : byIg.get(key) ?? byUser.get(key) ?? null
+      let suggest: string | null = null
+      if (!entry) {
+        let best = Infinity
+        for (const [k, e] of byIg) {
+          const dist = editDistance(key, k)
+          if (dist < best && dist <= Math.max(2, Math.floor(k.length / 4))) {
+            best = dist
+            suggest = (e.members ?? []).find((m) => igNorm(m.ig_id) === k)?.ig_id ?? null
+          }
+        }
+      }
+      const dup = !!entry && seen.has(entry.entry_id)
+      if (entry) seen.add(entry.entry_id)
+      out.push({ line: i, said, entry, suggest, dup })
+    }
+  })
+  return out
+}
+
+/** Place = 1 + everyone listed on earlier lines (standard competition ranking). */
+function placeNames(rows: NameRow[]): { row: NameRow; placement: number }[] {
+  const out: { row: NameRow; placement: number }[] = []
+  let before = 0
+  let line = -1
+  let place = 1
+  for (const r of rows) {
+    if (r.line !== line) {
+      place = before + 1
+      line = r.line
+    }
+    out.push({ row: r, placement: place })
+    before++
+  }
+  return out
+}
+
 export default function Results() {
   const { id } = useParams()
   const cat = useCatalog()
@@ -86,7 +165,9 @@ export default function Results() {
   const toast = useToast()
   const t = cat.tournaments.find((x) => x.id === id)
 
-  const [mode, setMode] = useState<'form' | 'paste'>('form')
+  const [mode, setMode] = useState<'names' | 'form' | 'paste'>('names')
+  const [names, setNames] = useState('')
+  const [skipUnknown, setSkipUnknown] = useState(false)
   const [label, setLabel] = useState('')
   const [playedAt, setPlayedAt] = useState(() => isoToIstInput(new Date().toISOString()))
   const [replace, setReplace] = useState(false)
@@ -98,6 +179,9 @@ export default function Results() {
   const entries = useMemo(() => (regs.data ?? []).filter((e) => e.status === 'active'), [regs.data])
   const entryById = useMemo(() => new Map((regs.data ?? []).map((e) => [e.entry_id, e])), [regs.data])
   const parsed = useMemo(() => parsePaste(paste, regs.data ?? []), [paste, regs.data])
+  const nameRows = useMemo(() => parseNames(names, entries), [names, entries])
+  const placed = useMemo(() => placeNames(nameRows.filter((r) => r.entry && !r.dup)), [nameRows])
+  const unknown = nameRows.filter((r) => !r.entry)
 
   const record = useAction(
     (a, args: { p_tournament_id: string; p_label: string; p_played_at: string | null; p_rows: unknown[]; p_replace: boolean }) =>
@@ -126,11 +210,15 @@ export default function Results() {
     return (p != null && !(Number.isInteger(p) && p >= 1)) || !(Number.isInteger(k) && k >= 0) || (r.points !== '' && !Number.isFinite(Number(r.points)))
   })
   const pasteInvalid = !!parsed.error || parsed.rows.length === 0 || parsed.rows.some((r) => r.problem)
-  const canCommit = label.trim().length > 0 && (mode === 'form' ? formRows.length > 0 && !formInvalid : !pasteInvalid)
+  const namesInvalid = placed.length === 0 || nameRows.some((r) => r.dup) || (unknown.length > 0 && !skipUnknown)
+  const canCommit =
+    label.trim().length > 0 && (mode === 'names' ? !namesInvalid : mode === 'form' ? formRows.length > 0 && !formInvalid : !pasteInvalid)
 
   function commit() {
     const payload =
-      mode === 'form'
+      mode === 'names'
+        ? placed.map((p) => ({ entry_id: p.row.entry!.entry_id, placement: p.placement, kills: 0 }))
+        : mode === 'form'
         ? formRows.map((r) => ({
             entry_id: r.entry_id,
             placement: r.placement === '' ? null : Number(r.placement),
@@ -156,6 +244,8 @@ export default function Results() {
           toast({ kind: 'success', text: `${label.trim()} saved: ${res.rows} rows.` })
           setRows([])
           setPaste('')
+          setNames('')
+          setSkipUnknown(false)
           setLabel('')
           setReplace(false)
         },
@@ -180,6 +270,9 @@ export default function Results() {
 
       <div className="panel stack">
         <div className="tabs" role="tablist">
+          <button role="tab" aria-selected={mode === 'names'} onClick={() => setMode('names')}>
+            Names in order
+          </button>
           <button role="tab" aria-selected={mode === 'form'} onClick={() => setMode('form')}>
             Enter a match
           </button>
@@ -196,7 +289,77 @@ export default function Results() {
           </Field>
         </div>
 
-        {mode === 'form' ? (
+        {mode === 'names' ? (
+          <>
+            <Field
+              label="In-game names, best first"
+              hint="One line per place. Same line, split by commas = same place (e.g. all knocked out in round 1). Case and spaces don't matter."
+              htmlFor="m-names"
+            >
+              <textarea
+                id="m-names"
+                className="textarea"
+                style={{ minHeight: 160 }}
+                spellCheck={false}
+                placeholder={'Rahul_07\nPriya.k, Aman 22, Sid\nNeha, Ravi, Kunal, Tina, Om'}
+                value={names}
+                onChange={(e) => setNames(e.target.value)}
+              />
+            </Field>
+            {nameRows.length > 0 && (
+              <div className="table-wrap">
+                <table className="data">
+                  <thead>
+                    <tr>
+                      <th className="n">Place</th>
+                      <th>Typed</th>
+                      <th>Player</th>
+                      <th className="n">Points</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {nameRows.map((r, i) => {
+                      const p = placed.find((x) => x.row === r)
+                      return (
+                        <tr key={i}>
+                          <td className="n num">{p ? p.placement : '—'}</td>
+                          <td className="small">{r.said}</td>
+                          <td>
+                            {p ? (
+                              <span className="row match-ok" style={gap(6)}>
+                                <CircleCheck size={16} aria-hidden /> {r.entry!.name}
+                              </span>
+                            ) : (
+                              <span className="row match-bad" style={gap(6)}>
+                                <CircleAlert size={16} aria-hidden />
+                                {r.dup ? 'Listed twice' : r.suggest ? `Not registered. Did you mean ${r.suggest}?` : 'Not registered in this event'}
+                              </span>
+                            )}
+                          </td>
+                          <td className="n">{p ? fmtPoints(computePoints(t, p.placement, 0, null)) : '—'}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {unknown.length > 0 && (
+              <label className="check">
+                <input type="checkbox" checked={skipUnknown} onChange={(e) => setSkipUnknown(e.target.checked)} />
+                <span>
+                  {unknown.length} name{unknown.length > 1 ? 's are' : ' is'} not registered. Fix typos first; tick only if they are outsiders. They get
+                  nothing and registered players move up.
+                </span>
+              </label>
+            )}
+            {placed.length > 0 && (
+              <p className="small t3">
+                {placed.length} of {entries.length} registered players listed. Anyone not listed gets no points for this match.
+              </p>
+            )}
+          </>
+        ) : mode === 'form' ? (
           entries.length === 0 ? (
             <p className="t3">No active entries in this event yet.</p>
           ) : (
