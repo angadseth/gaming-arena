@@ -169,7 +169,7 @@ export default function SignIn() {
             <OtpInput value={code} onChange={setCode} onComplete={verify} shake={shake} disabled={busy} />
             {codeError && <p className="error-text" role="alert">{codeError}</p>}
             <div className="row wrap" style={{ marginTop: 4 }}>
-              <a className="btn btn-secondary" href="https://mail.google.com/mail/u/0/#search/Pugmark" target="_blank" rel="noopener noreferrer">
+              <a className="btn btn-secondary" href="https://mail.google.com/mail/u/0/#search/Pugmark%20OR%20%22Gaming%20Arena%22" target="_blank" rel="noopener noreferrer">
                 <Mail size={18} aria-hidden /> Open Gmail
               </a>
               <Button kind="ghost" disabled={wait > 0 || busy} onClick={() => send()}>

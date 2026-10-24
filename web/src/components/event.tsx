@@ -92,7 +92,7 @@ export function GameFields({
 
 export function shareInvite(code: string, teamName: string, eventTitle: string) {
   const url = `${location.origin}${location.pathname}#/join/${code}`
-  const text = `Join my team "${teamName}" for ${eventTitle} on Pugmark. Invite code: ${code}`
+  const text = `Join my team "${teamName}" for ${eventTitle} on Gaming Arena. Invite code: ${code}`
   return { url, text }
 }
 
@@ -110,7 +110,7 @@ export function InviteCode({ code, teamName, eventTitle, onRegenerate }: { code:
   const share = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Pugmark invite', text, url })
+        await navigator.share({ title: 'Gaming Arena invite', text, url })
       } catch {
         /* user cancelled */
       }

@@ -6,23 +6,23 @@ import { houseCode, houseColor, STATUS_LABEL } from '../lib/format'
 import type { Game, TournamentStatus } from '../lib/types'
 import { OTP_LENGTH } from '../lib/api/types'
 
-export function PugmarkGlyph({ size = 22 }: { size?: number }) {
+/** Poker-chip mark: notched ring, star in the middle. */
+export function ChipGlyph({ size = 26 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <ellipse cx="5.2" cy="9.2" rx="1.9" ry="2.6" transform="rotate(-20 5.2 9.2)" />
-      <ellipse cx="9.5" cy="5.2" rx="2" ry="2.8" transform="rotate(-6 9.5 5.2)" />
-      <ellipse cx="14.5" cy="5.2" rx="2" ry="2.8" transform="rotate(6 14.5 5.2)" />
-      <ellipse cx="18.8" cy="9.2" rx="1.9" ry="2.6" transform="rotate(20 18.8 9.2)" />
-      <path d="M12 11.2c-3.7 0-6.7 2.9-6.7 6.3 0 2.5 1.8 4.3 3.9 4.3 1.1 0 1.8-.6 2.8-.6s1.7.6 2.8.6c2.1 0 3.9-1.8 3.9-4.3 0-3.4-3-6.3-6.7-6.3z" />
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden>
+      <circle cx="16" cy="16" r="15" fill="var(--magenta)" />
+      <circle cx="16" cy="16" r="15" fill="none" stroke="#fff6e8" strokeWidth="4" strokeDasharray="5.9 5.9" />
+      <circle cx="16" cy="16" r="9.5" fill="var(--bg)" stroke="var(--accent)" strokeWidth="1.6" />
+      <path d="M16 10.4l1.6 3.4 3.7.4-2.8 2.5.8 3.6L16 18.5l-3.3 1.8.8-3.6-2.8-2.5 3.7-.4z" fill="var(--accent)" />
     </svg>
   )
 }
 
 export function Brand() {
   return (
-    <Link to="/" className="brand" aria-label="Pugmark home">
-      <PugmarkGlyph />
-      <span className="brand-word">PUGMARK</span>
+    <Link to="/" className="brand" aria-label="Gaming Arena home">
+      <ChipGlyph />
+      <span className="brand-word">GAMING ARENA</span>
       <span className="brand-sub">IITM BS Esports</span>
     </Link>
   )

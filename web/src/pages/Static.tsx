@@ -21,7 +21,7 @@ export function Rulebook() {
 
         <h2>2. Teams</h2>
         <ul>
-          <li>The captain creates the team and shares the invite code. Every member, subs included, must have a Pugmark account.</li>
+          <li>The captain creates the team and shares the invite code. Every member, subs included, must have a Gaming Arena account.</li>
           <li>The captain handles lobby joins, result screenshots and disputes for the team.</li>
           <li>Rosters lock when registration closes. Teams short of players at that point may be removed.</li>
           <li>Each game allows at most the subs shown on its event page. Subs swap in only between matches.</li>
@@ -65,7 +65,7 @@ export function Rulebook() {
         <p>Two no-shows in a season mean a 30-day registration ban.</p>
 
         <h2>9. Money</h2>
-        <p>Entry is always free. There are no stakes, bets or paid predictions on Pugmark, in line with India's online gaming law. Any prizes are sponsored and based on performance.</p>
+        <p>Entry is always free. There are no stakes, bets or paid predictions on Gaming Arena, in line with India's online gaming law. Any prizes are sponsored and based on performance.</p>
 
         <p style={{ marginTop: 32 }}>
           See also the <Link to="/privacy" style={{ textDecoration: 'underline' }}>privacy note</Link>.

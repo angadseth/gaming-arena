@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { Flap, PugmarkGlyph } from './ui'
+import { Flap } from './ui'
 
-const PRINTS = 11
+const BULBS = 24
 
-/** Closing credit: a pugmark trail walks across, then the maker's name flips in like a scoreboard. */
+/** Closing credit: a marquee of bulbs lights up, then the maker's name spins in on slot reels. */
 export function SiteFooter() {
   const ref = useRef<HTMLElement>(null)
 
@@ -26,14 +26,15 @@ export function SiteFooter() {
   return (
     <footer ref={ref} className="site-footer">
       <div className="footer-trail" aria-hidden>
-        {Array.from({ length: PRINTS }, (_, i) => (
-          <span key={i} className="footer-print" style={{ animationDelay: `${i * 90}ms` }}>
-            <PugmarkGlyph size={18} />
-          </span>
+        {Array.from({ length: BULBS }, (_, i) => (
+          <span key={i} className="footer-print" style={{ animationDelay: `${i * 40}ms` }} />
         ))}
       </div>
       <div className="footer-inner">
-        <p className="footer-word" aria-hidden>PUGMARK</p>
+        <p className="footer-word" aria-hidden>
+          <span>GAMING</span>
+          <span>ARENA</span>
+        </p>
         <div className="footer-credit">
           <span className="footer-made">Website made by</span>
           <a className="footer-name" href="https://github.com/angadseth" target="_blank" rel="noreferrer">

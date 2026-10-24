@@ -2,14 +2,14 @@
  * Pointer effects for the whole app, wired once from the Shell with event delegation:
  * - .holo cards tilt and catch light under the pointer (also follows a finger on touch),
  * - .btn-primary leans up to 6 px towards a mouse pointer,
- * - a mouse pointer leaves a short trail of fading pugmarks.
+ * - a mouse pointer leaves a short trail of sparkles in the club colours.
  * Nothing runs under prefers-reduced-motion; magnetism and the trail need a fine pointer.
  */
-const PAW =
-  '<svg viewBox="0 0 24 24" fill="currentColor"><ellipse cx="5.2" cy="9.2" rx="1.9" ry="2.6" transform="rotate(-20 5.2 9.2)"/><ellipse cx="9.5" cy="5.2" rx="2" ry="2.8" transform="rotate(-6 9.5 5.2)"/><ellipse cx="14.5" cy="5.2" rx="2" ry="2.8" transform="rotate(6 14.5 5.2)"/><ellipse cx="18.8" cy="9.2" rx="1.9" ry="2.6" transform="rotate(20 18.8 9.2)"/><path d="M12 11.2c-3.7 0-6.7 2.9-6.7 6.3 0 2.5 1.8 4.3 3.9 4.3 1.1 0 1.8-.6 2.8-.6s1.7.6 2.8.6c2.1 0 3.9-1.8 3.9-4.3 0-3.4-3-6.3-6.7-6.3z"/></svg>'
+const PAW = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c.9 6.6 4.5 10.6 12 12-7.5 1.4-11.1 5.4-12 12-.9-6.6-4.5-10.6-12-12C7.5 10.6 11.1 6.6 12 0z"/></svg>'
+const SPARK_COLOURS = ['var(--accent)', 'var(--magenta)', 'var(--cyan)', 'var(--lime)']
 
-const STEP = 64 // px of pointer travel between prints
-const MAX_PRINTS = 10
+const STEP = 34 // px of pointer travel between sparkles
+const MAX_PRINTS = 16
 const MAX_PULL = 6
 
 export function startFx(): () => void {
@@ -63,6 +63,7 @@ export function startFx(): () => void {
     p.className = 'paw'
     p.innerHTML = PAW
     p.style.transform = `translate(${x + ox - 9}px, ${y + oy - 9}px) rotate(${angle + Math.PI / 2}rad)`
+    p.style.color = SPARK_COLOURS[layer.childElementCount % SPARK_COLOURS.length]
     layer.appendChild(p)
     while (layer.childElementCount > MAX_PRINTS) layer.firstElementChild?.remove()
     p.addEventListener('animationend', () => p.remove())

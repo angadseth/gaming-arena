@@ -88,7 +88,7 @@ export default function JoinTeam() {
   return (
     <div className="page stack" style={{ gap: 20, maxWidth: 640 }}>
       <h1 className="h1">Join a team</h1>
-      <p className="t2">Ask your captain for the 8-character invite code from their Pugmark profile.</p>
+      <p className="t2">Ask your captain for the 8-character invite code from their Gaming Arena profile.</p>
       <form className="row" style={{ alignItems: 'flex-start' }} onSubmit={(e) => { e.preventDefault(); lookup() }}>
         <div className="grow">
           <Field label="Invite code" htmlFor="code" error={codeErr}>
