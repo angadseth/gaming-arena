@@ -33,6 +33,15 @@ DONE ~17:50: folder MOVED to tools_unique/PUGMARK (old iitm-esports locked by VS
  "keep username respectful or banned for the whole tenure" warning on onboarding + Edit profile sheet. 43/43 tests.
  Test account 25f2003321 (sagar_rathore, friend): delete SQL PREPARED in Supabase SQL tab, Angad must press Run
  (I may not hard-delete data). Also unverified sagar6969rathor@ds... exists (never signed in).
+DONE ~18:40 (3775860): game photos behind card dots (web/public/art + CREDITS.md, GAME_ART in format.ts),
+ fairy-light garlands (Festive.tsx), fireworks + confetti canvas (lib/fireworks.ts, celebrate() on register/join).
+IN PROGRESS (his 24 Oct ask, in this order):
+ A. Profile pictures: preset avatars (DiceBear-style, no uploads = no offensive photos); profiles.avatar + RPC.
+ B. Player rankings: per-student points + rank by format (Solo / Duo-3v3 / Squad-Team), top-3 "GOAT" podium
+    cards on leaderboards, own rank pinned. Player points = event placement points (house_points table) given
+    to every non-sub member in full.
+ C. PDF for his friend: how points + leaderboards work for every game type, any number of teams
+    (placement_points, kill_points, tie-breaks rank by points>wins>kills>best placement, house split).
 NEXT:
  0. DONE ~18:15: renamed to GAMING ARENA + theme v3 "Super Club" (5cd4ed7; v2 at tag theme-holo-v2, v1 at
     theme-ranger-v1). Still says Pugmark: Supabase SMTP sender name + email templates in dashboard (otp.html file
