@@ -7,7 +7,7 @@ registration, live standings, house standings and an organiser console.
 - **Backend:** Supabase (Postgres, Auth email OTP, Storage). `supabase/`
 - **Security model:** every table has RLS; clients get read access to public data only, and every
   write goes through a validated `SECURITY DEFINER` function. Sign-in is limited to
-  `@ds.study.iitm.ac.in` / `@es.study.iitm.ac.in` by an auth hook and a database trigger.
+  `@ds` / `@es` / `@mg.study.iitm.ac.in` by an auth hook and a database trigger.
 
 ## Develop
 

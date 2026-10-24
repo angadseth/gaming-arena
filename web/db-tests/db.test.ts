@@ -32,6 +32,11 @@ describe('sign-in domain guard', () => {
     await expect(db.newUser('someone@gmail.com')).rejects.toThrow(/IIT Madras/)
     await expect(db.newUser('x@study.iitm.ac.in.evil.com')).rejects.toThrow(/IIT Madras/)
     await expect(db.newUser('x@fakeds.study.iitm.ac.in')).rejects.toThrow(/IIT Madras/)
+    await expect(db.newUser('x@fakemg.study.iitm.ac.in')).rejects.toThrow(/IIT Madras/)
+  })
+
+  it('accepts all three student domains (ds, es, mg)', async () => {
+    await expect(db.newUser('24f3002949@mg.study.iitm.ac.in')).resolves.toBeTruthy()
     await expect(db.newUser('23f1000001+2@ds.study.iitm.ac.in')).rejects.toThrow(/IIT Madras/)
     await expect(db.newUser('a@b@ds.study.iitm.ac.in')).rejects.toThrow(/IIT Madras/)
     await expect(db.query(`update auth.users set email = 'zz@ds.study.iitm.ac.in' where id = $1`, [alice])).rejects.toThrow(/cannot be changed/)

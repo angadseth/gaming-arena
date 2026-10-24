@@ -6,7 +6,7 @@ import { Brand, Button, Field, OtpInput } from '../components/ui'
 import { errorCode, errorText, useApi, useAuth } from '../lib/app'
 import { OTP_LENGTH } from '../lib/api/types'
 
-const DOMAINS = ['ds.study.iitm.ac.in', 'es.study.iitm.ac.in']
+const DOMAINS = ['ds.study.iitm.ac.in', 'es.study.iitm.ac.in', 'mg.study.iitm.ac.in']
 const PENDING_KEY = 'pugmark-pending-email'
 const RESEND_SECONDS = 60
 
@@ -17,7 +17,7 @@ export function normalizeEmail(raw: string): { email: string; error: string | nu
   const [local, domain, extra] = email.split('@')
   if (!email) return { email, error: 'Enter your IITM BS email' }
   if (extra !== undefined || !local || !/^[a-z0-9][a-z0-9._-]{0,63}$/.test(local) || !DOMAINS.includes(domain ?? '')) {
-    return { email, error: 'Use your IITM BS student email (…@ds.study.iitm.ac.in or …@es.study.iitm.ac.in)' }
+    return { email, error: 'Use your IITM BS student email (…@ds, @es or @mg.study.iitm.ac.in)' }
   }
   return { email, error: null }
 }

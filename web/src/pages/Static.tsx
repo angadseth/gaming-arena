@@ -11,7 +11,7 @@ export function Rulebook() {
       <article className="prose">
         <h2>1. Eligibility</h2>
         <ol>
-          <li>Open only to current IIT Madras BS students. You sign in with your verified student email (@ds.study.iitm.ac.in or @es.study.iitm.ac.in).</li>
+          <li>Open only to current IIT Madras BS students. You sign in with your verified student email (@ds, @es or @mg.study.iitm.ac.in).</li>
           <li>One account per person. Duplicate accounts get every one of them banned.</li>
           <li>Your house is set once; organisers can correct your house or region if they are wrong. You can change your username once every 30 days, and your full name and WhatsApp number from your profile.</li>
           <li>Usernames must be respectful. If we find a username offensive in any way, that account is banned from every event for the rest of the player's time in the programme. Renaming it afterwards does not undo the ban: every change is logged.</li>
