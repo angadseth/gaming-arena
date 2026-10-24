@@ -88,11 +88,9 @@ export default function Events() {
                         <Link className="icon-btn" to={`/admin/events/${t.id}/registrations`} aria-label="Registrations" title="Registrations">
                           <ClipboardList size={18} strokeWidth={1.75} />
                         </Link>
-                        {isAdmin && (
-                          <Link className="icon-btn" to={`/admin/events/${t.id}/results`} aria-label="Results" title="Results">
-                            <ListOrdered size={18} strokeWidth={1.75} />
-                          </Link>
-                        )}
+                        <Link className="icon-btn" to={`/admin/events/${t.id}/results`} aria-label="Results" title="Results">
+                          <ListOrdered size={18} strokeWidth={1.75} />
+                        </Link>
                       </div>
                     </td>
                   </tr>
@@ -255,11 +253,9 @@ function EventForm({ id }: { id: string | undefined }) {
               <Link to={`/admin/events/${id}/registrations`} className="btn btn-secondary btn-sm">
                 <ClipboardList size={16} aria-hidden /> Registrations ({c?.entries ?? 0})
               </Link>
-              {isAdmin && (
-                <Link to={`/admin/events/${id}/results`} className="btn btn-secondary btn-sm">
-                  <ListOrdered size={16} aria-hidden /> Results
-                </Link>
-              )}
+              <Link to={`/admin/events/${id}/results`} className="btn btn-secondary btn-sm">
+                <ListOrdered size={16} aria-hidden /> Results
+              </Link>
               <Link to={`/e/${existing!.slug}`} className="btn btn-ghost btn-sm">
                 Public page
               </Link>

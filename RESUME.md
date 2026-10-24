@@ -14,14 +14,14 @@ SUPABASE (ref fehkrxssoxuiixgmfini, Mumbai, URL https://fehkrxssoxuiixgmfini.sup
  confirm email ON, anon OFF, OTP 8 digits / 600 s (app uses OTP_LENGTH=8, dev code 12345678); Site URL set.
  GitHub vars set, Pages=Actions; LIVE https://angadseth.github.io/pugmark/ (commit 8746694+). Admin "Access by
  email" panel shipped in Players. Live probes OK: gmail 403, password signup refused, profiles/admin RPC denied.
-NEXT (blocked on ANGAD, step 1):
- 1. Angad: new Gmail (e.g. pugmark.iitm@gmail.com) + 2-Step Verification + App Password; HE pastes it at
-    Supabase > Authentication > Emails > SMTP Settings (host smtp.gmail.com, port 465, user = that Gmail,
-    sender name Pugmark). Until then login codes don't reach students (built-in mail = team only, 2/hour).
- 2. Me after SMTP: Emails > Templates: "Magic link or OTP" + "Confirm sign up" -> subject
-    "{{ .Token }} is your Pugmark sign-in code", body = supabase/templates/otp.html (says 10 minutes; code 8 digits).
-    Rate Limits: emails/hour ~40 (raise after watching), verify limits default.
- 3. Angad signs in with 24f2004141 -> becomes superadmin. Then SQL: update public.app_settings set value='[]'
-    where key='bootstrap_superadmins';  Then test Access by email panel live (screen not yet seen visually:
-    dev server was killed for low RAM; verify on live site after his login).
- 4. Later: Turnstile captcha (needs Cloudflare acct), real regions list, game art uploads.
+DONE 24 Oct ~16:20: SMTP saved by Angad (sender onlypadaicontent0001@gmail.com, name Pugmark, 465);
+ templates "Magic link or OTP" + "Confirm sign up" set (subject {{ .Token }}..., body otp.html).
+ BUG FIXED live (22123be + supabase/live-patches/): GoTrue gives OTP users a random encrypted_password, so the
+ trigger's password check blocked all sign-ups; now passwords are blocked only by token hook + session_ok().
+ Test code SENT to 24f2004141 OK (8 boxes render).
+NEXT:
+ 1. Angad enters code + onboarding (username permanent) -> superadmin. Verify get_my_profile roles.
+ 2. SQL: update public.app_settings set value='[]' where key='bootstrap_superadmins';
+ 3. Check Access by email panel on live site visually (Players page), and Me/Register flows.
+ 4. Later: Turnstile captcha (needs Cloudflare acct), real regions list, game art uploads, rate limit check
+    (Gmail ~500/day; Supabase custom-SMTP default 30 emails/hour).

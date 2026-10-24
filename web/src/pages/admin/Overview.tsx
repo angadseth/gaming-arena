@@ -9,7 +9,7 @@ import { AdminHeader, gap } from './shared'
 const ORDER: TournamentStatus[] = ['live', 'open', 'upcoming', 'closed', 'draft', 'completed', 'cancelled']
 
 export default function Overview() {
-  const { profile, isAdmin } = useAuth()
+  const { profile } = useAuth()
   const cat = useCatalog()
   const counts = useCounts()
 
@@ -73,7 +73,7 @@ export default function Overview() {
             const g = cat.gameById.get(t.game_id)
             const c = counts.data?.get(t.id)
             return (
-              <Link key={t.id} to={`/admin/events/${t.id}${isAdmin ? '/results' : '/registrations'}`} className="link-row">
+              <Link key={t.id} to={`/admin/events/${t.id}/results`} className="link-row">
                 <div className="grow stack" style={gap(4)}>
                   <span className="ellipsis" style={{ fontWeight: 600 }}>
                     {t.title}

@@ -224,7 +224,10 @@ declare
   v_rows jsonb := '[]';
   v_seen uuid[] := '{}';
 begin
-  perform public.require_admin();
+  -- Organisers run matches, so results are open to all staff.
+  if not public.is_staff() then
+    raise exception 'Staff only' using errcode = '42501', hint = 'FORBIDDEN';
+  end if;
   select * into v_t from public.tournaments where id = p_tournament_id;
   if not found then
     raise exception 'Event not found' using errcode = 'P0001', hint = 'NOT_FOUND';
@@ -310,7 +313,10 @@ end $$;
 create function public.admin_delete_match(p_match_id uuid) returns void
 language plpgsql security definer set search_path = '' as $$
 begin
-  perform public.require_admin();
+  -- Organisers run matches, so results are open to all staff.
+  if not public.is_staff() then
+    raise exception 'Staff only' using errcode = '42501', hint = 'FORBIDDEN';
+  end if;
   delete from public.matches where id = p_match_id;
   if not found then
     raise exception 'Match not found' using errcode = 'P0001', hint = 'NOT_FOUND';

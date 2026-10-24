@@ -213,7 +213,7 @@ function ManageSheet({ user, onClose }: { user: AdminUser; onClose: () => void }
             <div className="section-head">
               <h2>Roles (superadmin)</h2>
             </div>
-            <p className="hint">Admins manage everything except roles. Organisers can only view registrations and game requests.</p>
+            <p className="hint">Admins manage everything except roles. Organisers run matches: they see registrations and enter or fix results, nothing else.</p>
             <div className="stack" style={gap(8)}>
               {(['admin', 'organizer', 'superadmin'] as Role[]).map((r) => {
                 const has = roles.includes(r)

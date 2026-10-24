@@ -167,3 +167,20 @@ describe('security review fixes', () => {
     expect(r.rows[0].ok).toBe(false)
   })
 })
+
+describe('organisers run matches', () => {
+  it('an organiser passes the results guard; a player does not', async () => {
+    const org = await db.newUser('22f3000888@es.study.iitm.ac.in')
+    await db.as(su)
+    await db.rpc('superadmin_set_email_role', { p_email: '22f3000888@es.study.iitm.ac.in', p_role: 'organizer' })
+    await onboard(org, 'orgone')
+    await db.as(org)
+    await expectHint(db.rpc('admin_delete_match', { p_match_id: '00000000-0000-4000-8000-000000000000' }), 'NOT_FOUND')
+    await expectHint(db.rpc('admin_upsert_game', { p: {} }), 'FORBIDDEN')
+    await expectHint(db.rpc('admin_set_email_ban', { p_email: '21f1000001@ds.study.iitm.ac.in', p_banned: true, p_note: null }), 'FORBIDDEN')
+    const neo = await db.newUser('22f3000889@es.study.iitm.ac.in')
+    await onboard(neo, 'plainplayer')
+    await db.as(neo)
+    await expectHint(db.rpc('admin_delete_match', { p_match_id: '00000000-0000-4000-8000-000000000000' }), 'FORBIDDEN')
+  })
+})
