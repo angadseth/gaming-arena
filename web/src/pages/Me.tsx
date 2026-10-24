@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Avatar, AVATAR_STYLES, avatarKey } from '../components/Avatar'
 import { EntryPanel } from '../components/event'
-import { Button, Empty, ErrorBox, Field, Flap, GameCover, HouseTag, NameWarning, Sheet, Skeleton, StatusPill } from '../components/ui'
-import { errorText, useApi, useAuth, useHouseName, useMyEntries, useRegionName, useToast } from '../lib/app'
+import { UsernameField, usernameBlocksSave, useUsernameStatus } from '../components/UsernameField'
+import { Button, Empty, ErrorBox, Field, Flap, GameCover, HouseTag, Sheet, Skeleton, StatusPill } from '../components/ui'
+import { errorCode, errorText, useApi, useAuth, useHouseName, useMyEntries, useRegionName, useToast } from '../lib/app'
 import { fmtDate } from '../lib/format'
 
 export default function Me() {
@@ -20,10 +21,12 @@ export default function Me() {
   const [editOpen, setEditOpen] = useState(false)
   const [form, setForm] = useState({ username: '', full_name: '', whatsapp: '' })
   const [editErr, setEditErr] = useState<string | null>(null)
+  const [usernameErr, setUsernameErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [picOpen, setPicOpen] = useState(false)
   const [picSeed, setPicSeed] = useState(() => Math.random().toString(36).slice(2, 6))
   const [picBusy, setPicBusy] = useState<string | null>(null)
+  const uStatus = useUsernameStatus(form.username, profile?.username)
 
   if (!profile) return <div className="page"><Skeleton h={160} /></div>
 
@@ -38,6 +41,7 @@ export default function Me() {
   function openEdit() {
     setForm({ username: profile!.username, full_name: profile!.full_name, whatsapp: profile!.whatsapp })
     setEditErr(null)
+    setUsernameErr(null)
     setEditOpen(true)
   }
 
@@ -58,6 +62,7 @@ export default function Me() {
   }
 
   async function saveProfile() {
+    if (usernameBlocksSave(uStatus)) return
     setBusy(true)
     setEditErr(null)
     try {
@@ -68,7 +73,9 @@ export default function Me() {
       setEditOpen(false)
       toast({ kind: 'success', text: 'Profile saved' })
     } catch (e) {
-      setEditErr(errorText(e))
+      // Username problems belong under the username box, everything else at the bottom.
+      if (/^(BAD_USERNAME|USERNAME_TAKEN|USERNAME_BLOCKED|RENAME_COOLDOWN|RENAME_LIVE)$/.test(errorCode(e))) setUsernameErr(errorText(e))
+      else setEditErr(errorText(e))
     } finally {
       setBusy(false)
     }
@@ -199,23 +206,19 @@ export default function Me() {
 
       <Sheet open={editOpen} onClose={() => setEditOpen(false)} title="Edit profile">
         <form className="stack" onSubmit={(e) => { e.preventDefault(); saveProfile() }} noValidate>
-          <Field
-            label="Username"
-            htmlFor="ed-username"
+          <UsernameField
+            id="ed-username"
+            value={form.username}
+            onChange={(v) => {
+              setForm({ ...form, username: v })
+              setUsernameErr(null)
+            }}
+            status={uStatus}
+            current={profile.username}
+            disabled={!!nextRename}
+            error={usernameErr}
             hint={nextRename ? `You changed it recently. Next change allowed on ${fmtDate(nextRename, false)}.` : 'Shown publicly on leaderboards. You can change it once every 30 days.'}
-          >
-            <input
-              id="ed-username"
-              className="input"
-              autoCapitalize="none"
-              spellCheck={false}
-              maxLength={20}
-              disabled={!!nextRename}
-              value={form.username}
-              onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') })}
-            />
-          </Field>
-          <NameWarning />
+          />
           <Field label="Full name" htmlFor="ed-name" hint="As on your IITM records. Only organisers see it.">
             <input id="ed-name" className="input" autoComplete="name" maxLength={60} value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
           </Field>
@@ -225,7 +228,7 @@ export default function Me() {
           {editErr && <p className="error-text" role="alert">{editErr}</p>}
           <div className="row" style={{ justifyContent: 'flex-end' }}>
             <Button kind="ghost" type="button" onClick={() => setEditOpen(false)}>Cancel</Button>
-            <Button kind="primary" type="submit" busy={busy}>Save changes</Button>
+            <Button kind="primary" type="submit" busy={busy} disabled={usernameBlocksSave(uStatus)}>Save changes</Button>
           </div>
         </form>
       </Sheet>

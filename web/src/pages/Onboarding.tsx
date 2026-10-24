@@ -1,11 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Check, TriangleAlert } from 'lucide-react'
-import { useEffect, useState, type FormEvent } from 'react'
+import { TriangleAlert } from 'lucide-react'
+import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
-import { Button, Field, Locked, NameWarning } from '../components/ui'
+import { Button, Field, Locked } from '../components/ui'
+import { UsernameField, usernameProblem, useUsernameStatus } from '../components/UsernameField'
 import { errorCode, errorText, useApi, useAuth, useHouses, useRegions } from '../lib/app'
 
-const USERNAME_RE = /^[a-z][a-z0-9_]{2,19}$/
 const NAME_RE = /^\p{L}[\p{L} .'-]{1,59}$/u
 
 type Errors = Partial<Record<'username' | 'full_name' | 'house' | 'region' | 'whatsapp' | 'rules' | 'form', string>>
@@ -28,32 +28,16 @@ export default function Onboarding() {
   const [rules, setRules] = useState(false)
   const [errors, setErrors] = useState<Errors>({})
   const [busy, setBusy] = useState(false)
-  const [avail, setAvail] = useState<'idle' | 'checking' | 'free' | 'taken'>('idle')
-
   const uname = username.trim().toLowerCase()
-  useEffect(() => {
-    if (!USERNAME_RE.test(uname)) {
-      setAvail('idle')
-      return
-    }
-    setAvail('checking')
-    const t = window.setTimeout(async () => {
-      try {
-        const ok = await api.rpc<boolean>('username_available', { p_username: uname })
-        setAvail(ok ? 'free' : 'taken')
-      } catch {
-        setAvail('idle')
-      }
-    }, 400)
-    return () => window.clearTimeout(t)
-  }, [uname, api])
+  const uStatus = useUsernameStatus(username)
 
   if (profile) return <Navigate to={next} replace />
 
   function validate(): Errors {
     const e: Errors = {}
-    if (!USERNAME_RE.test(uname)) e.username = '3–20 characters: lowercase letters, numbers and _, starting with a letter'
-    else if (avail === 'taken') e.username = 'That username is taken'
+    const uProblem = usernameProblem(uname)
+    if (uProblem) e.username = uProblem
+    else if (uStatus === 'taken') e.username = 'That username is taken or not allowed'
     if (!NAME_RE.test(fullName.trim().replace(/\s+/g, ' '))) e.full_name = 'Enter your full name as on your IITM records'
     if (!house) e.house = 'Pick your house'
     if (!region) e.region = 'Pick your region'
@@ -84,7 +68,7 @@ export default function Onboarding() {
       const code = errorCode(err)
       const msg = errorText(err)
       const key: keyof Errors =
-        code === 'USERNAME_TAKEN' || code === 'BAD_USERNAME' ? 'username'
+        code === 'USERNAME_TAKEN' || code === 'BAD_USERNAME' || code === 'USERNAME_BLOCKED' ? 'username'
           : code === 'BAD_NAME' ? 'full_name'
             : code === 'BAD_WHATSAPP' ? 'whatsapp'
               : code === 'BAD_HOUSE' ? 'house'
@@ -108,36 +92,17 @@ export default function Onboarding() {
 
         <Locked label="IITM email (verified)">{session?.email}</Locked>
 
-        <Field
-          label="Username"
-          htmlFor="username"
+        <UsernameField
+          id="username"
+          value={username}
+          onChange={(v) => {
+            setUsername(v)
+            if (errors.username) setErrors({ ...errors, username: undefined })
+          }}
+          status={uStatus}
           error={errors.username}
-          hint={
-            avail === 'free' ? (
-              <span className="row" style={{ gap: 6, color: 'var(--success)' }}>
-                <Check size={14} aria-hidden /> Available
-              </span>
-            ) : avail === 'taken' ? (
-              <span style={{ color: 'var(--danger)' }}>Taken, try another</span>
-            ) : (
-              'Lowercase letters, numbers and _. Shown publicly.'
-            )
-          }
-        >
-          <input
-            id="username"
-            className="input"
-            autoCapitalize="none"
-            autoComplete="username"
-            spellCheck={false}
-            maxLength={20}
-            value={username}
-            aria-invalid={!!errors.username}
-            onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-            placeholder="e.g. tigerclaw_24"
-          />
-        </Field>
-        <NameWarning />
+          hint="Lowercase letters, numbers and _. Shown publicly."
+        />
 
         <Field label="Full name" htmlFor="fullname" error={errors.full_name} hint="Only organisers see this.">
           <input id="fullname" className="input" autoComplete="name" maxLength={60} value={fullName} aria-invalid={!!errors.full_name} onChange={(e) => setFullName(e.target.value)} />

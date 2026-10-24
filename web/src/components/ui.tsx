@@ -115,7 +115,7 @@ export function GameCover({ game, eager }: { game: Pick<Game, 'title' | 'short' 
           onError={() => setBroken(true)}
         />
       ) : (
-        <div className="cover-gen cover-art" style={fit} aria-hidden>
+        <div className={`cover-gen cover-art${photo ? ' has-photo' : ''}`} style={fit} aria-hidden>
           {photo && (
             <img
               className="cover-photo"

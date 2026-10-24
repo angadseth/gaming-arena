@@ -914,7 +914,7 @@ p {
     radial-gradient(circle, color-mix(in srgb, var(--tone) 42%, transparent) 1.3px, transparent 1.9px) 0 0 / 9px 9px,
     radial-gradient(120% 90% at 85% 0%, color-mix(in srgb, var(--tone) 38%, var(--surface-2)) 0%, var(--surface-1) 70%);
 }
-/* The game's photo sits faintly under the halftone dots and the outlined name. */
+/* The game's photo is the poster: full strength, halftone dots only round the edges. */
 .cover-gen .cover-photo {
   position: absolute;
   inset: 0;
@@ -922,18 +922,27 @@ p {
   height: 100%;
   object-fit: cover;
   z-index: -2;
-  opacity: 0.55;
-  filter: saturate(1.2) contrast(1.05);
+  filter: saturate(1.15) contrast(1.06);
 }
-.cover-gen:has(.cover-photo)::before {
+.cover-gen.has-photo::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(circle, color-mix(in srgb, var(--tone) 55%, transparent) 1.3px, transparent 1.9px) 0 0 / 9px 9px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--tone) 60%, transparent) 1.2px, transparent 1.8px) 0 0 / 8px 8px;
+  -webkit-mask-image: radial-gradient(75% 70% at 50% 42%, transparent 35%, #000 95%);
+  mask-image: radial-gradient(75% 70% at 50% 42%, transparent 35%, #000 95%);
 }
-.hero .cover-gen .cover-photo {
-  opacity: 0.68;
+/* With a photo the outlined name steps back to a watermark. */
+.cover-gen.has-photo .mono {
+  opacity: 0.22;
+}
+.cover-gen.has-photo .mono-fill {
+  display: none;
+}
+/* Only the bottom darkens, where the title sits. */
+.cover:has(.has-photo)::after {
+  background: linear-gradient(180deg, rgba(18, 5, 28, 0) 50%, rgba(18, 5, 28, 0.55) 78%, #12051c 100%);
 }
 .cover-gen .mono {
   position: absolute;
@@ -2469,4 +2478,19 @@ body {
   .podium-crown {
     animation: none;
   }
+}
+
+/* ---------- live username status, right under the box ---------- */
+.u-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+}
+.u-state.good {
+  color: var(--success);
+}
+.u-state.bad {
+  color: var(--danger);
+  font-weight: 600;
 }
