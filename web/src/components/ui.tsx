@@ -97,7 +97,10 @@ export function GameCover({ game, eager }: { game: Pick<Game, 'title' | 'short' 
   const api = useApi()
   const [broken, setBroken] = useState(false)
   const src = game.cover_path && !broken ? api.artUrl(game.cover_path) : ''
-  const mono = (game.short || game.title).replace(/[^A-Za-z0-9 ]/g, '').split(' ').slice(0, 2).join('\n')
+  const words = (game.short || game.title).replace(/[^A-Za-z0-9 ]/g, '').split(' ').filter(Boolean).slice(0, 2)
+  const mono = words.join('\n')
+  // Font size scales with the longest word so every name fills the card without breaking.
+  const fit = { '--len': Math.max(3, ...words.map((w) => w.length)) } as CSSProperties
   return (
     <div className="cover">
       {src ? (
@@ -111,7 +114,7 @@ export function GameCover({ game, eager }: { game: Pick<Game, 'title' | 'short' 
           onError={() => setBroken(true)}
         />
       ) : (
-        <div className="cover-gen cover-art" aria-hidden>
+        <div className="cover-gen cover-art" style={fit} aria-hidden>
           <span className="mono">{mono}</span>
           <span className="mono mono-fill">{mono}</span>
           <span className="glyph">

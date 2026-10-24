@@ -806,12 +806,12 @@ p {
       #d875ff 35%,
       #ff7773 42%
     ),
-    repeating-linear-gradient(45deg, rgba(14, 38, 41, 0.6) 0 2px, transparent 2px 6px);
+    repeating-linear-gradient(45deg, rgba(14, 38, 41, 0.35) 0 1px, transparent 1px 6px);
   background-size: 300% 300%, 100% 100%;
   background-position: var(--px) var(--py), 0 0;
   background-blend-mode: overlay;
   mix-blend-mode: color-dodge;
-  opacity: calc(0.12 + var(--hover) * 0.38);
+  opacity: calc(0.04 + var(--hover) * 0.42);
   transition: opacity var(--d-slow);
 }
 .holo-glare {
@@ -881,6 +881,7 @@ p {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  container-type: inline-size;
 }
 .cover-art {
   position: absolute;
@@ -909,13 +910,13 @@ p {
 }
 .cover-gen .mono {
   position: absolute;
-  left: -3%;
-  top: 4%;
+  left: 5%;
+  top: 16%;
   font: 900 128px/0.8 var(--font-display);
   text-transform: uppercase;
   letter-spacing: -0.01em;
-  word-break: break-all;
-  white-space: pre-line;
+  font-size: min(150px, calc(94cqw / (var(--len) * 0.5)));
+  white-space: pre;
   color: transparent;
   -webkit-text-stroke: 2px color-mix(in srgb, var(--tone) 80%, #fff);
   opacity: 0.85;
@@ -952,10 +953,11 @@ p {
   border-radius: 13px;
 }
 .hero .cover-gen .mono {
-  font-size: clamp(150px, 30vw, 300px);
+  font-size: min(300px, calc(60cqw / (var(--len) * 0.5)));
 }
 /* The only ambient motion on the page: a slow sweep of foil across the featured card. */
 .hero .holo-foil {
+  opacity: calc(0.12 + var(--hover) * 0.3);
   animation: sheen 9s linear infinite;
 }
 .hero.is-active .holo-foil {
