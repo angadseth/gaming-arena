@@ -51,9 +51,12 @@ DONE 24 Oct ~21:30 (6b692f2, LOCAL ONLY, not pushed): MATCH LOBBY + NOTICES (doc
  code, private), lobby_agreements (rules gate, app_settings.lobby_rules_version), event_notices + bell/inbox,
  admin Event > "Lobby & notices" (Gmail BCC 40/btn, WhatsApp text), registration needs agree tick. 60/60 tests.
  Screens: web/dev/lobby-demo.mjs. Auto-mode BLOCKED me pressing Run in Supabase SQL editor + live deploy.
+DONE ~23:30: 0010 LIVE + pushed (eae9700). Then 0011 (check-in links site acct <-> in-game name, fixed Meet
+ app_settings.default_meet_url, points x100, + all fixes from loophole review agent, see docs/match-lobby.md table)
+ and 0012 (player_card: XP/levels/badges, unlock ladder). Commits ab50b58, 82f4a8f, 9fffb1e LOCAL. 72/72 tests.
 NEXT:
- -1. Angad presses Run on migration 0010 in Supabase SQL editor (pasted in tab "Untitled query"), THEN
-     git push (deploys Pages). Never push before the migration is live. Then check Lobby tab live.
+ -1. Angad presses Run on 0011+0012 (pasted in Supabase SQL tab "Untitled query", 42k chars). THEN git push,
+     then set the fixed Meet link he sends (Admin > event > Lobby & notices) and check Lobby + Me card live.
  0. DONE ~18:15: renamed to GAMING ARENA + theme v3 "Super Club" (5cd4ed7; v2 at tag theme-holo-v2, v1 at
     theme-ranger-v1). Still says Pugmark: Supabase SMTP sender name + email templates in dashboard (otp.html file
     updated, paste it), repo/URL /pugmark (rename only if he asks). Ask how it looks on his phone.
