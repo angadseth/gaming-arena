@@ -10,3 +10,6 @@ supabase/.temp
 # private notes, not for the public repo
 idea/
 MEMORY.md
+
+# local memory copies
+memory/
