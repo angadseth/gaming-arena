@@ -24,6 +24,20 @@ import './styles.css'
 // The admin console is a separate chunk: players never download it.
 const Admin = lazy(() => import('./pages/admin/Admin'))
 
+// A deploy replaces the chunk files; a tab opened before it then fails to load the admin chunk.
+// Reload once to pick up the new build (the guard stops a loop if the file is really missing).
+window.addEventListener('vite:preloadError', (e) => {
+  try {
+    const last = Number(sessionStorage.getItem('ga:chunk-reload') ?? 0)
+    if (Date.now() - last < 30_000) return
+    sessionStorage.setItem('ga:chunk-reload', String(Date.now()))
+  } catch {
+    return
+  }
+  e.preventDefault()
+  window.location.reload()
+})
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { retry: 1, refetchOnWindowFocus: true },
