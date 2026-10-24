@@ -129,11 +129,19 @@ describe('bans by email', () => {
 })
 
 describe('security review fixes', () => {
-  it('no account can be created or updated with a password', async () => {
+  it('code-only users (which GoTrue gives a random password) can sign up; email change is blocked', async () => {
     await db.as('postgres')
-    await expect(db.query(`insert into auth.users (email, encrypted_password) values ('22f1000555@ds.study.iitm.ac.in', 'x')`)).rejects.toThrow(/emailed|email you/)
-    await expect(db.query(`update auth.users set encrypted_password = 'x' where id = $1`, [su])).rejects.toThrow(/email you/)
+    await db.query(`insert into auth.users (email, encrypted_password) values ('22f1000555@ds.study.iitm.ac.in', '$2a$10$random')`)
     await expect(db.query(`update auth.users set email_change = 'a@gmail.com' where id = $1`, [su])).rejects.toThrow(/cannot be changed/)
+  })
+  it('the token hook refuses password and anonymous sessions', async () => {
+    await db.as('postgres')
+    const pw = await db.rpc<{ error?: { http_code: number } }>('hook_custom_access_token', { event: { authentication_method: 'password', claims: {} } })
+    expect(pw.error?.http_code).toBe(403)
+    const amr = await db.rpc<{ error?: unknown }>('hook_custom_access_token', { event: { authentication_method: 'token_refresh', claims: { amr: [{ method: 'password' }] } } })
+    expect(amr.error).toBeTruthy()
+    const otp = await db.rpc<{ claims?: unknown }>('hook_custom_access_token', { event: { authentication_method: 'otp', claims: { amr: [{ method: 'otp' }] } } })
+    expect(otp.claims).toBeTruthy()
   })
   it('password or anonymous sessions get no powers, and unconfirmed emails cannot onboard', async () => {
     await db.as(su)

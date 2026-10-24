@@ -45,10 +45,9 @@ begin
   if coalesce(new.email_change, '') <> '' then
     raise exception 'Email cannot be changed.' using errcode = '42501';
   end if;
-  -- Sign-in is by emailed code only: no account may ever hold a password.
-  if coalesce(new.encrypted_password, '') <> '' then
-    raise exception 'Sign in with the code we email you.' using errcode = '42501';
-  end if;
+  -- Passwords cannot be blocked here: GoTrue stores a random password even for
+  -- code-only users. Password sessions are refused by hook_custom_access_token
+  -- and by public.session_ok() instead.
   if new.email is null or (tg_op = 'INSERT' and not public.email_may_sign_in(new.email))
      or not public.email_domain_allowed(new.email) then
     raise exception 'Only IIT Madras BS student emails can sign in.' using errcode = '42501';
@@ -216,7 +215,7 @@ grant execute on function public.superadmin_set_email_role(text, text), public.a
 grant select on public.email_access to supabase_auth_admin;
 
 drop trigger guard_domain on auth.users;
-create trigger guard_domain before insert or update of email, email_change, encrypted_password on auth.users
+create trigger guard_domain before insert or update of email, email_change on auth.users
   for each row execute function public.guard_auth_user_domain();
 
 -- Token hook: refuse any session that did not come from the emailed code.
