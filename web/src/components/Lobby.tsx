@@ -205,11 +205,11 @@ function CheckInCard({ t, game, open, igId }: { t: Tournament; game: Game; open:
             Check in
           </Button>
         </>
-      ) : (
+      ) : igId ? (
         <div className="ig-now small">
           <span className="t3">Registered as</span> <b>{igId}</b>
         </div>
-      )}
+      ) : null}
     </section>
   )
 }

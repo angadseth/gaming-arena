@@ -2843,6 +2843,7 @@ body {
   color: var(--success);
 }
 /* ---------- player card: level, XP, badges ---------- */
+.pcard .tag-type { display: block; }
 .level-chip {
   --lv: var(--text-2);
   display: inline-block;
