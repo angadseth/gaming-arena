@@ -1,67 +1,29 @@
-# RESUME (24 Oct 2026, ~15:30)
-TRIGGER: Angad types "game website continue" in a new terminal -> read this file, do the NEXT list in order, no questions. He does not track state; I own everything.
-Repo: github.com/angadseth/pugmark (public; idea/ + MEMORY.md are local-only, gitignored). Last commit b68c402.
-Done: units 1-8, CI/Pages/keepalive workflows, dev preview = PGlite (code 123456).
-Done b68c402: migration 0006 email access (superadmin_set_email_role, admin_set_email_ban, admin_email_access;
- banned emails blocked at hook+auth trigger) + ALL security-review fixes (docs/security-review.md): no passwords
- (auth trigger + hook_custom_access_token + session_ok in has_role/require_player), confirmed email for onboarding,
- throttles, house_standings rewrite, L3-L10. config.toml: confirmations ON, OTP 8/600s, token hook, no localhost.
- 34/34 db-tests pass, build OK.
-Minor TODO: dead dev-banner text ships in prod bundle (harmless).
- Not done from review: H1 Turnstile server-side (needs Cloudflare account), M4 8-digit OTP/TOTP (kept 6, 300s).
-SUPABASE (ref fehkrxssoxuiixgmfini, Mumbai, URL https://fehkrxssoxuiixgmfini.supabase.co; org zxcwnvqzrmmrwzucbmtm):
- DONE 24 Oct: all 6 migrations live; hooks Before User Created + Custom Access Token ENABLED; Email provider:
- confirm email ON, anon OFF, OTP 8 digits / 600 s (app uses OTP_LENGTH=8, dev code 12345678); Site URL set.
- GitHub vars set, Pages=Actions; LIVE https://angadseth.github.io/pugmark/ (commit 8746694+). Admin "Access by
- email" panel shipped in Players. Live probes OK: gmail 403, password signup refused, profiles/admin RPC denied.
-DONE 24 Oct ~16:20: SMTP saved by Angad (sender onlypadaicontent0001@gmail.com, name Pugmark, 465);
- templates "Magic link or OTP" + "Confirm sign up" set (subject {{ .Token }}..., body otp.html).
- BUG FIXED live (22123be + supabase/live-patches/): GoTrue gives OTP users a random encrypted_password, so the
- trigger's password check blocked all sign-ups; now passwords are blocked only by token hook + session_ok().
- Test code SENT to 24f2004141 OK (8 boxes render).
-DONE ~16:45: Angad signed in -> username angad_seth, superadmin; bootstrap list cleared ([]).
- Organisers can now record/delete match results (952f4ea + live patch applied). 36/36 tests.
- Live audit: 0 write grants on public tables, RLS on all, no realtime, storage admin-only, roles = only angad_seth;
- Security Advisor 0 errors (warnings = SECURITY DEFINER RPCs by design + leaked-password n/a).
-DONE ~17:30: THEME v2 "Holo League" LIVE (1267211..a1482e3+): holo foil event cards per game hue, split-flap
- numbers (Houses/Leaderboards/Me), pugmark cursor trail + magnetic primary buttons (lib/fx.ts), keycap buttons,
- SiteFooter credit "Website made by ANGAD JANGIR" (he asked: Jangir, not Seth). Plan: docs/research/design-v2.md.
- Old theme = git tag theme-ranger-v1. Phone width not yet eyeballed (frames blocked, window would not resize).
-DONE ~17:50: folder MOVED to tools_unique/PUGMARK (old iitm-esports locked by VS Code, has MOVED-TO-PUGMARK.txt;
- delete it once free). memory/ = local copies of global notes. Migration 0007 profile_edit LIVE (2d40e11):
- update_my_profile (username 1x/30 days, not while live, audited; full name 3/30d; WhatsApp 5/day) + red
- "keep username respectful or banned for the whole tenure" warning on onboarding + Edit profile sheet. 43/43 tests.
- Test account 25f2003321 (sagar_rathore, friend): delete SQL PREPARED in Supabase SQL tab, Angad must press Run
- (I may not hard-delete data). Also unverified sagar6969rathor@ds... exists (never signed in).
-DONE ~18:40 (3775860): game photos behind card dots (web/public/art + CREDITS.md, GAME_ART in format.ts),
- fairy-light garlands (Festive.tsx), fireworks + confetti canvas (lib/fireworks.ts, celebrate() on register/join).
-DONE ~19:45 (231ba38): UsernameField (components/UsernameField.tsx) shared by Onboarding + Edit profile:
- says what's wrong under the box while typing, Save disabled until valid; server username errors land there.
- Migration 0009 LIVE: blocked_words (120, English+Hinglish; whole=true only matches a full _/digit-split part),
- username_is_clean() (leetspeak + stretched letters folded), profiles trigger -> USERNAME_BLOCKED,
- username_available() also checks it. No existing player had a blocked name. Add words: insert into
- public.blocked_words values ('word', false). Game photos now full strength (dots only at edges). 50/50 tests.
-DONE ~19:05 (a67a709 + docs): migration 0008 LIVE (avatars: profiles.avatar + set_my_avatar, DiceBear
- bottts/pixel-art/lorelei/thumbs; player_rankings(format) top100+me; tournament_standings returns captain avatar).
- Leaderboards: Top players tabs + GOAT podium + "Your rank"; event standings podium. 45/45 tests.
- PDF for his friend: docs/scoring/Gaming-Arena-Scoring-Logic.pdf (6 pages, from gaming-arena-scoring.html).
- Not yet seen with real data: podium cards (no completed events yet).
-DONE 24 Oct ~21:30 (6b692f2, LOCAL ONLY, not pushed): MATCH LOBBY + NOTICES (docs/match-lobby.md).
- Migration 0010 lobby_notices: games.play_links/join_steps (Stumble Guys seeded), event_lobby (Meet/chat/room
- code, private), lobby_agreements (rules gate, app_settings.lobby_rules_version), event_notices + bell/inbox,
- admin Event > "Lobby & notices" (Gmail BCC 40/btn, WhatsApp text), registration needs agree tick. 60/60 tests.
- Screens: web/dev/lobby-demo.mjs. Auto-mode BLOCKED me pressing Run in Supabase SQL editor + live deploy.
-DONE ~23:30: 0010 LIVE + pushed (eae9700). Then 0011 (check-in links site acct <-> in-game name, fixed Meet
- app_settings.default_meet_url, points x100, + all fixes from loophole review agent, see docs/match-lobby.md table)
- and 0012 (player_card: XP/levels/badges, unlock ladder). Commits ab50b58, 82f4a8f, 9fffb1e LOCAL. 72/72 tests.
-NEXT:
- -1. Angad presses Run on 0011+0012 (pasted in Supabase SQL tab "Untitled query", 42k chars). THEN git push,
-     then set the fixed Meet link he sends (Admin > event > Lobby & notices) and check Lobby + Me card live.
- 0. DONE ~18:15: renamed to GAMING ARENA + theme v3 "Super Club" (5cd4ed7; v2 at tag theme-holo-v2, v1 at
-    theme-ranger-v1). Still says Pugmark: Supabase SMTP sender name + email templates in dashboard (otp.html file
-    updated, paste it), repo/URL /pugmark (rename only if he asks). Ask how it looks on his phone.
- 1. Ask Angad how v2 feels on his phone; tune from his words (keep v1 tag for "pehle wala").
- 2. Remind Angad: rotate the Gmail App Password he pasted in chat; 2FA on GitHub (Supabase login) + IITM Google.
- 3. Check Access by email panel visually on live site (as angad_seth).
- 4. Later: auto status cron (pg_cron: upcoming->open->closed by time), Turnstile captcha (needs Cloudflare
-    acct), real regions list, game art uploads.
+# RESUME: Gaming Arena (25 Oct 2026, ~01:00)
+TRIGGER: "game website continue" -> read this, then MEMORY.md "START HERE" if needed. He doesn't track state; I own it.
+LIVE https://angadseth.github.io/gaming-arena/ · repo github.com/angadseth/gaming-arena (last f68062c) · angadseth/pugmark = redirect-only repo (keep!)
+Supabase ref fehkrxssoxuiixgmfini (Mumbai). Superadmin angad_seth = 24f2004141@ds. Dev preview: cd web; npx vite --port 5199 (code 12345678).
+Migrations 0001-0013 LIVE. 0014 (allow @mg.study) PASTED in Supabase SQL tab: he must press Run (UNCONFIRMED).
+I can't press Run in Supabase (auto mode blocks): copy SQL to clipboard, paste in Monaco, he presses Run. Data edits: use admin UI.
+
+STATE (what exists): Stumble Guys Season 1 = registration OPEN, closes Fri 30 Oct 20:00, starts 21:00 IST.
+ Fixed Meet (all events) https://meet.google.com/gzm-enay-fab. Lobby hidden until registered; check-in auto T-45;
+ room code only to checked-in. Admin Results = cards, "name, points" per line (no points = table), Edit/Delete per game.
+ Event standings: "Your position" card. Footer: "Made by Angad Jangir, Abhimanyu and Sagar Rathore" (equal, his call).
+ Test data on live: newbie (25f1001880) registered + DQ'd, game "stumble k chode" 1000 pts. Ask before clearing.
+ Docs: docs/match-lobby.md (architecture, every name scenario, game-night runbook). Screens: web/dev/gamenight-demo.mjs.
+
+OPEN QUESTIONS to Angad (ask first thing):
+ a. Did you press Run for 0014 (mg emails)? 24f3002949@mg must be able to log in.
+ b. One roll number = one account across ds/es/mg? (desibeer = 24f3002949@ds already exists -> could make 2 accounts.) I recommend YES.
+ c. Top 3 "Verified on Meet" tick before points are final? (offered, no answer)
+ d. Top Players page counts only COMPLETED events; include live events? (offered, no answer)
+ e. Abhimanyu's surname for the footer?
+
+NEXT (he said 25 Oct: "kal se aur deep cheez, website bahut zyada update karenge"):
+ 1. Answer/implement a-e above. 2. Real test with a friend: register -> check-in -> room code -> results.
+ 3. Supabase dashboard: Auth > URL config Site URL -> /gaming-arena/ ; SMTP sender name still "Pugmark".
+ 4. Remind: rotate the Gmail app password he pasted in chat; 2FA on GitHub + IITM Google.
+ 5. Later ideas: pg_cron auto status (upcoming->open->closed->live), Turnstile captcha, screenshot OCR for results.
+RULES: small boxes/cards, not text walls, not oversized; build what he names; keep versions (git tags/history);
+ run a loophole-review agent before big features go live; verify live in Chrome after every deploy.
+Full history: MEMORY.md (bottom section has the old long RESUME).
