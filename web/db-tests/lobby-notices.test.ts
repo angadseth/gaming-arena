@@ -163,3 +163,21 @@ describe('check-in and the fixed Meet link', () => {
     expect(Number(s.rows[0].points)).toBe(1000)
   })
 })
+
+describe('player card', () => {
+  type Card = { xp: number; level: string; next_level_at: number; badges: { key: string; have: boolean }[] }
+  it('turns games and check-ins into XP, a level and badges', async () => {
+    await db.as(null)
+    const c = await db.rpc<Card>('player_card', { p_username: 'ravi' })
+    expect(c.xp).toBe(1100) // won one game (1000) + one check-in (100)
+    expect(c.level).toBe('Bronze')
+    expect(c.next_level_at).toBe(3000)
+    const have = c.badges.filter((b) => b.have).map((b) => b.key)
+    expect(have).toEqual(['debut', 'game_winner'])
+  })
+  it('signed-in player gets their own card; unknown names get null', async () => {
+    await db.as(meera)
+    expect((await db.rpc<Card>('player_card', {})).level).toBe('Rookie')
+    expect(await db.rpc('player_card', { p_username: 'nobody_here' })).toBeNull()
+  })
+})

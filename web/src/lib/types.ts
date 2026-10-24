@@ -242,3 +242,17 @@ export interface Session {
   userId: string
   email: string
 }
+
+export interface PlayerCardData {
+  username: string
+  house_id: number
+  avatar: string
+  xp: number
+  level: string
+  level_floor: number
+  next_level_at: number | null
+  events: number
+  checkins: number
+  games: number
+  badges: { key: string; count: number; have: boolean }[]
+}

@@ -89,3 +89,16 @@ GitHub Pages (React)                     Supabase Postgres (RLS on, grant-nothin
 
 Stumble Guys custom parties hold up to 32. With more players, run heats: one code per
 heat, change the code and save again between heats.
+
+## Rewards: why players register, agree and check in (migration 0012)
+
+Lobby side card "What you unlock": Register -> lobby; accept rules -> Meet link + group chat;
+check in -> room code + 100 XP; play -> 50 to 1000 points a game; top 3 -> house points,
+Podium badge, hall of fame (event podium).
+
+Player card on Me (`player_card()`, computed live, nothing stored, cannot be edited):
+- XP = your entries' match points + 100 per check-in.
+- Levels: Rookie 0, Bronze 1000, Silver 3000, Gold 6000, Platinum 10000, Diamond 20000, Legend 40000.
+- Badges: Debut (first game), Regular (3 check-ins), Game winner, Podium, Champion.
+  Locked badges show how to unlock them.
+No money prizes: entry is free and there is nothing to bet (Online Gaming Act).

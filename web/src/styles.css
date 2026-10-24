@@ -2842,3 +2842,124 @@ body {
   gap: 4px;
   color: var(--success);
 }
+/* ---------- player card: level, XP, badges ---------- */
+.level-chip {
+  --lv: var(--text-2);
+  display: inline-block;
+  margin-top: 4px;
+  font: 900 26px/1 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lv);
+}
+.lv-bronze { --lv: #e09a5c; }
+.lv-silver { --lv: #d6dbe6; }
+.lv-gold { --lv: var(--accent); }
+.lv-platinum { --lv: var(--cyan); }
+.lv-diamond { --lv: #9fd8ff; }
+.lv-legend { --lv: var(--magenta); }
+.xp {
+  font: 900 26px/1 var(--font-display);
+  color: var(--text-1);
+  margin-top: 4px;
+}
+.xp-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.xp-bar span {
+  display: block;
+  height: 100%;
+  width: var(--p);
+  border-radius: inherit;
+  background: var(--rainbow);
+}
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+}
+.badge {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 10px 6px;
+  text-align: center;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+  opacity: 0.7;
+}
+.badge.is-have {
+  opacity: 1;
+  border-style: solid;
+  border-color: var(--accent);
+  background: linear-gradient(180deg, var(--accent-tint), transparent), var(--surface-2);
+}
+.badge-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--text-3);
+}
+.badge.is-have .badge-icon {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.badge b {
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--text-1);
+}
+.badge small {
+  font-size: 10.5px;
+  line-height: 13px;
+  color: var(--text-3);
+}
+/* ---------- unlock ladder in the lobby ---------- */
+.ladder {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.ladder li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-2);
+}
+.ladder li > span:first-child {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--text-3);
+}
+.ladder li.done > span:first-child {
+  background: var(--success);
+  color: #06210f;
+}
+.ladder li b {
+  color: var(--text-1);
+  font-weight: 650;
+}
+.ladder li small {
+  display: block;
+  color: var(--accent);
+  font-size: 12px;
+}

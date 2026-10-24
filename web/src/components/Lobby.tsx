@@ -27,7 +27,17 @@ export const LOBBY_RULES = [
   'Use only the in-game name you registered',
   'Keep the room code and Meet link to yourself',
   'In the Meet: mic off unless speaking, stay respectful',
+  'If asked on Meet, show your in-game profile; a ringer or borrowed account = DQ',
   'Organisers may screenshot the lobby; their call is final',
+]
+
+/** What each step unlocks: the reason to register, agree and check in on time. */
+const LADDER: { title: string; gets: string }[] = [
+  { title: 'Register', gets: 'Lobby opens for you' },
+  { title: 'Accept lobby rules', gets: 'Meet link + group chat' },
+  { title: 'Check in on match day', gets: 'Room code · +100 XP' },
+  { title: 'Play every game', gets: '50 to 1000 points a game · XP · Debut badge' },
+  { title: 'Finish top 3', gets: 'House points · Podium badge · Hall of fame' },
 ]
 
 export function LobbyTab({ t, game }: { t: Tournament; game: Game }) {
@@ -35,6 +45,8 @@ export function LobbyTab({ t, game }: { t: Tournament; game: Game }) {
   const lobby = useLobby(session ? t.id : undefined)
   const steps = game.join_steps ?? []
   const links = game.play_links ?? []
+  const d = lobby.data
+  const stage = !d?.registered ? 0 : !d.agreed ? 1 : !d.checked_in ? 2 : 3
 
   return (
     <div className="lobby">
@@ -57,6 +69,17 @@ export function LobbyTab({ t, game }: { t: Tournament; game: Game }) {
       </div>
 
       <aside className="lobby-side">
+        <section className="lobby-card">
+          <h3 className="lobby-h">What you unlock</h3>
+          <ol className="ladder">
+            {LADDER.map((l, i) => (
+              <li key={l.title} className={i < stage ? 'done' : undefined}>
+                <span>{i < stage ? <Check size={14} strokeWidth={3} /> : i + 1}</span>
+                <span><b>{l.title}</b><small>{l.gets}</small></span>
+              </li>
+            ))}
+          </ol>
+        </section>
         {links.length > 0 && (
           <section className="lobby-card">
             <h3 className="lobby-h">Get the game</h3>

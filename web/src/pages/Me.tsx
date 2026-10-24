@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Avatar, AVATAR_STYLES, avatarKey } from '../components/Avatar'
 import { EntryPanel } from '../components/event'
+import { PlayerCard } from '../components/PlayerCard'
 import { UsernameField, usernameBlocksSave, useUsernameStatus } from '../components/UsernameField'
 import { Button, Empty, ErrorBox, Field, Flap, GameCover, HouseTag, Sheet, Skeleton, StatusPill } from '../components/ui'
 import { errorCode, errorText, useApi, useAuth, useHouseName, useMyEntries, useRegionName, useToast } from '../lib/app'
@@ -109,6 +110,8 @@ export default function Me() {
         </dl>
         {profile.status !== 'active' && <p className="error-text">Your account is {profile.status}. Contact the organisers.</p>}
       </header>
+
+      <PlayerCard />
 
       <div className="stats">
         <div><strong><Flap value={list.length} tiles /></strong><span className="tag-type t3">Events</span></div>
