@@ -35,13 +35,11 @@ DONE ~17:50: folder MOVED to tools_unique/PUGMARK (old iitm-esports locked by VS
  (I may not hard-delete data). Also unverified sagar6969rathor@ds... exists (never signed in).
 DONE ~18:40 (3775860): game photos behind card dots (web/public/art + CREDITS.md, GAME_ART in format.ts),
  fairy-light garlands (Festive.tsx), fireworks + confetti canvas (lib/fireworks.ts, celebrate() on register/join).
-IN PROGRESS (his 24 Oct ask, in this order):
- A. Profile pictures: preset avatars (DiceBear-style, no uploads = no offensive photos); profiles.avatar + RPC.
- B. Player rankings: per-student points + rank by format (Solo / Duo-3v3 / Squad-Team), top-3 "GOAT" podium
-    cards on leaderboards, own rank pinned. Player points = event placement points (house_points table) given
-    to every non-sub member in full.
- C. PDF for his friend: how points + leaderboards work for every game type, any number of teams
-    (placement_points, kill_points, tie-breaks rank by points>wins>kills>best placement, house split).
+DONE ~19:05 (a67a709 + docs): migration 0008 LIVE (avatars: profiles.avatar + set_my_avatar, DiceBear
+ bottts/pixel-art/lorelei/thumbs; player_rankings(format) top100+me; tournament_standings returns captain avatar).
+ Leaderboards: Top players tabs + GOAT podium + "Your rank"; event standings podium. 45/45 tests.
+ PDF for his friend: docs/scoring/Gaming-Arena-Scoring-Logic.pdf (6 pages, from gaming-arena-scoring.html).
+ Not yet seen with real data: podium cards (no completed events yet).
 NEXT:
  0. DONE ~18:15: renamed to GAMING ARENA + theme v3 "Super Club" (5cd4ed7; v2 at tag theme-holo-v2, v1 at
     theme-ranger-v1). Still says Pugmark: Supabase SMTP sender name + email templates in dashboard (otp.html file
