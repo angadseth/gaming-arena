@@ -35,6 +35,12 @@ DONE ~17:50: folder MOVED to tools_unique/PUGMARK (old iitm-esports locked by VS
  (I may not hard-delete data). Also unverified sagar6969rathor@ds... exists (never signed in).
 DONE ~18:40 (3775860): game photos behind card dots (web/public/art + CREDITS.md, GAME_ART in format.ts),
  fairy-light garlands (Festive.tsx), fireworks + confetti canvas (lib/fireworks.ts, celebrate() on register/join).
+DONE ~19:45 (231ba38): UsernameField (components/UsernameField.tsx) shared by Onboarding + Edit profile:
+ says what's wrong under the box while typing, Save disabled until valid; server username errors land there.
+ Migration 0009 LIVE: blocked_words (120, English+Hinglish; whole=true only matches a full _/digit-split part),
+ username_is_clean() (leetspeak + stretched letters folded), profiles trigger -> USERNAME_BLOCKED,
+ username_available() also checks it. No existing player had a blocked name. Add words: insert into
+ public.blocked_words values ('word', false). Game photos now full strength (dots only at edges). 50/50 tests.
 DONE ~19:05 (a67a709 + docs): migration 0008 LIVE (avatars: profiles.avatar + set_my_avatar, DiceBear
  bottts/pixel-art/lorelei/thumbs; player_rankings(format) top100+me; tournament_standings returns captain avatar).
  Leaderboards: Top players tabs + GOAT podium + "Your rank"; event standings podium. 45/45 tests.
