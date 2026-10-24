@@ -19,9 +19,13 @@ DONE 24 Oct ~16:20: SMTP saved by Angad (sender onlypadaicontent0001@gmail.com, 
  BUG FIXED live (22123be + supabase/live-patches/): GoTrue gives OTP users a random encrypted_password, so the
  trigger's password check blocked all sign-ups; now passwords are blocked only by token hook + session_ok().
  Test code SENT to 24f2004141 OK (8 boxes render).
+DONE ~16:45: Angad signed in -> username angad_seth, superadmin; bootstrap list cleared ([]).
+ Organisers can now record/delete match results (952f4ea + live patch applied). 36/36 tests.
+ Live audit: 0 write grants on public tables, RLS on all, no realtime, storage admin-only, roles = only angad_seth;
+ Security Advisor 0 errors (warnings = SECURITY DEFINER RPCs by design + leaked-password n/a).
 NEXT:
- 1. Angad enters code + onboarding (username permanent) -> superadmin. Verify get_my_profile roles.
- 2. SQL: update public.app_settings set value='[]' where key='bootstrap_superadmins';
- 3. Check Access by email panel on live site visually (Players page), and Me/Register flows.
- 4. Later: Turnstile captcha (needs Cloudflare acct), real regions list, game art uploads, rate limit check
-    (Gmail ~500/day; Supabase custom-SMTP default 30 emails/hour).
+ 1. THEME REDO: Angad 24 Oct: "visibility bahut kam, theme maza nahi aaya". Raise contrast + more energy;
+    ask/confirm direction, keep old version recoverable (git tag before redesign).
+ 2. Remind Angad: rotate the Gmail App Password he pasted in chat; 2FA on GitHub (Supabase login) + IITM Google.
+ 3. Check Access by email panel visually on live site (as angad_seth).
+ 4. Later: Turnstile captcha (needs Cloudflare acct), real regions list, game art uploads, auto status cron.
