@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useApi } from '../lib/app'
 import { houseCode, STATUS_LABEL } from '../lib/format'
 import type { Game, TournamentStatus } from '../lib/types'
+import { OTP_LENGTH } from '../lib/api/types'
 
 export function PugmarkGlyph({ size = 22 }: { size?: number }) {
   return (
@@ -178,9 +179,9 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
   )
 }
 
-/** One real input drawn as six boxes: paste, autofill and backspace all work. */
+/** One real input drawn as boxes: paste, autofill and backspace all work. */
 export function OtpInput({
-  value, onChange, onComplete, length = 6, shake, disabled,
+  value, onChange, onComplete, length = OTP_LENGTH, shake, disabled,
 }: { value: string; onChange: (v: string) => void; onComplete?: (v: string) => void; length?: number; shake?: boolean; disabled?: boolean }) {
   const ref = useRef<HTMLInputElement>(null)
   const [focused, setFocused] = useState(false)

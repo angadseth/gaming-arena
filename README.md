@@ -14,7 +14,7 @@ registration, live standings, house standings and an organiser console.
 ```bash
 cd web
 npm install
-npm run dev          # no Supabase env -> runs the real migrations in-browser (PGlite); code 123456
+npm run dev          # no Supabase env -> runs the real migrations in-browser (PGlite); code 12345678
 npx vitest run db-tests   # database security tests
 ```
 

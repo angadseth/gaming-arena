@@ -4,6 +4,7 @@ import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { Turnstile } from '../components/Turnstile'
 import { Brand, Button, Field, OtpInput } from '../components/ui'
 import { errorCode, errorText, useApi, useAuth } from '../lib/app'
+import { OTP_LENGTH } from '../lib/api/types'
 
 const DOMAINS = ['ds.study.iitm.ac.in', 'es.study.iitm.ac.in']
 const PENDING_KEY = 'pugmark-pending-email'
@@ -93,7 +94,7 @@ export default function SignIn() {
   }
 
   async function verify(value: string) {
-    if (value.length !== 6) return
+    if (value.length !== OTP_LENGTH) return
     setBusy(true)
     setCodeError(null)
     try {
@@ -112,7 +113,7 @@ export default function SignIn() {
 
   return (
     <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
-      {api.kind === 'pglite' && <div className="dev-banner">LOCAL PREVIEW DATABASE · sign-in code is 123456</div>}
+      {api.kind === 'pglite' && <div className="dev-banner">LOCAL PREVIEW DATABASE · sign-in code is 12345678</div>}
       <div className="contour" style={{ borderBottom: '1px solid var(--border)' }}>
         <div style={{ maxWidth: 480, margin: '0 auto', padding: '20px var(--gutter) 40px' }}>
           <Brand />
@@ -131,7 +132,7 @@ export default function SignIn() {
         {step === 'email' ? (
           <form className="stack" onSubmit={send} noValidate>
             <h2 className="h2">Sign in</h2>
-            <p className="t2">We'll email a 6-digit code to your IITM BS student inbox. No passwords.</p>
+            <p className="t2">We'll email a {OTP_LENGTH}-digit code to your IITM BS student inbox. No passwords.</p>
             <Field label="IITM BS email" htmlFor="email" error={emailError} hint="Your roll number works too, e.g. 24f1001234">
               <input
                 id="email"

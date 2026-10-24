@@ -45,6 +45,7 @@ export default function Players() {
   return (
     <>
       <AdminHeader title="Players" sub="Search by username, name or email. Up to 50 results." />
+      <EmailAccess />
       <div className="row" style={{ position: 'relative' }}>
         <Search size={18} className="t3" style={{ position: 'absolute', left: 14 }} aria-hidden />
         <input className="input" style={{ paddingLeft: 42 }} placeholder="At least 2 characters" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search players" />
@@ -252,5 +253,138 @@ function ManageSheet({ user, onClose }: { user: AdminUser; onClose: () => void }
         </div>
       </div>
     </Sheet>
+  )
+}
+
+interface AccessRow {
+  email: string
+  role: 'admin' | 'organizer' | null
+  banned: boolean
+  note: string | null
+  updated_at: string
+  registered: boolean
+  username: string | null
+  by: string | null
+}
+
+type AccessAction = 'organizer' | 'admin' | 'norole' | 'ban' | 'unban'
+
+const ACTION_LABEL: Record<AccessAction, string> = {
+  organizer: 'Make organiser',
+  admin: 'Make admin',
+  norole: 'Remove role',
+  ban: 'Ban',
+  unban: 'Unban',
+}
+
+/** Grant a role or ban by IITM email, before or after the person signs up. */
+function EmailAccess() {
+  const api = useApi()
+  const { isSuperadmin } = useAuth()
+  const toast = useToast()
+  const [email, setEmail] = useState('')
+  const [action, setAction] = useState<AccessAction>(isSuperadmin ? 'organizer' : 'ban')
+  const [note, setNote] = useState('')
+  const list = useQuery({ queryKey: ['email-access'], queryFn: () => api.rpc<AccessRow[]>('admin_email_access') })
+  const inv = [['email-access'], ['admin-users']]
+  const role = useAction((a, args: { p_email: string; p_role: string | null }) => a.rpc('superadmin_set_email_role', args), inv)
+  const ban = useAction((a, args: { p_email: string; p_banned: boolean; p_note: string }) => a.rpc('admin_set_email_ban', args), inv)
+
+  const actions: AccessAction[] = isSuperadmin ? ['organizer', 'admin', 'norole', 'ban', 'unban'] : ['ban', 'unban']
+  const full = (() => {
+    const v = email.trim().toLowerCase()
+    return v && !v.includes('@') ? `${v}@ds.study.iitm.ac.in` : v
+  })()
+  const busy = role.isPending || ban.isPending
+
+  function apply() {
+    const done = () => {
+      toast({ kind: 'success', text: `${ACTION_LABEL[action]}: ${full}` })
+      setEmail('')
+      setNote('')
+    }
+    if (action === 'ban' || action === 'unban') {
+      ban.mutate({ p_email: full, p_banned: action === 'ban', p_note: note }, { onSuccess: done })
+    } else {
+      role.mutate({ p_email: full, p_role: action === 'norole' ? null : action }, { onSuccess: done })
+    }
+  }
+
+  return (
+    <section className="panel stack" style={gap(12)}>
+      <div className="section-head">
+        <h2>Access by email</h2>
+      </div>
+      <p className="hint">
+        {isSuperadmin
+          ? 'Make someone an organiser or admin, or ban them, by IITM email. It works even if they have not signed up yet: a role applies when they finish their profile, and a banned email can never create an account.'
+          : 'Ban or unban someone by IITM email, even before they sign up. Only the superadmin can give roles.'}
+      </p>
+      <div className="form-grid two">
+        <Field label="IITM email or roll number" htmlFor="acc-email" hint={full && full !== email.trim().toLowerCase() ? full : undefined}>
+          <input id="acc-email" className="input num" autoComplete="off" spellCheck={false} placeholder="24f1000001" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </Field>
+        <Field label="Action" htmlFor="acc-action">
+          <select id="acc-action" className="select" value={action} onChange={(e) => setAction(e.target.value as AccessAction)}>
+            {actions.map((a) => (
+              <option key={a} value={a}>
+                {ACTION_LABEL[a]}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+      {action === 'ban' && (
+        <Field label="Reason" hint="Kept in the audit log" htmlFor="acc-note">
+          <input id="acc-note" className="input" value={note} onChange={(e) => setNote(e.target.value)} />
+        </Field>
+      )}
+      <div className="row">
+        <Button busy={busy} disabled={!full} onClick={apply}>
+          {ACTION_LABEL[action]}
+        </Button>
+      </div>
+
+      {list.error ? (
+        <ErrorBox error={list.error} retry={() => list.refetch()} />
+      ) : list.isPending ? (
+        <Skeleton h={80} />
+      ) : list.data?.length ? (
+        <div className="table-wrap">
+          <table className="data">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Player</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>By</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.data.map((r) => (
+                <tr key={r.email}>
+                  <td className="small num">{r.email}</td>
+                  <td className="small">{r.registered ? r.username : <span className="t3">not signed up</span>}</td>
+                  <td className="small">{r.role === 'organizer' ? 'Organiser' : r.role === 'admin' ? 'Admin' : <span className="t3">none</span>}</td>
+                  <td>
+                    {r.banned ? (
+                      <span className="pill pill-live" title={r.note ?? undefined}>banned</span>
+                    ) : (
+                      <span className="pill pill-open">allowed</span>
+                    )}
+                  </td>
+                  <td className="small t3">{r.by ?? 'system'}</td>
+                  <td className="small t3">{fmtDate(r.updated_at, false)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="small t3">No email-level roles or bans yet.</p>
+      )}
+    </section>
   )
 }

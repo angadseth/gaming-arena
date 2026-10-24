@@ -36,4 +36,5 @@ export const SET_RETURNING = new Set([
   'tournament_match_results',
 ])
 
-export const OTP_LENGTH = 6
+/** Digits in the emailed code; must match Supabase Auth > Email > OTP length. */
+export const OTP_LENGTH = 8

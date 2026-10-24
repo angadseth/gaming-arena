@@ -686,11 +686,11 @@ p {
 }
 .otp-boxes {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   pointer-events: none;
 }
 .otp-box {
-  width: 48px;
+  width: clamp(32px, 9.5vw, 46px);
   height: 56px;
   display: grid;
   place-items: center;

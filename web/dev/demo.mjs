@@ -108,7 +108,7 @@ await shot('02-signin', false)
 await page.click('button[type=submit]')
 await page.waitForSelector('.otp input')
 await shot('03-otp', false)
-await page.fill('.otp input', '123456')
+await page.fill('.otp input', '12345678')
 await page.waitForSelector('#username, .game-card', { timeout: 20_000 })
 if (await page.$('#username')) {
   await page.fill('#username', 'angad')

@@ -1,18 +1,23 @@
-# RESUME (24 Oct 2026, ~13:30)
-Repo: github.com/angadseth/pugmark (public; idea/ + MEMORY.md are local-only, gitignored).
-Done: units 1-8 (DB+RLS+RPCs, full web app, admin console, rules/privacy), CI + Pages + keepalive workflows,
-supabase/config.toml (OTP 600s, 60s resend, hook, templates), dev preview = PGlite in browser (code 123456).
-NEW (uncommitted): migration 0006_email_access.sql (superadmin_set_email_role, admin_set_email_ban,
- admin_email_access, banned emails blocked in hook + auth trigger, admins can't touch admins) +
- web/db-tests/email-access.test.ts -> 30/30 tests pass. TODO: admin UI panel "Access by email" in Players,
- add new RPC names to api, commit + push.
-Preview: cd web && npx vite --port 5199 ; screenshots: ADMIN=1 node dev/demo.mjs <outdir> 390
-Running: security review agent -> docs/security-review.md. NEXT: apply its fixes, rerun db-tests, commit.
-SUPABASE (Chrome ext connected, Angad logged in, org zxcwnvqzrmmrwzucbmtm, old paused project exists):
- - IN PROGRESS: creating project "pugmark", region Mumbai (ap-south-1), DB password via "Generate".
- - then SQL editor: run migrations 0001..0006 in order (0005 storage too), then Auth settings:
-   email OTP length 6/expiry 600, templates from supabase/templates/otp.html, Before User Created hook ->
-   public.hook_before_user_created, disable anon sign-ins/other providers, Site URL https://angadseth.github.io/pugmark/
- - Angad must paste Gmail App Password in Auth > SMTP himself (smtp.gmail.com 465).
- - then repo vars VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY (gh variable set), Pages source=Actions.
-Open: real IITM regions list (seeded provisional), real game key art (admin uploads), Turnstile optional.
+# RESUME (24 Oct 2026, ~13:35)
+TRIGGER: Angad types "game website continue" in a new terminal -> read this file, do the NEXT list in order, no questions. He does not track state; I own everything.
+Repo: github.com/angadseth/pugmark (public; idea/ + MEMORY.md are local-only, gitignored). Last commit b68c402.
+Done: units 1-8, CI/Pages/keepalive workflows, dev preview = PGlite (code 123456).
+Done b68c402: migration 0006 email access (superadmin_set_email_role, admin_set_email_ban, admin_email_access;
+ banned emails blocked at hook+auth trigger) + ALL security-review fixes (docs/security-review.md): no passwords
+ (auth trigger + hook_custom_access_token + session_ok in has_role/require_player), confirmed email for onboarding,
+ throttles, house_standings rewrite, L3-L10. config.toml: confirmations ON, otp_expiry 300, token hook, no localhost.
+ 34/34 db-tests pass, build OK.
+TODO code: admin UI "Access by email" panel in web/src/pages/admin/Players.tsx (superadmin: email + role select;
+ admins: ban/unban email + note; list from admin_email_access). Remove dead "code is 123456" banner from prod.
+ Not done from review: H1 Turnstile server-side (needs Cloudflare account), M4 8-digit OTP/TOTP (kept 6, 300s).
+SUPABASE: project CREATED: name pugmark, ref fehkrxssoxuiixgmfini, Mumbai, URL https://fehkrxssoxuiixgmfini.supabase.co
+ (org zxcwnvqzrmmrwzucbmtm; DB password was auto-generated, not saved; auto-expose OFF, auto-RLS ON).
+ Chrome ext works (tab group); Angad logged in. NEXT:
+ 1. DONE 13:40: all 6 migrations ran in SQL editor (fetched from raw.githubusercontent @b68c402 into Monaco via JS); verified 15 games/15 events/12 houses/guard trigger/bucket; 8 anon fns.
+ 2. Auth: Email provider ON + confirm email ON, OTP 6 / 300s, templates (supabase/templates/otp.html, subject
+    "{{ .Token }} is your Pugmark sign-in code") for Magic Link + Confirm signup, hooks: Before User Created ->
+    public.hook_before_user_created, Custom Access Token -> public.hook_custom_access_token; anon sign-ins OFF;
+    Site URL + redirect https://angadseth.github.io/pugmark/
+ 3. Angad: Gmail + App Password into Auth > SMTP himself (smtp.gmail.com 465).
+ 4. gh variable set VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY (publishable key from API settings), Pages=Actions.
+ 5. After his first sign-in: update app_settings set value='[]' where key='bootstrap_superadmins'.

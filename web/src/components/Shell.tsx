@@ -23,7 +23,7 @@ export function Shell() {
   return (
     <>
       {api.kind === 'pglite' && (
-        <div className="dev-banner">LOCAL PREVIEW DATABASE · sign-in code is 123456 · nothing here is live</div>
+        <div className="dev-banner">LOCAL PREVIEW DATABASE · sign-in code is 12345678 · nothing here is live</div>
       )}
       <header className="topbar">
         <div className="topbar-inner">

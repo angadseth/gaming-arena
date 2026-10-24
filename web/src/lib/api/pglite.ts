@@ -7,7 +7,7 @@ import stubSql from '../../../dev/supabase-stub.sql?raw'
 import type { Game, House, Region, Session, Tournament } from '../types'
 import { ApiError, SET_RETURNING, type Api } from './types'
 
-export const DEV_OTP = '123456'
+export const DEV_OTP = '12345678'
 const SESSION_KEY = 'pugmark-dev-session'
 const ART_KEY = 'pugmark-dev-art:'
 
