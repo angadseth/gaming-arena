@@ -46,7 +46,14 @@ DONE ~19:05 (a67a709 + docs): migration 0008 LIVE (avatars: profiles.avatar + se
  Leaderboards: Top players tabs + GOAT podium + "Your rank"; event standings podium. 45/45 tests.
  PDF for his friend: docs/scoring/Gaming-Arena-Scoring-Logic.pdf (6 pages, from gaming-arena-scoring.html).
  Not yet seen with real data: podium cards (no completed events yet).
+DONE 24 Oct ~21:30 (6b692f2, LOCAL ONLY, not pushed): MATCH LOBBY + NOTICES (docs/match-lobby.md).
+ Migration 0010 lobby_notices: games.play_links/join_steps (Stumble Guys seeded), event_lobby (Meet/chat/room
+ code, private), lobby_agreements (rules gate, app_settings.lobby_rules_version), event_notices + bell/inbox,
+ admin Event > "Lobby & notices" (Gmail BCC 40/btn, WhatsApp text), registration needs agree tick. 60/60 tests.
+ Screens: web/dev/lobby-demo.mjs. Auto-mode BLOCKED me pressing Run in Supabase SQL editor + live deploy.
 NEXT:
+ -1. Angad presses Run on migration 0010 in Supabase SQL editor (pasted in tab "Untitled query"), THEN
+     git push (deploys Pages). Never push before the migration is live. Then check Lobby tab live.
  0. DONE ~18:15: renamed to GAMING ARENA + theme v3 "Super Club" (5cd4ed7; v2 at tag theme-holo-v2, v1 at
     theme-ranger-v1). Still says Pugmark: Supabase SMTP sender name + email templates in dashboard (otp.html file
     updated, paste it), repo/URL /pugmark (rename only if he asks). Ask how it looks on his phone.
