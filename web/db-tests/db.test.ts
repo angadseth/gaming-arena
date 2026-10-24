@@ -234,7 +234,7 @@ describe('results and standings', () => {
     await db.rpc('admin_upsert_tournament', { p: { id: soloEvent, game_id: soloGame, slug: 'chess-blitz-1', title: 'Blitz Cup', status: 'completed' } })
     h = await db.query<{ house_id: number; points: string }>('select * from public.house_standings(null)')
     const pich = h.rows.find((r) => r.house_id === 9)
-    expect(Number(pich?.points)).toBe(17) // 1st (10) + 2nd (7), both Pichavaram
+    expect(Number(pich?.points)).toBe(1700) // 1st (1000) + 2nd (700), x100 tables, both Pichavaram
   })
 
   it('ranks players across completed events, by format, with my own row', async () => {
@@ -242,7 +242,7 @@ describe('results and standings', () => {
     const r = await db.query<{ rank: string; username: string; avatar: string; points: string; firsts: string; is_me: boolean }>(
       `select * from public.player_rankings('solo', null)`)
     expect(r.rows.map((x) => [Number(x.rank), x.username, Number(x.points), Number(x.firsts), x.is_me])).toEqual([
-      [1, 'bob', 10, 1, false], [2, 'alice', 7, 0, true]])
+      [1, 'bob', 1000, 1, false], [2, 'alice', 700, 0, true]])
     expect(r.rows[0].avatar).toBe('bottts:bob')
     const squads = await db.query(`select * from public.player_rankings('squad', null)`)
     expect(squads.rows).toHaveLength(0)

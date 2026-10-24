@@ -266,15 +266,16 @@ export const useLobby = (tournamentId: string | undefined) => {
 }
 
 /** Notices from every event the player is in; polled so the bell stays fresh. */
-export const useInbox = () => {
+/** The bell asks for 10 notices; the Notices page for 50. Hidden tabs stop polling (free-tier egress). */
+export const useInbox = (limit = 10) => {
   const api = useApi()
   const { session, profile } = useAuth()
   return useQuery({
-    queryKey: ['inbox', session?.userId],
-    queryFn: () => api.rpc<Inbox>('my_notices', { p_limit: 50 }),
+    queryKey: ['inbox', session?.userId, limit],
+    queryFn: () => api.rpc<Inbox>('my_notices', { p_limit: limit }),
     enabled: !!session && !!profile,
     refetchInterval: 60_000,
-    refetchIntervalInBackground: true,
+    refetchIntervalInBackground: false,
   })
 }
 

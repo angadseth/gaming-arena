@@ -51,7 +51,7 @@ await sql(`with t as (select id from public.tournaments where slug = 'stumble-gu
   insert into public.entry_members (entry_id, tournament_id, user_id, role, ig_id) select id, tournament_id, captain_id, 'captain', 'AngadStumbles' from e`)
 await sql(`insert into public.event_lobby (tournament_id, meet_url, chat_url, room_code, note) select id, 'https://meet.google.com/abc-defg-hij', 'https://chat.whatsapp.com/ExampleInvite', 'SG4821', 'Region: Asia · 5 games · top 8 to the final' from public.tournaments where slug = 'stumble-guys-s1'`)
 await sql(`insert into public.event_notices (tournament_id, kind, title, body, created_at) select id, 'reminder', 'Starting in 15 minutes', 'Join the Google Meet now. Room code follows shortly.', now() - interval '5 minutes' from public.tournaments where slug = 'stumble-guys-s1'`)
-await sql(`insert into public.event_notices (tournament_id, kind, title, body) select id, 'room', 'Room code is up: SG4821', 'Open the Lobby tab for the Meet link, room code and steps.' from public.tournaments where slug = 'stumble-guys-s1'`)
+await sql(`insert into public.event_notices (tournament_id, kind, title, body) select id, 'room', 'Room code is up', 'Check in on the Lobby tab to see it.' from public.tournaments where slug = 'stumble-guys-s1'`)
 await page.goto(BASE + '#/')
 await page.reload()
 await page.goto(BASE + '#/e/stumble-guys-s1?tab=lobby')

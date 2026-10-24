@@ -3,7 +3,7 @@ import { Check, Copy, ExternalLink, Mail, Megaphone, Save, Trash2, UserCheck, Vi
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { NOTICE_LABEL } from '../../components/Lobby'
-import { Button, Empty, ErrorBox, Field, HouseTag, Skeleton } from '../../components/ui'
+import { Button, Empty, ErrorBox, Field, HouseTag, Sheet, Skeleton } from '../../components/ui'
 import { useAction, useApi, useAuth, useCatalog, useToast } from '../../lib/app'
 import { fmtDate, relative } from '../../lib/format'
 import type { AdminLobby, NoticeKind } from '../../lib/types'
@@ -41,6 +41,7 @@ export default function Lobby() {
   const [deleting, setDeleting] = useState<string | null>(null)
   const [fixedMeet, setFixedMeet] = useState<string | null>(null)
   const [who, setWho] = useState('')
+  const [fixing, setFixing] = useState<{ username: string; ig_id: string } | null>(null)
   const { isAdmin } = useAuth()
 
   useEffect(() => {
@@ -56,6 +57,7 @@ export default function Lobby() {
   const post = useAction((a, m: typeof msg) => a.rpc('admin_post_notice', { p_tournament_id: id, p_kind: m.kind, p_title: m.title, p_body: m.body }), inv)
   const del = useAction((a, nid: string) => a.rpc('admin_delete_notice', { p_id: nid }), inv)
   const setDefaultMeet = useAction((a, url: string) => a.rpc('admin_set_default_meet', { p_url: url }), inv)
+  const fixName = useAction((a, f: { username: string; ig_id: string }) => a.rpc('admin_set_ig_id', { p_tournament_id: id, p_username: f.username, p_ig_id: f.ig_id }), inv)
   const setCheckin = useAction((a, open: boolean) => a.rpc('admin_set_checkin', { p_tournament_id: id, p_open: open, p_notify: true }), inv)
 
   if (cat.loading || q.isPending) return <Skeleton h={400} />
@@ -108,7 +110,7 @@ export default function Lobby() {
         <div className="spread wrap" style={{ gap: 10 }}>
           <div>
             <h3 className="lobby-h">Check-in &amp; roster</h3>
-            <p className="small t3">Let into the game room only names that are checked in here.</p>
+            <p className="small t3">Let into the game room only names checked in here. Opening check-in starts a new round: everyone checks in again. It also opens by itself 45 min before the start.</p>
           </div>
           <div className="row wrap" style={gap(8)}>
             <span className={`pill ${d.checkin_open ? 'pill-open' : 'pill-closed'}`}>{d.checkin_open ? 'Check-in open' : 'Check-in closed'}</span>
@@ -134,7 +136,12 @@ export default function Lobby() {
               <tbody>
                 {roster.map((r) => (
                   <tr key={r.username} className={r.checked_in_at ? 'is-in' : undefined}>
-                    <td><b>{r.ig_id}</b>{r.ig_changes > 0 && <span className="tag-type changed" title="Changed at check-in"> edited</span>}</td>
+                    <td>
+                      <b>{r.ig_id}</b>
+                      {r.ig_changes > 0 && <span className="tag-type changed" title="Name was changed after registering"> edited</span>}
+                      {/[^ -~]/.test(r.ig_id) && <span className="tag-type changed" title="Has non-English or invisible characters: check closely"> odd chars</span>}
+                      <button className="link-btn small" onClick={() => setFixing({ username: r.username, ig_id: r.ig_id })}>Fix name</button>
+                    </td>
                     <td className="small">@{r.username}{r.entry !== r.username ? ` · ${r.entry}` : ''}<br /><span className="t3">{r.full_name}</span></td>
                     <td><HouseTag id={r.house_id} /></td>
                     <td className="small">{r.entry_status === 'disqualified' ? 'DQ' : r.checked_in_at ? <span className="in-tick"><Check size={13} strokeWidth={2.5} aria-hidden /> {relative(r.checked_in_at)}</span> : <span className="t3">Not in</span>}</td>
@@ -258,6 +265,19 @@ export default function Lobby() {
         )}
       </section>
 
+      <Sheet open={!!fixing} onClose={() => setFixing(null)} title={`Fix @${fixing?.username ?? ''}'s in-game name`}>
+        {fixing && (
+          <div className="stack" style={gap(14)}>
+            <p className="small t3">Use this for typos or after a dispute. Players cannot rename themselves once checked in. The change is logged.</p>
+            <Field label="In-game name" htmlFor="fix-ig">
+              <input id="fix-ig" className="input" maxLength={64} value={fixing.ig_id} onChange={(e) => setFixing({ ...fixing, ig_id: e.target.value })} />
+            </Field>
+            <Button kind="primary" busy={fixName.isPending} disabled={!fixing.ig_id.trim()} onClick={() => fixName.mutate(fixing, { onSuccess: () => { setFixing(null); toast({ kind: 'success', text: 'Name updated' }) } })}>
+              Save name
+            </Button>
+          </div>
+        )}
+      </Sheet>
       <ConfirmSheet
         open={!!deleting}
         onClose={() => setDeleting(null)}

@@ -97,7 +97,7 @@ describe('notices', () => {
     await db.as(ravi)
     const inbox = await db.rpc<Inbox>('my_notices', { p_limit: 50 })
     expect(inbox.unread).toBe(2)
-    expect(inbox.items.map((i) => i.title)).toEqual(['Starts in 15 minutes', 'Room code is up: SG9999'])
+    expect(inbox.items.map((i) => i.title)).toEqual(['Starts in 15 minutes', 'Room code is up'])
     expect(inbox.items[0].event_slug).toBe('stumble-cup')
   })
   it('marking seen clears the badge', async () => {
@@ -179,5 +179,41 @@ describe('player card', () => {
     await db.as(meera)
     expect((await db.rpc<Card>('player_card', {})).level).toBe('Rookie')
     expect(await db.rpc('player_card', { p_username: 'nobody_here' })).toBeNull()
+  })
+})
+
+describe('loophole fixes', () => {
+  it('a notice never carries the room code', async () => {
+    await db.as(admin)
+    await db.rpc('admin_set_lobby', { p_tournament_id: event, p: { room_code: 'SECRET42' }, p_notify: true })
+    await db.as('postgres')
+    const r = await db.query<{ n: number }>(`select count(*)::int as n from public.event_notices where title like '%SECRET42%' or body like '%SECRET42%'`)
+    expect(r.rows[0].n).toBe(0)
+  })
+  it('a checked-in player cannot rename to steal a placement', async () => {
+    await db.as(ravi)
+    await expectHint(db.rpc('check_in', { p_tournament_id: event, p_ig_id: 'SomeoneElse' }), 'IG_LOCKED')
+    await db.as(admin)
+    await db.rpc('admin_set_ig_id', { p_tournament_id: event, p_username: 'ravi', p_ig_id: 'Ravi_Fixed' })
+  })
+  it('lookalike names with invisible characters count as the same name', async () => {
+    await db.as('postgres')
+    const e = (await db.query<{ entry_id: string }>(`select entry_id from public.entry_members where tournament_id = $1`, [event])).rows[0].entry_id
+    await expect(db.query(`insert into public.entry_members (entry_id, tournament_id, user_id, role, ig_id) values ($1, $2, $3, 'player', $4)`,
+      [e, event, meera, 'Ravi​_Fixed'])).rejects.toThrow(/unique/)
+  })
+  it('a disqualified player loses the lobby and the inbox', async () => {
+    await db.as('postgres')
+    await db.exec(`update public.entries set status = 'disqualified' where tournament_id = '${event}'`)
+    await db.as(ravi)
+    expect(await db.rpc<Lobby>('event_lobby', { p_tournament_id: event })).toEqual({ registered: false })
+    expect((await db.rpc<Inbox>('my_notices', { p_limit: 50 })).items).toEqual([])
+    await db.as('postgres')
+    await db.exec(`update public.entries set status = 'active' where tournament_id = '${event}'`)
+  })
+  it('penalties at the new scale are accepted', async () => {
+    await db.as(admin)
+    await db.rpc('admin_record_match', { p_tournament_id: event, p_label: 'Penalty test', p_played_at: null,
+      p_rows: [{ ig_id: 'ravi_fixed', placement: null, points: -2000 }], p_replace: false })
   })
 })

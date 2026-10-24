@@ -102,3 +102,19 @@ Player card on Me (`player_card()`, computed live, nothing stored, cannot be edi
 - Badges: Debut (first game), Regular (3 check-ins), Game winner, Podium, Champion.
   Locked badges show how to unlock them.
 No money prizes: entry is free and there is nothing to bet (Online Gaming Act).
+
+## Loophole review (24 Oct, review agent) and what was fixed in 0011
+
+| Finding | Fix |
+|---|---|
+| Room code leaked through notice titles (inbox, lock screen, WhatsApp, email) | Notices only say "Room code is up"; old titles rewritten |
+| Two players swap in-game names between a game and its results | Name locked once checked in or once any match exists; organiser-only `admin_set_ig_id` (audited, "Fix name" on roster) |
+| Disqualified players still saw the room code and notices | `in_event`, inbox, rules and check-in require an active entry; no code after completed/cancelled |
+| Lookalike names (zero-width space, Cyrillic) | `ig_key()` unique index (NFKC, invisible chars stripped); Stumble names ASCII only; roster flags "odd chars" |
+| Points caps still at the old scale; x1 fallback tables | Caps -100000..100000; fallback tables x100; points columns numeric(10,2) |
+| Notify bypassed the notice throttle | throttle on lobby/check-in notices; delete checks not-found |
+| Check-in never reset between heats | Opening check-in starts a new round (everyone checks in again) |
+| Nobody gets the code if organisers forget check-in | Check-in opens by itself 45 min before `starts_at` |
+| Polling cost on the free tier | Hidden tabs stop polling; bell fetches 10, Notices page 50; audit_log index |
+| Fixed Meet link kept forever by anyone who saw it | Make the Meet IITM-only with host admit; rotate it each term |
+| x100 migration abort when kill_points > 10 | Constraints dropped before scaling, re-added after |

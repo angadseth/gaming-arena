@@ -2963,3 +2963,10 @@ body {
   color: var(--accent);
   font-size: 12px;
 }
+.link-btn {
+  display: block;
+  margin-top: 2px;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

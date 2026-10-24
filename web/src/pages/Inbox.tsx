@@ -9,7 +9,7 @@ export default function Inbox() {
   const api = useApi()
   const qc = useQueryClient()
   const { session } = useAuth()
-  const inbox = useInbox()
+  const inbox = useInbox(50)
   const unread = inbox.data?.unread ?? 0
 
   // Opening the inbox counts as reading it; the list keeps its highlights until the next refresh.
@@ -17,7 +17,7 @@ export default function Inbox() {
     if (unread === 0) return
     const id = window.setTimeout(() => {
       api.rpc('mark_notices_seen').then(() => {
-        qc.setQueryData(['inbox', session?.userId], (d: typeof inbox.data) => (d ? { ...d, unread: 0 } : d))
+        qc.setQueriesData({ queryKey: ['inbox', session?.userId] }, (d: typeof inbox.data) => (d ? { ...d, unread: 0 } : d))
       }, () => {})
     }, 1200)
     return () => window.clearTimeout(id)
