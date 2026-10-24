@@ -11,6 +11,7 @@ create function public.username_available(p_username text) returns boolean
 language sql stable security definer set search_path = '' as $$
   select lower(btrim(p_username)) ~ '^[a-z][a-z0-9_]{2,19}$'
      and not exists (select 1 from public.reserved_usernames where name = lower(btrim(p_username)))
+     and lower(btrim(p_username)) !~ '(admin|moder|staff|offici|pugmark|iitm|organi[sz]|support|esport|superuser|root)'
      and not exists (select 1 from public.profiles where lower(username) = lower(btrim(p_username)))
 $$;
 
@@ -36,7 +37,11 @@ begin
     raise exception 'Your profile is already set up' using errcode = 'P0001', hint = 'PROFILE_EXISTS';
   end if;
 
-  select lower(email) into v_email from auth.users where id = v_uid;
+  if not public.session_ok() then
+    raise exception 'Sign in with the emailed code' using errcode = '42501', hint = 'AUTH_METHOD';
+  end if;
+  -- Only a mailbox-verified address counts.
+  select lower(email) into v_email from auth.users where id = v_uid and email_confirmed_at is not null;
   if v_email is null or not public.email_domain_allowed(v_email) then
     raise exception 'Only IIT Madras BS student emails can join' using errcode = '42501', hint = 'BAD_DOMAIN';
   end if;
@@ -48,7 +53,8 @@ begin
     raise exception 'Username: 3-20 characters, lowercase letters, numbers and _, starting with a letter'
       using errcode = 'P0001', hint = 'BAD_USERNAME';
   end if;
-  if exists (select 1 from public.reserved_usernames where name = v_user) then
+  if exists (select 1 from public.reserved_usernames where name = v_user)
+     or v_user ~ '(admin|moder|staff|offici|pugmark|iitm|organi[sz]|support|esport|superuser|root)' then
     raise exception 'That username is reserved' using errcode = 'P0001', hint = 'USERNAME_TAKEN';
   end if;
   if exists (select 1 from public.profiles where lower(username) = v_user) then
@@ -67,8 +73,8 @@ begin
   insert into public.profiles (id, email, username, full_name, house_id, region_id, whatsapp, rules_accepted_at)
   values (v_uid, v_email, v_user, v_name, p_house_id, p_region_id, public.normalize_whatsapp(p_whatsapp), now());
 
-  -- First sign-in of a bootstrap superadmin grants the role.
-  if exists (
+  -- First sign-in of a bootstrap superadmin grants the role, only while no superadmin exists.
+  if not exists (select 1 from public.user_roles where role = 'superadmin') and exists (
     select 1 from public.app_settings s, jsonb_array_elements_text(s.value) e(email)
     where s.key = 'bootstrap_superadmins' and lower(e.email) = v_email
   ) then
@@ -99,6 +105,10 @@ language plpgsql security definer set search_path = '' as $$
 declare
   me public.profiles := public.require_player();
 begin
+  if me.whatsapp is not distinct from public.normalize_whatsapp(p_whatsapp) then
+    return;
+  end if;
+  perform public.throttle('whatsapp', 5, interval '1 day');
   update public.profiles set whatsapp = public.normalize_whatsapp(p_whatsapp) where id = me.id;
   perform public.audit('profile.whatsapp', me.id::text);
 end $$;
@@ -152,6 +162,7 @@ declare
   v_extra jsonb;
   v_entry uuid;
 begin
+  perform public.throttle('reg', 30, interval '1 hour');
   v_t := public.lock_open_tournament(p_tournament_id);
   select * into v_g from public.games where id = v_t.game_id;
   if v_g.team_size <> 1 then
@@ -186,6 +197,7 @@ declare
   v_entry uuid;
   v_code text;
 begin
+  perform public.throttle('reg', 30, interval '1 hour');
   v_t := public.lock_open_tournament(p_tournament_id);
   select * into v_g from public.games where id = v_t.game_id;
   if v_g.team_size = 1 then
@@ -217,11 +229,12 @@ end $$;
 
 -- Preview a team from an invite code before joining (no private data).
 create function public.team_by_invite(p_code text) returns jsonb
-language plpgsql stable security definer set search_path = '' as $$
+language plpgsql volatile security definer set search_path = '' as $$
 declare
   r jsonb;
 begin
   perform public.require_player();
+  perform public.throttle('invite', 30, interval '1 hour');
   select jsonb_build_object(
     'entry_id', e.id, 'team_name', e.name, 'tournament_id', t.id, 'tournament_title', t.title,
     'tournament_slug', t.slug, 'game_title', g.title, 'house_id', e.house_id,
@@ -250,6 +263,8 @@ declare
   v_count int;
   v_role text;
 begin
+  perform public.throttle('invite', 30, interval '1 hour');
+  perform public.throttle('reg', 30, interval '1 hour');
   select * into v_e from public.entries
   where invite_code = upper(btrim(coalesce(p_code, ''))) and status = 'active'
   for update;
@@ -291,7 +306,11 @@ begin
   if not found or not exists (select 1 from public.entry_members where entry_id = p_entry_id and user_id = me.id) then
     raise exception 'You are not in this entry' using errcode = 'P0001', hint = 'NOT_MEMBER';
   end if;
+  perform public.throttle('reg', 30, interval '1 hour');
   perform public.lock_open_tournament(v_e.tournament_id);
+  if exists (select 1 from public.match_results where entry_id = v_e.id) then
+    raise exception 'Results are already recorded for this entry' using errcode = 'P0001', hint = 'HAS_RESULTS';
+  end if;
 
   if v_e.captain_id = me.id then
     delete from public.entries where id = v_e.id;
@@ -330,7 +349,11 @@ begin
   if not found or v_e.captain_id <> me.id then
     raise exception 'Only the captain can remove players' using errcode = '42501', hint = 'NOT_CAPTAIN';
   end if;
+  perform public.throttle('reg', 30, interval '1 hour');
   perform public.lock_open_tournament(v_e.tournament_id);
+  if exists (select 1 from public.match_results where entry_id = v_e.id) then
+    raise exception 'Results are already recorded for this entry' using errcode = 'P0001', hint = 'HAS_RESULTS';
+  end if;
   select p.id into v_target from public.profiles p
   join public.entry_members m on m.user_id = p.id and m.entry_id = v_e.id
   where lower(p.username) = lower(btrim(p_username));
@@ -348,6 +371,7 @@ declare
   me public.profiles := public.require_player();
   v_code text := public.new_invite_code();
 begin
+  perform public.throttle('invite', 30, interval '1 hour');
   update public.entries set invite_code = v_code
   where id = p_entry_id and captain_id = me.id and invite_code is not null;
   if not found then
@@ -391,6 +415,7 @@ language plpgsql security definer set search_path = '' as $$
 declare
   me public.profiles := public.require_player();
 begin
+  perform pg_advisory_xact_lock(hashtextextended(me.id::text || 'request_game', 0));
   if (select count(*) from public.game_requests
       where user_id = me.id and created_at > now() - interval '24 hours') >= 3 then
     raise exception 'You can send 3 requests a day' using errcode = 'P0001', hint = 'RATE_LIMITED';
@@ -446,29 +471,40 @@ create function public.house_standings(p_season text default null)
 returns table (rank bigint, house_id smallint, points numeric, podiums bigint, players bigint)
 language sql stable security definer set search_path = '' as $$
   with done as (
-    select * from public.tournaments
+    select id, house_points from public.tournaments
     where status = 'completed' and (p_season is null or season = p_season)
+  ), agg as (
+    select e.id as entry_id, e.tournament_id,
+           coalesce(sum(r.points), 0) + e.points_adjust as points,
+           count(*) filter (where r.placement = 1) as wins,
+           coalesce(sum(r.kills), 0) as kills, min(r.placement) as best
+    from public.entries e join done d on d.id = e.tournament_id
+    left join public.match_results r on r.entry_id = e.id
+    where e.status = 'active' group by e.id
   ), placed as (
-    select d.id as tournament_id, s.entry_id, s.rank,
-           public.points_for_rank(d.house_points, s.rank::int) as pts
-    from done d cross join lateral public.tournament_standings(d.id) s
-    where s.status = 'active'
+    select a.tournament_id, a.entry_id,
+           rank() over (partition by a.tournament_id
+                        order by a.points desc, a.wins desc, a.kills desc, a.best asc nulls last) as rnk
+    from agg a
+  ), scored as (
+    select pl.tournament_id, pl.entry_id, pl.rnk, public.points_for_rank(d.house_points, pl.rnk::int) as pts
+    from placed pl join done d on d.id = pl.tournament_id
   ), shares as (
-    select p.house_id, pl.rank,
-           pl.pts / count(*) over (partition by pl.tournament_id, pl.entry_id) as share
-    from placed pl
-    join public.entry_members m on m.entry_id = pl.entry_id and m.role <> 'sub'
+    select p.house_id, s.rnk, s.pts / count(*) over (partition by s.tournament_id, s.entry_id) as share
+    from scored s
+    join public.entry_members m on m.entry_id = s.entry_id and m.role <> 'sub'
     join public.profiles p on p.id = m.user_id
   ), pts as (
-    select house_id, sum(share) as points, count(*) filter (where rank <= 3) as podiums
+    select house_id, sum(share) as points, count(*) filter (where rnk <= 3) as podiums
     from shares group by house_id
+  ), ppl as (
+    select p.house_id, count(distinct m.user_id) as players
+    from public.entry_members m join done d on d.id = m.tournament_id
+    join public.profiles p on p.id = m.user_id group by p.house_id
   )
-  select rank() over (order by coalesce(pts.points, 0) desc),
-         h.id, round(coalesce(pts.points, 0), 2), coalesce(pts.podiums, 0),
-         (select count(distinct m.user_id) from public.entry_members m
-            join done d on d.id = m.tournament_id
-            join public.profiles p on p.id = m.user_id where p.house_id = h.id)
-  from public.houses h left join pts on pts.house_id = h.id
+  select rank() over (order by coalesce(pts.points, 0) desc), h.id, round(coalesce(pts.points, 0), 2),
+         coalesce(pts.podiums, 0), coalesce(ppl.players, 0)
+  from public.houses h left join pts on pts.house_id = h.id left join ppl on ppl.house_id = h.id
   order by 1, h.name
 $$;
 

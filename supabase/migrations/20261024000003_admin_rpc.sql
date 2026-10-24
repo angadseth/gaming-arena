@@ -89,6 +89,7 @@ create function public.admin_upsert_tournament(p jsonb) returns uuid
 language plpgsql security definer set search_path = '' as $$
 declare
   v_id uuid := nullif(p ->> 'id', '')::uuid;
+  v_old public.tournaments;
 begin
   perform public.require_admin();
   if v_id is null then
@@ -107,29 +108,32 @@ begin
     returning id into v_id;
     perform public.audit('tournament.create', v_id::text, jsonb_build_object('slug', p ->> 'slug'));
   else
-    update public.tournaments set
-      game_id = (p ->> 'game_id')::uuid, slug = lower(p ->> 'slug'), title = p ->> 'title',
-      season = coalesce(p ->> 'season', '2026'), summary = coalesce(p ->> 'summary', ''),
-      status = coalesce(p ->> 'status', status),
-      reg_opens_at = nullif(p ->> 'reg_opens_at', '')::timestamptz,
-      reg_closes_at = nullif(p ->> 'reg_closes_at', '')::timestamptz,
-      starts_at = nullif(p ->> 'starts_at', '')::timestamptz,
-      max_entries = nullif(p ->> 'max_entries', '')::integer,
-      same_house_teams = coalesce((p ->> 'same_house_teams')::boolean, same_house_teams),
-      placement_points = coalesce(p -> 'placement_points', placement_points),
-      kill_points = coalesce((p ->> 'kill_points')::numeric, kill_points),
-      house_points = coalesce(p -> 'house_points', house_points),
-      contact_note = coalesce(p ->> 'contact_note', '')
-    where id = v_id;
+    select * into v_old from public.tournaments where id = v_id for update;
     if not found then
       raise exception 'Event not found' using errcode = 'P0001', hint = 'NOT_FOUND';
     end if;
     -- Changing the game under existing registrations would break them.
-    if exists (select 1 from public.entries where tournament_id = v_id)
-       and (select game_id from public.tournaments where id = v_id) is distinct from (p ->> 'game_id')::uuid then
+    if v_old.game_id is distinct from (p ->> 'game_id')::uuid
+       and exists (select 1 from public.entries where tournament_id = v_id) then
       raise exception 'This event already has registrations; its game cannot change' using errcode = 'P0001', hint = 'HAS_ENTRIES';
     end if;
-    perform public.audit('tournament.update', v_id::text, jsonb_build_object('slug', p ->> 'slug', 'status', p ->> 'status'));
+    -- Fields missing from p keep their value; an empty string clears a nullable field.
+    update public.tournaments set
+      game_id = (p ->> 'game_id')::uuid, slug = lower(p ->> 'slug'), title = p ->> 'title',
+      season = coalesce(p ->> 'season', season), summary = coalesce(p ->> 'summary', summary),
+      status = coalesce(p ->> 'status', status),
+      reg_opens_at = case when p ? 'reg_opens_at' then nullif(p ->> 'reg_opens_at', '')::timestamptz else reg_opens_at end,
+      reg_closes_at = case when p ? 'reg_closes_at' then nullif(p ->> 'reg_closes_at', '')::timestamptz else reg_closes_at end,
+      starts_at = case when p ? 'starts_at' then nullif(p ->> 'starts_at', '')::timestamptz else starts_at end,
+      max_entries = case when p ? 'max_entries' then nullif(p ->> 'max_entries', '')::integer else max_entries end,
+      same_house_teams = coalesce((p ->> 'same_house_teams')::boolean, same_house_teams),
+      placement_points = coalesce(p -> 'placement_points', placement_points),
+      kill_points = coalesce((p ->> 'kill_points')::numeric, kill_points),
+      house_points = coalesce(p -> 'house_points', house_points),
+      contact_note = coalesce(p ->> 'contact_note', contact_note)
+    where id = v_id;
+    perform public.audit('tournament.update', v_id::text, jsonb_build_object('before', to_jsonb(v_old),
+      'after', (select to_jsonb(t) from public.tournaments t where t.id = v_id)));
   end if;
   return v_id;
 exception
@@ -362,6 +366,9 @@ create function public.admin_correct_profile(p_user_id uuid, p_full_name text, p
 language plpgsql security definer set search_path = '' as $$
 begin
   perform public.require_admin();
+  if exists (select 1 from public.user_roles where user_id = p_user_id) and not public.has_role(array['superadmin']) then
+    raise exception 'Only the superadmin can edit staff profiles' using errcode = '42501', hint = 'FORBIDDEN';
+  end if;
   update public.profiles set
     full_name = coalesce(nullif(btrim(p_full_name), ''), full_name),
     house_id = coalesce(p_house_id, house_id),

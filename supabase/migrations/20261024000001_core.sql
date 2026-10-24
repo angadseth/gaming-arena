@@ -19,6 +19,8 @@
 alter default privileges in schema public revoke all on tables from anon, authenticated;
 alter default privileges in schema public revoke all on sequences from anon, authenticated;
 alter default privileges in schema public revoke execute on functions from public, anon, authenticated;
+-- The per-schema rule above cannot remove the global EXECUTE-to-PUBLIC default; this one does.
+alter default privileges revoke execute on functions from public;
 
 -- ---------------------------------------------------------------------
 -- 1. Settings and reference data
@@ -292,9 +294,17 @@ language sql stable security definer set search_path = '' as $$
   )
 $$;
 
+-- Sessions must come from the emailed code: never a password or anonymous sign-in.
+create function public.session_ok() returns boolean
+language sql stable set search_path = '' as $$
+  select coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) = false
+     and not exists (select 1 from jsonb_array_elements(coalesce(auth.jwt() -> 'amr', '[]')) a
+                     where a ->> 'method' in ('password', 'anonymous'))
+$$;
+
 create function public.has_role(p_roles text[]) returns boolean
 language sql stable security definer set search_path = '' as $$
-  select exists (
+  select public.session_ok() and exists (
     select 1 from public.user_roles r
     join public.profiles p on p.id = r.user_id
     where r.user_id = auth.uid() and r.role = any (p_roles) and p.status = 'active'
@@ -328,6 +338,9 @@ begin
   if auth.uid() is null then
     raise exception 'Please sign in first' using errcode = '42501', hint = 'AUTH_REQUIRED';
   end if;
+  if not public.session_ok() then
+    raise exception 'Sign in with the emailed code' using errcode = '42501', hint = 'AUTH_METHOD';
+  end if;
   select * into v from public.profiles where id = auth.uid();
   if not found then
     raise exception 'Finish your profile first' using errcode = 'P0001', hint = 'PROFILE_REQUIRED';
@@ -344,6 +357,27 @@ language sql security definer set search_path = '' as $$
   values (auth.uid(), p_action, p_target, coalesce(p_details, '{}'))
 $$;
 
+-- Per-user throttle for player writes, so one account cannot flood the database.
+create table public.rate_events (
+  user_id uuid not null,
+  action  text not null,
+  at      timestamptz not null default now()
+);
+create index rate_events_idx on public.rate_events (user_id, action, at);
+alter table public.rate_events enable row level security;
+
+create function public.throttle(p_action text, p_max int, p_window interval) returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  perform pg_advisory_xact_lock(hashtextextended(auth.uid()::text || p_action, 0));
+  if (select count(*) from public.rate_events
+      where user_id = auth.uid() and action = p_action and at > now() - p_window) >= p_max then
+    raise exception 'Slow down and try again shortly' using errcode = 'P0001', hint = 'RATE_LIMITED';
+  end if;
+  insert into public.rate_events (user_id, action) values (auth.uid(), p_action);
+  delete from public.rate_events where at < now() - interval '2 days' and random() < 0.01;
+end $$;
+
 create function public.new_invite_code() returns text
 language plpgsql volatile set search_path = '' as $$
 declare
@@ -353,7 +387,8 @@ declare
   i int;
 begin
   for i in 0..7 loop
-    code := code || substr(alphabet, (get_byte(bytes, i) % 32) + 1, 1);
+    -- byte 6 of a UUIDv4 carries the version nibble, so use byte 9 instead.
+    code := code || substr(alphabet, (get_byte(bytes, case when i = 6 then 9 else i end) % 32) + 1, 1);
   end loop;
   return code;
 end $$;
