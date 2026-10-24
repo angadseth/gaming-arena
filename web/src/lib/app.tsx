@@ -35,19 +35,26 @@ export function ApiProvider({ api, children }: { api: Api; children: ReactNode }
   const qc = useQueryClient()
   const [session, setSession] = useState<Session | null>(null)
   const [ready, setReady] = useState(false)
+  // undefined = not known yet. The first session event only tells us who is signed in; it is not a change.
+  const userRef = useRef<string | null | undefined>(undefined)
 
   useEffect(() => {
     let alive = true
+    const seen = (s: Session | null) => {
+      const id = s?.userId ?? null
+      // A real sign-in/out/switch: refetch everything for the new user. resetQueries keeps mounted
+      // queries attached (clear() orphaned them and left pages on skeletons forever).
+      if (userRef.current !== undefined && userRef.current !== id) qc.resetQueries()
+      userRef.current = id
+      setSession(s)
+    }
     api.getSession().then((s) => {
       if (!alive) return
-      setSession(s)
+      seen(s)
       setReady(true)
     })
     const off = api.onAuthChange((s) => {
-      setSession((prev) => {
-        if (prev?.userId !== s?.userId) qc.clear()
-        return s
-      })
+      if (alive) seen(s)
     })
     return () => {
       alive = false

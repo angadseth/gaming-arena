@@ -174,7 +174,7 @@ export default function Me() {
         </Link>
       </div>
 
-      <Button kind="danger" style={{ alignSelf: 'flex-start' }} onClick={async () => { await api.signOut(); qc.clear(); nav('/') }}>
+      <Button kind="danger" style={{ alignSelf: 'flex-start' }} onClick={async () => { await api.signOut(); nav('/') }}>
         <LogOut size={18} aria-hidden /> Sign out
       </Button>
 
