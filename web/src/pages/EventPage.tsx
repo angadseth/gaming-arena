@@ -2,17 +2,20 @@ import { Check } from 'lucide-react'
 import { Link, useSearchParams, useParams } from 'react-router-dom'
 import { EntryPanel } from '../components/event'
 import { Leaderboard } from '../components/Leaderboard'
+import { LobbyTab } from '../components/Lobby'
 import { ErrorBox, GameCover, MetaLine, Skeleton, StatusPill } from '../components/ui'
 import { useAuth, useCatalog, useCounts, useMyEntries } from '../lib/app'
 import { fmtDate, fmtPoints, ordinal, platformLabel, regOpen, teamSizeLabel } from '../lib/format'
 import NotFound from './NotFound'
 
-type Tab = 'overview' | 'standings' | 'rules'
+type Tab = 'overview' | 'lobby' | 'standings' | 'rules'
+const TABS: Tab[] = ['overview', 'lobby', 'standings', 'rules']
+const TAB_LABEL: Record<Tab, string> = { overview: 'Overview', lobby: 'Lobby', standings: 'Standings', rules: 'Rules' }
 
 export default function EventPage() {
   const { slug = '' } = useParams()
   const [params, setParams] = useSearchParams()
-  const tab = (['overview', 'standings', 'rules'].includes(params.get('tab') ?? '') ? params.get('tab') : null) as Tab | null
+  const tab = (TABS.includes(params.get('tab') as Tab) ? params.get('tab') : null) as Tab | null
   const cat = useCatalog()
   const counts = useCounts()
   const mine = useMyEntries()
@@ -31,9 +34,10 @@ export default function EventPage() {
   const g = t && cat.gameById.get(t.game_id)
   if (!t || !g) return <NotFound />
 
-  const active: Tab = tab ?? (['live', 'completed', 'closed'].includes(t.status) ? 'standings' : 'overview')
   const c = counts.data?.get(t.id)
   const myEntry = mine.data?.find((e) => e.tournament.id === t.id)
+  const active: Tab =
+    tab ?? (myEntry && ['live', 'closed'].includes(t.status) ? 'lobby' : ['live', 'completed', 'closed'].includes(t.status) ? 'standings' : 'overview')
   const open = regOpen(t)
   const placement = Object.entries(t.placement_points ?? {}).sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
   const houseTable = Object.entries(t.house_points ?? {}).sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
@@ -63,9 +67,9 @@ export default function EventPage() {
       </div>
 
       <div className="tabs" role="tablist">
-        {(['overview', 'standings', 'rules'] as Tab[]).map((k) => (
+        {TABS.map((k) => (
           <button key={k} role="tab" aria-selected={active === k} onClick={() => setTab(k)}>
-            {k === 'overview' ? 'Overview' : k === 'standings' ? 'Standings' : 'Rules'}
+            {TAB_LABEL[k]}
           </button>
         ))}
       </div>
@@ -87,7 +91,7 @@ export default function EventPage() {
             <div className="section-head"><h2>How it works</h2></div>
             <ol className="prose" style={{ margin: 0 }}>
               <li>Sign in with your IITM BS email and register{g.team_size > 1 ? '. The captain creates the team and shares the invite code; teammates join with it' : ''}.</li>
-              <li>Before each match, organisers send lobby details to registered players on WhatsApp.</li>
+              <li>Before each match, the Meet link and room code appear in the Lobby tab, and you get a notice on the bell.</li>
               <li>{g.verify_note ? `Results are verified by ${g.verify_note}.` : 'Captains share a result screenshot after every match.'} Organisers post results here.</li>
               <li>Standings update on this page. Final placements earn points for your house.</li>
             </ol>
@@ -124,6 +128,8 @@ export default function EventPage() {
         </div>
       )}
 
+      {active === 'lobby' && <LobbyTab t={t} game={g} />}
+
       {active === 'standings' && <Leaderboard t={t} game={g} />}
 
       {active === 'rules' && (
@@ -141,7 +147,7 @@ export default function EventPage() {
       <div className="cta-bar">
         <div className="cta-bar-inner">
           <span className="small t2 num">
-            {c ? `${c.entries} ${g.team_size > 1 ? 'teams' : 'players'} registered` : ' '}
+            {c ? `${c.entries} ${g.team_size > 1 ? (c.entries === 1 ? 'team' : 'teams') : c.entries === 1 ? 'player' : 'players'} registered` : ' '}
           </span>
           {myEntry ? (
             <button className="btn btn-secondary" onClick={() => setTab('overview')}>

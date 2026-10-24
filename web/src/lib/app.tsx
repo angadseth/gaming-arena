@@ -3,7 +3,7 @@ import { CircleAlert, CircleCheck, Info, X } from 'lucide-react'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ApiError, type Api } from './api'
 import type {
-  Game, House, HouseStanding, MatchResultRow, MyEntry, MyProfile, PlayerRank, RankFormat, Region, Session, StandingRow, Tournament, TournamentCount,
+  Game, House, HouseStanding, Inbox, Lobby, MatchResultRow, MyEntry, MyProfile, PlayerRank, RankFormat, Region, Session, StandingRow, Tournament, TournamentCount,
 } from './types'
 
 // ---------------------------------------------------------------------
@@ -250,6 +250,73 @@ export const useMyEntries = () => {
     queryFn: () => api.rpc<MyEntry[]>('my_entries'),
     enabled: !!session && !!profile,
   })
+}
+
+/** The private side of an event. Signed-out visitors never call it. */
+export const useLobby = (tournamentId: string | undefined) => {
+  const api = useApi()
+  const { session, profile } = useAuth()
+  return useQuery({
+    queryKey: ['lobby', tournamentId, session?.userId],
+    queryFn: () => api.rpc<Lobby>('event_lobby', { p_tournament_id: tournamentId }),
+    enabled: !!tournamentId && !!session && !!profile,
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+  })
+}
+
+/** Notices from every event the player is in; polled so the bell stays fresh. */
+export const useInbox = () => {
+  const api = useApi()
+  const { session, profile } = useAuth()
+  return useQuery({
+    queryKey: ['inbox', session?.userId],
+    queryFn: () => api.rpc<Inbox>('my_notices', { p_limit: 50 }),
+    enabled: !!session && !!profile,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: true,
+  })
+}
+
+const ALERTED_KEY = 'ga:last-alerted-notice'
+const readKey = () => {
+  try {
+    return localStorage.getItem(ALERTED_KEY)
+  } catch {
+    return null
+  }
+}
+const writeKey = (v: string) => {
+  try {
+    localStorage.setItem(ALERTED_KEY, v)
+  } catch {
+    /* private window: alerts may repeat, harmless */
+  }
+}
+
+/** Pops a system notification for a new notice while the site is open in some tab. */
+export function useNoticeAlerts() {
+  const inbox = useInbox()
+  useEffect(() => {
+    const newest = inbox.data?.items[0]
+    if (!newest || !newest.unread) return
+    const last = readKey()
+    if (last === newest.id) return
+    writeKey(newest.id)
+    // The first load after sign-in only remembers; it does not replay old notices.
+    if (last === null) return
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
+    try {
+      const n = new Notification(newest.title, { body: `${newest.event_title}${newest.body ? ` · ${newest.body}` : ''}`, tag: newest.id })
+      n.onclick = () => {
+        window.focus()
+        window.location.hash = `#/e/${newest.event_slug}?tab=lobby`
+      }
+    } catch {
+      /* some mobile browsers only allow notifications from a service worker */
+    }
+  }, [inbox.data])
+  return inbox
 }
 
 /** Lookup helpers built from the cached catalog. */

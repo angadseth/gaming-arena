@@ -332,6 +332,7 @@ function GameForm({ id }: { id: string | undefined }) {
             <input type="checkbox" checked={f.is_active} disabled={!isAdmin} onChange={(e) => set('is_active', e.target.checked)} />
             <span>Visible to players</span>
           </label>
+          {existing && isAdmin && <PlayEditor game={existing} />}
         </aside>
       </div>
 
@@ -345,6 +346,46 @@ function GameForm({ id }: { id: string | undefined }) {
           </Link>
         </div>
       )}
+    </>
+  )
+}
+
+const NL = '\n'
+
+/** Play links ("kind | label | url" per line) and room-join steps shown in every event's Lobby tab. */
+function PlayEditor({ game }: { game: Game }) {
+  const toast = useToast()
+  const [links, setLinks] = useState(() => (game.play_links ?? []).map((l) => `${l.kind} | ${l.label} | ${l.url}`).join(NL))
+  const [steps, setSteps] = useState(() => (game.join_steps ?? []).join(NL))
+  const [err, setErr] = useState<string | null>(null)
+  const save = useAction((a, args: Record<string, unknown>) => a.rpc('admin_set_game_play', args), [['games']])
+
+  function submit() {
+    const parsed = links.split(NL).map((l) => l.trim()).filter(Boolean).map((l) => {
+      const [kind, label, ...url] = l.split('|').map((x) => x.trim())
+      return { kind, label, url: url.join('|') }
+    })
+    const bad = parsed.find((p) => !['web', 'android', 'ios', 'pc', 'mac', 'console'].includes(p.kind) || !p.label || !p.url.startsWith('https://'))
+    if (bad) return setErr('Each line: kind | label | https://link (kind = web, android, ios, pc, mac, console)')
+    setErr(null)
+    save.mutate(
+      { p_game_id: game.id, p_play_links: parsed, p_join_steps: steps.split(NL).map((s) => s.trim()).filter(Boolean) },
+      { onSuccess: () => toast({ kind: 'success', text: 'Play links saved' }) },
+    )
+  }
+
+  return (
+    <>
+      <div className="section-head">
+        <h2>Lobby: play links</h2>
+      </div>
+      <Field label="Links" error={err} hint="One per line: android | Google Play | https://..." htmlFor="g-play">
+        <textarea id="g-play" className="textarea mono" rows={4} value={links} onChange={(e) => setLinks(e.target.value)} />
+      </Field>
+      <Field label="How to join the room" hint="One short step per line (max 12)" htmlFor="g-steps">
+        <textarea id="g-steps" className="textarea" rows={5} value={steps} onChange={(e) => setSteps(e.target.value)} />
+      </Field>
+      <Button size="sm" busy={save.isPending} onClick={submit}>Save play links</Button>
     </>
   )
 }

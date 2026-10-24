@@ -2494,3 +2494,314 @@ body {
   color: var(--danger);
   font-weight: 600;
 }
+
+/* =====================================================================
+   Match lobby, notices and the bell (24 Oct 2026). Small cards, short
+   lines: the page shows boxes, not paragraphs. Haldi stays the action.
+   ===================================================================== */
+.lobby {
+  display: grid;
+  gap: 14px;
+}
+@media (min-width: 900px) {
+  .lobby {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+.lobby-main,
+.lobby-side {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.lobby-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: 16px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  min-width: 0;
+}
+.lobby-h {
+  font: 800 16px/1.1 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-1);
+}
+.lobby-badge {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+.lobby-locked {
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+.play-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.play-tile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  min-height: 52px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  transition: border-color var(--d-fast), background var(--d-fast);
+}
+.play-tile:hover {
+  border-color: var(--accent);
+  background: var(--surface-3);
+  color: var(--text-1);
+}
+.play-tile svg {
+  flex: none;
+  color: var(--accent);
+}
+.play-tile-text {
+  display: grid;
+  min-width: 0;
+}
+.play-tile-text b {
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.play-tile-text small {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-3);
+}
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-2);
+}
+.step-n {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 800 12px/1 var(--font-display);
+}
+.rule-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.rule-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-2);
+}
+.rule-list svg {
+  flex: none;
+  color: var(--success);
+}
+.room-tile {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  border: 1px dashed var(--border-strong);
+  background: var(--surface-2);
+}
+.room-tile.is-set {
+  border-style: solid;
+  border-color: var(--accent);
+  background: linear-gradient(180deg, var(--accent-tint), transparent), var(--surface-2);
+}
+.room-tile .tag-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.room-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 900 26px/1 var(--font-display);
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+.room-code svg,
+.room-pass svg {
+  color: var(--text-3);
+}
+.room-pass {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+}
+.room-pass b {
+  color: var(--text-1);
+  letter-spacing: 0.06em;
+}
+.lobby-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.lobby-actions [aria-disabled='true'] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.lobby-note {
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  box-shadow: inset 3px 0 0 var(--accent);
+  color: var(--text-2);
+  white-space: pre-line;
+}
+.notice-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.notice {
+  --k: var(--text-3);
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  box-shadow: inset 3px 0 0 var(--k);
+}
+.notice-room,
+.notice-live {
+  --k: var(--accent);
+}
+.notice-reminder {
+  --k: var(--cyan);
+}
+.notice-result {
+  --k: var(--success);
+}
+.notice.is-unread {
+  background: linear-gradient(90deg, var(--accent-tint), transparent 60%), var(--surface-2);
+}
+.notice-kind {
+  font: 800 11px/1 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--k);
+}
+.notice-title {
+  font-size: 14px;
+  line-height: 19px;
+  color: var(--text-1);
+}
+.notice p {
+  white-space: pre-line;
+}
+.notice-event {
+  color: var(--accent);
+  justify-self: start;
+}
+.bell {
+  position: relative;
+}
+.bell-dot {
+  position: absolute;
+  top: 6px;
+  right: 4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--magenta);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--bg);
+}
+.stat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.stat-chips span {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.stat-chips b {
+  color: var(--text-1);
+  margin-right: 2px;
+}
+.outside {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+.chips.chips-wrap {
+  flex-wrap: wrap;
+  overflow: visible;
+  margin: 0;
+  padding: 0;
+}
+.notice-head {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 10px;
+}
+@media (min-width: 1100px) {
+  .admin-two:has(.lobby-card) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}

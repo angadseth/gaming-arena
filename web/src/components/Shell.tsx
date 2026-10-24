@@ -1,7 +1,7 @@
-import { CalendarRange, ListOrdered, Shield, Trees, UserRound } from 'lucide-react'
+import { Bell, CalendarRange, ListOrdered, Shield, Trees, UserRound } from 'lucide-react'
 import { useEffect, type ReactNode } from 'react'
 import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { useApi, useAuth } from '../lib/app'
+import { useApi, useAuth, useNoticeAlerts } from '../lib/app'
 import { startFireworks } from '../lib/fireworks'
 import { startFx } from '../lib/fx'
 import { Avatar, avatarKey } from './Avatar'
@@ -44,6 +44,7 @@ export function Shell() {
             ))}
           </nav>
           <div className="top-actions">
+            {session && profile && <BellLink />}
             {isStaff && (
               <NavLink to="/admin" className="icon-btn" aria-label="Admin console" title="Admin console">
                 <Shield size={20} strokeWidth={1.75} />
@@ -77,6 +78,17 @@ export function Shell() {
         ))}
       </nav>
     </>
+  )
+}
+
+function BellLink() {
+  const inbox = useNoticeAlerts()
+  const n = inbox.data?.unread ?? 0
+  return (
+    <NavLink to="/inbox" className="icon-btn bell" aria-label={n ? `Notices, ${n} unread` : 'Notices'} title="Notices">
+      <Bell size={20} strokeWidth={1.75} />
+      {n > 0 && <span className="bell-dot num">{n > 9 ? '9+' : n}</span>}
+    </NavLink>
   )
 }
 

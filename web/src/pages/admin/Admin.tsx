@@ -5,6 +5,7 @@ import { Empty } from '../../components/ui'
 import Audit from './Audit'
 import Events, { EventEditor } from './Events'
 import Games, { GameEditor } from './Games'
+import Lobby from './Lobby'
 import Overview from './Overview'
 import Players from './Players'
 import Regions from './Regions'
@@ -44,6 +45,7 @@ export default function Admin() {
             <Route path="events/:id" element={<EventEditor />} />
             <Route path="events/:id/registrations" element={<Registrations />} />
             <Route path="events/:id/results" element={<Results />} />
+            <Route path="events/:id/lobby" element={<Lobby />} />
             <Route path="games" element={<Games />} />
             <Route path="games/new" element={<GameEditor />} />
             <Route path="games/:id" element={<GameEditor />} />

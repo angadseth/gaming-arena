@@ -66,6 +66,7 @@ function RegisterForm({ t, g, onDone }: { t: Tournament; g: Game; onDone: (d: { 
   const [teamName, setTeamName] = useState('')
   const [igId, setIgId] = useState('')
   const [extra, setExtra] = useState<Record<string, string>>({})
+  const [agreed, setAgreed] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [busy, setBusy] = useState(false)
 
@@ -135,10 +136,15 @@ function RegisterForm({ t, g, onDone }: { t: Tournament; g: Game; onDone: (d: { 
       </section>
 
       {errors.__form && <p className="error-text" role="alert">{errors.__form}</p>}
-      <p className="small t3">
-        By registering you confirm the in-game account is yours and you'll follow the event rules. Entry is free; there are no stakes or bets.
-      </p>
-      <Button kind="primary" block busy={busy} type="submit">
+      <label className="check">
+        <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+        <span>
+          The in-game account is mine, I'll follow the event rules and the{' '}
+          <Link to="/rules" style={{ textDecoration: 'underline' }}>rulebook</Link>, and organisers may send me notices for this event.
+          Entry is free; no stakes or bets.
+        </span>
+      </label>
+      <Button kind="primary" block busy={busy} disabled={!agreed} type="submit">
         {team ? 'Create team' : 'Register'}
       </Button>
     </form>
@@ -152,12 +158,12 @@ function Success({ t, g, invite, teamName }: { t: Tournament; g: Game; invite?: 
       <CircleCheck size={48} strokeWidth={1.5} style={{ color: 'var(--success)' }} aria-hidden />
       <h1 className="h1">{invite ? 'Team created' : "You're in"}</h1>
       <p className="lead">
-        {t.title} is now on your profile.{invite ? ' Share the code below with your teammates.' : ' Lobby details reach you on WhatsApp before each match.'}
+        {t.title} is now on your profile.{invite ? ' Share the code below with your teammates.' : ' Open the Lobby to get the game, accept the lobby rules and turn on alerts.'}
       </p>
       {invite && teamName && <InviteCode code={invite} teamName={teamName} eventTitle={t.title} />}
       {g.team_size > 1 && <p className="small t3">Your team needs {g.team_size} players before registration closes.</p>}
       <div className="row wrap">
-        <Link to={`/e/${t.slug}`} className="btn btn-primary">Done</Link>
+        <Link to={`/e/${t.slug}?tab=lobby`} className="btn btn-primary">Open lobby</Link>
         <Link to={`/e/${t.slug}?tab=standings`} className="btn btn-secondary">View leaderboard</Link>
       </div>
     </div>

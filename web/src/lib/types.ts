@@ -48,6 +48,56 @@ export interface Game {
   accent: string | null
   is_active: boolean
   sort_order: number
+  /** Public "get the game" links. */
+  play_links: PlayLink[]
+  /** How to enter a custom room, one short step each. */
+  join_steps: string[]
+}
+
+export type PlayKind = 'web' | 'android' | 'ios' | 'pc' | 'mac' | 'console'
+export interface PlayLink {
+  kind: PlayKind
+  label: string
+  url: string
+}
+
+export type NoticeKind = 'info' | 'room' | 'live' | 'reminder' | 'result'
+export interface Notice {
+  id: string
+  kind: NoticeKind
+  title: string
+  body: string
+  created_at: string
+}
+
+/** event_lobby(): outsiders get registered=false; players see details after agreeing to the lobby rules. */
+export interface Lobby {
+  registered: boolean
+  agreed?: boolean
+  has_room?: boolean
+  meet_url?: string | null
+  chat_url?: string | null
+  room_code?: string | null
+  room_password?: string | null
+  note?: string
+  updated_at?: string | null
+  notices?: Notice[]
+}
+
+export interface AdminLobby extends Lobby {
+  recipients: number
+  agreed_count: number
+  emails: string[]
+}
+
+export interface InboxItem extends Notice {
+  event_slug: string
+  event_title: string
+  unread: boolean
+}
+export interface Inbox {
+  unread: number
+  items: InboxItem[]
 }
 
 export interface Tournament {

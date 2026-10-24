@@ -12,6 +12,7 @@ import Houses from './pages/Houses'
 import JoinTeam from './pages/JoinTeam'
 import Leaderboards from './pages/Leaderboards'
 import Me from './pages/Me'
+import Inbox from './pages/Inbox'
 import NotFound from './pages/NotFound'
 import Onboarding from './pages/Onboarding'
 import Register from './pages/Register'
@@ -53,6 +54,7 @@ const router = createHashRouter([
           { path: '/leaderboards', element: <Leaderboards /> },
           { path: '/houses', element: <Houses /> },
           { path: '/me', element: <RequireAuth><Me /></RequireAuth> },
+          { path: '/inbox', element: <RequireAuth><Inbox /></RequireAuth> },
           { path: '/welcome', element: <RequireAuth><Onboarding /></RequireAuth> },
           { path: '/request', element: <RequireAuth><RequestGame /></RequireAuth> },
           { path: '/rules', element: <Rulebook /> },

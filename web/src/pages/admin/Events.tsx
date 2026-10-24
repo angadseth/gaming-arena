@@ -1,4 +1,4 @@
-import { ClipboardList, ListOrdered, Plus } from 'lucide-react'
+import { ClipboardList, ListOrdered, Plus, RadioTower } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button, Empty, ErrorBox, Field, Skeleton, StatusPill } from '../../components/ui'
@@ -90,6 +90,9 @@ export default function Events() {
                         </Link>
                         <Link className="icon-btn" to={`/admin/events/${t.id}/results`} aria-label="Results" title="Results">
                           <ListOrdered size={18} strokeWidth={1.75} />
+                        </Link>
+                        <Link className="icon-btn" to={`/admin/events/${t.id}/lobby`} aria-label="Lobby and notices" title="Lobby & notices">
+                          <RadioTower size={18} strokeWidth={1.75} />
                         </Link>
                       </div>
                     </td>
@@ -255,6 +258,9 @@ function EventForm({ id }: { id: string | undefined }) {
               </Link>
               <Link to={`/admin/events/${id}/results`} className="btn btn-secondary btn-sm">
                 <ListOrdered size={16} aria-hidden /> Results
+              </Link>
+              <Link to={`/admin/events/${id}/lobby`} className="btn btn-secondary btn-sm">
+                <RadioTower size={16} aria-hidden /> Lobby & notices
               </Link>
               <Link to={`/e/${existing!.slug}`} className="btn btn-ghost btn-sm">
                 Public page
