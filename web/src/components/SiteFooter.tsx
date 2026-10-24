@@ -37,7 +37,7 @@ export function SiteFooter() {
         <div className="footer-credit">
           <span className="footer-made">Website made by</span>
           <a className="footer-name" href="https://github.com/angadseth" target="_blank" rel="noreferrer">
-            <Flap value="ANGAD SETH" tiles />
+            <Flap value="ANGAD JANGIR" tiles />
           </a>
         </div>
         <nav className="footer-links" aria-label="Footer">
