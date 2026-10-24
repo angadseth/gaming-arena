@@ -1,9 +1,9 @@
 import { ChevronRight, ImageUp, Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button, Empty, ErrorBox, Field, GameCover, MetaLine, Skeleton } from '../../components/ui'
 import { errorText, useAction, useApi, useAuth, useGames, useToast } from '../../lib/app'
-import { platformLabel, teamSizeLabel } from '../../lib/format'
+import { gameHue, platformLabel, teamSizeLabel } from '../../lib/format'
 import type { Game, GameMode } from '../../lib/types'
 import { AdminHeader, gap, parseJson, ReadOnlyNote, resizeToWebp } from './shared'
 
@@ -299,7 +299,7 @@ function GameForm({ id }: { id: string | undefined }) {
           <div className="section-head">
             <h2>Card art</h2>
           </div>
-          <div className="game-card" style={{ maxWidth: 280 }}>
+          <div className="game-card" style={{ maxWidth: 280, '--hue': gameHue({ slug: f.slug, accent: f.accent || null }) } as CSSProperties}>
             <GameCover game={{ title: f.title || 'Game', short: f.short, cover_path: f.cover_path || null }} />
             <div className="game-card-body">
               <span className="game-card-title">{f.short || f.title || 'Game'}</span>
@@ -327,7 +327,7 @@ function GameForm({ id }: { id: string | undefined }) {
               Remove art
             </Button>
           )}
-          {text('accent', 'Accent (optional)', 'Hex, used sparingly', { mono: true })}
+          {text('accent', 'Accent (optional)', 'Hex for the card frame and foil; empty uses the game default', { mono: true })}
           <label className="check">
             <input type="checkbox" checked={f.is_active} disabled={!isAdmin} onChange={(e) => set('is_active', e.target.checked)} />
             <span>Visible to players</span>

@@ -1,8 +1,8 @@
 import { Check, Gamepad2, LoaderCircle, Lock } from 'lucide-react'
-import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useApi } from '../lib/app'
-import { houseCode, STATUS_LABEL } from '../lib/format'
+import { houseCode, houseColor, STATUS_LABEL } from '../lib/format'
 import type { Game, TournamentStatus } from '../lib/types'
 import { OTP_LENGTH } from '../lib/api/types'
 
@@ -54,8 +54,26 @@ export function StatusPill({ status }: { status: TournamentStatus }) {
 
 export function HouseTag({ id, title }: { id: number | null | undefined; title?: string }) {
   return (
-    <span className="house-tag" title={title}>
+    <span className="house-tag" title={title} style={{ '--h': houseColor(id) } as CSSProperties}>
       {houseCode(id)}
+    </span>
+  )
+}
+
+/**
+ * Split-flap number: each character flips into place, staggered, whenever the value changes.
+ * Screen readers get the plain value; the tiles are decoration.
+ */
+export function Flap({ value, tiles, className = '' }: { value: string | number; tiles?: boolean; className?: string }) {
+  const text = String(value)
+  return (
+    <span className={`flap${tiles ? ' flap-tiles' : ''} ${className}`}>
+      <span className="sr-only">{text}</span>
+      {[...text].map((c, i) => (
+        <span key={`${i}:${c}`} className={c === ' ' ? 'flap-gap' : 'flap-ch'} style={{ '--i': i } as CSSProperties} aria-hidden>
+          {c}
+        </span>
+      ))}
     </span>
   )
 }
@@ -95,6 +113,7 @@ export function GameCover({ game, eager }: { game: Pick<Game, 'title' | 'short' 
       ) : (
         <div className="cover-gen cover-art" aria-hidden>
           <span className="mono">{mono}</span>
+          <span className="mono mono-fill">{mono}</span>
           <span className="glyph">
             <Gamepad2 size={20} strokeWidth={1.75} />
           </span>

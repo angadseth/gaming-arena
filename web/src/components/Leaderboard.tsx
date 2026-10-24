@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { useStandings } from '../lib/app'
 import { fmtPoints, regOpen } from '../lib/format'
 import type { Game, StandingRow, Tournament } from '../lib/types'
-import { Empty, ErrorBox, HouseTag, Sheet, Skeleton } from './ui'
+import { Empty, ErrorBox, Flap, HouseTag, Sheet, Skeleton } from './ui'
 
 type SortKey = 'rank' | 'wins' | 'kills' | 'name'
 
@@ -163,7 +163,7 @@ function Row({
         onClick={toggle}
         aria-expanded={open}
       >
-        <span className="rank" role="cell">{r.status === 'disqualified' ? 'DQ' : scored && r.rank ? r.rank : '–'}</span>
+        <span className="rank" role="cell">{r.status === 'disqualified' ? 'DQ' : scored && r.rank ? <Flap value={r.rank} /> : '–'}</span>
         <span className="stack" style={{ gap: 3, minWidth: 0 }} role="cell">
           <span className="ellipsis" style={{ fontWeight: 600 }}>
             {r.name}
@@ -175,7 +175,7 @@ function Row({
           </span>
         </span>
         <span className="stat" role="cell">
-          {fmtPoints(r.points)}
+          <Flap value={fmtPoints(r.points)} />
           {scored && <small>{second}</small>}
         </span>
       </button>

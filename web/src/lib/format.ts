@@ -1,20 +1,43 @@
 import type { Game, GameMode, Tournament, TournamentStatus } from './types'
 
 /** House identity: 3-letter ranger codes and the park each house is named after. */
-export const HOUSE_META: Record<number, { code: string; park: string }> = {
-  1: { code: 'BAN', park: 'Bandipur National Park, Karnataka' },
-  2: { code: 'COR', park: 'Jim Corbett National Park, Uttarakhand' },
-  3: { code: 'GIR', park: 'Gir National Park, Gujarat' },
-  4: { code: 'KAN', park: 'Kanha National Park, Madhya Pradesh' },
-  5: { code: 'KAZ', park: 'Kaziranga National Park, Assam' },
-  6: { code: 'NAL', park: 'Nallamala Forest, Andhra Pradesh and Telangana' },
-  7: { code: 'NAM', park: 'Namdapha National Park, Arunachal Pradesh' },
-  8: { code: 'NIL', park: 'Nilgiri Biosphere Reserve, Tamil Nadu' },
-  9: { code: 'PIC', park: 'Pichavaram Mangrove Forest, Tamil Nadu' },
-  10: { code: 'SAR', park: 'Saranda Forest, Jharkhand' },
-  11: { code: 'SUN', park: 'Sundarbans National Park, West Bengal' },
-  12: { code: 'WAY', park: 'Wayanad Wildlife Sanctuary, Kerala' },
+export const HOUSE_META: Record<number, { code: string; park: string; color: string }> = {
+  1: { code: 'BAN', park: 'Bandipur National Park, Karnataka', color: '#ffb547' },
+  2: { code: 'COR', park: 'Jim Corbett National Park, Uttarakhand', color: '#ff7a45' },
+  3: { code: 'GIR', park: 'Gir National Park, Gujarat', color: '#e9c46a' },
+  4: { code: 'KAN', park: 'Kanha National Park, Madhya Pradesh', color: '#a3d65c' },
+  5: { code: 'KAZ', park: 'Kaziranga National Park, Assam', color: '#8ec5ff' },
+  6: { code: 'NAL', park: 'Nallamala Forest, Andhra Pradesh and Telangana', color: '#cf9cf0' },
+  7: { code: 'NAM', park: 'Namdapha National Park, Arunachal Pradesh', color: '#5eead4' },
+  8: { code: 'NIL', park: 'Nilgiri Biosphere Reserve, Tamil Nadu', color: '#7dd3fc' },
+  9: { code: 'PIC', park: 'Pichavaram Mangrove Forest, Tamil Nadu', color: '#4ade80' },
+  10: { code: 'SAR', park: 'Saranda Forest, Jharkhand', color: '#f78fc4' },
+  11: { code: 'SUN', park: 'Sundarbans National Park, West Bengal', color: '#ff8a8a' },
+  12: { code: 'WAY', park: 'Wayanad Wildlife Sanctuary, Kerala', color: '#fde047' },
 }
+
+export const houseColor = (id: number | null | undefined) => (id ? (HOUSE_META[id]?.color ?? '#9db3ae') : '#9db3ae')
+
+/** Foil hue for each game's collectible card; admins can override with games.accent. */
+const GAME_HUE: Record<string, string> = {
+  bgmi: '#f4a62a',
+  'ff-max': '#ff6b3d',
+  codm: '#9be15d',
+  'clash-royale': '#5aa9ff',
+  'brawl-stars': '#ffd23f',
+  'pokemon-unite': '#b99cff',
+  efootball: '#3dd6c6',
+  'real-cricket': '#7fd36b',
+  'asphalt-legends': '#ff4f8b',
+  'stumble-guys': '#ff9edb',
+  'ludo-king': '#ffdf4f',
+  valorant: '#ff4655',
+  cs2: '#f2b544',
+  chess: '#e8e1cf',
+  skribbl: '#6fc8ff',
+}
+export const gameHue = (g: { slug?: string; accent?: string | null } | null | undefined) =>
+  (g?.accent && /^#[0-9a-f]{6}$/i.test(g.accent) ? g.accent : g?.slug ? GAME_HUE[g.slug] : undefined) ?? '#ffc23d'
 
 export const houseCode = (id: number | null | undefined) => (id ? (HOUSE_META[id]?.code ?? '—') : 'MIX')
 

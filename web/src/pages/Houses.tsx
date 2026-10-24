@@ -1,4 +1,4 @@
-import { Empty, ErrorBox, HouseTag, Skeleton } from '../components/ui'
+import { Empty, ErrorBox, Flap, HouseTag, Skeleton } from '../components/ui'
 import { useAuth, useCatalog, useHouseName, useHouseStandings } from '../lib/app'
 import { fmtPoints, HOUSE_META } from '../lib/format'
 
@@ -34,7 +34,7 @@ export default function Houses() {
             const mine = profile?.house_id === r.house_id
             return (
               <div key={r.house_id} className={`lrow${mine ? ' mine-bar' : ''}`} style={{ minHeight: 72, position: 'relative' }}>
-                <span className="rank num">{top > 0 ? r.rank : '–'}</span>
+                <span className="rank num">{top > 0 ? <Flap value={r.rank} /> : '–'}</span>
                 <span className="stack" style={{ gap: 6, minWidth: 0 }}>
                   <span className="row" style={{ gap: 10 }}>
                     <HouseTag id={r.house_id} />
@@ -44,7 +44,7 @@ export default function Houses() {
                   <span className="bar" aria-hidden><span style={{ width: top > 0 ? `${(r.points / top) * 100}%` : '0%' }} /></span>
                 </span>
                 <span className="stat num">
-                  {fmtPoints(r.points)}
+                  <Flap value={fmtPoints(r.points)} tiles />
                   <small>{r.podiums} PODIUMS</small>
                 </span>
               </div>

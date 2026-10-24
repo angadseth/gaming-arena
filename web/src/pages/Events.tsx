@@ -1,10 +1,10 @@
 import { ChevronRight, MessageSquarePlus, Users } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { EventCard } from '../components/event'
 import { Empty, ErrorBox, GameCover, MetaLine, Skeleton, StatusPill } from '../components/ui'
 import { useAuth, useCatalog, useCounts, useMyEntries } from '../lib/app'
-import { fmtShort, regOpen, relative, teamSizeLabel, urgency } from '../lib/format'
+import { fmtShort, gameHue, regOpen, relative, teamSizeLabel, urgency } from '../lib/format'
 import type { Tournament, TournamentStatus } from '../lib/types'
 
 const FILTERS: { key: 'all' | TournamentStatus; label: string }[] = [
@@ -56,7 +56,7 @@ export default function Events() {
       {cat.error ? (
         <ErrorBox error={cat.error} />
       ) : cat.loading ? (
-        <Skeleton h={300} r={10} />
+        <Skeleton h={300} r={16} />
       ) : (
         hero && <Hero t={hero.t} mine={hero.mine} entrants={counts.data?.get(hero.t.id)?.entries} signedIn={!!session} />
       )}
@@ -71,7 +71,7 @@ export default function Events() {
 
       {cat.loading ? (
         <div className="game-grid">
-          {Array.from({ length: 8 }, (_, i) => <div key={i} className="skel" style={{ aspectRatio: '4 / 5', borderRadius: 10 }} />)}
+          {Array.from({ length: 8 }, (_, i) => <div key={i} className="skel" style={{ aspectRatio: '4 / 5', borderRadius: 16 }} />)}
         </div>
       ) : shown.length ? (
         <div className="game-grid">
@@ -113,8 +113,10 @@ function Hero({ t, mine, entrants, signedIn }: { t: Tournament; mine: boolean; e
   const open = regOpen(t)
   const when = t.status === 'open' && t.reg_closes_at ? `CLOSES ${fmtShort(t.reg_closes_at)}` : t.starts_at ? `STARTS ${fmtShort(t.starts_at)}` : null
   return (
-    <section className="hero" style={{ aspectRatio: '16 / 9', maxHeight: 460 }} aria-label="Featured event">
+    <section className="hero holo" style={{ '--hue': gameHue(g) } as CSSProperties} aria-label="Featured event">
       <GameCover game={g} eager />
+      <span className="holo-foil" aria-hidden />
+      <span className="holo-glare" aria-hidden />
       <div className="hero-body">
         <div className="row wrap" style={{ gap: 8 }}>
           <StatusPill status={t.status} />

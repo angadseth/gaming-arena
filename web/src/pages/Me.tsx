@@ -3,7 +3,7 @@ import { ChevronRight, LogOut, MessageCircle, Shield } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EntryPanel } from '../components/event'
-import { Button, Empty, ErrorBox, Field, GameCover, HouseTag, Sheet, Skeleton, StatusPill } from '../components/ui'
+import { Button, Empty, ErrorBox, Field, Flap, GameCover, HouseTag, Sheet, Skeleton, StatusPill } from '../components/ui'
 import { errorText, useApi, useAuth, useHouseName, useMyEntries, useRegionName, useToast } from '../lib/app'
 import { fmtDate } from '../lib/format'
 
@@ -72,9 +72,9 @@ export default function Me() {
       </header>
 
       <div className="stats">
-        <div><strong>{list.length}</strong><span className="tag-type t3">Events</span></div>
-        <div><strong>{active.length}</strong><span className="tag-type t3">Active</span></div>
-        <div><strong>{captains}</strong><span className="tag-type t3">Captain</span></div>
+        <div><strong><Flap value={list.length} tiles /></strong><span className="tag-type t3">Events</span></div>
+        <div><strong><Flap value={active.length} tiles /></strong><span className="tag-type t3">Active</span></div>
+        <div><strong><Flap value={captains} tiles /></strong><span className="tag-type t3">Captain</span></div>
       </div>
 
       <section className="stack" style={{ gap: 12 }}>

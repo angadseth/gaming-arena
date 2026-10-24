@@ -1,8 +1,8 @@
 import { Copy, Crown, LogOut, RefreshCw, Share2, UserMinus } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { useAction, useToast } from '../lib/app'
-import { fmtShort, regOpen, teamSizeLabel } from '../lib/format'
+import { fmtShort, gameHue, regOpen, teamSizeLabel } from '../lib/format'
 import type { ExtraField, Game, MyEntry, Tournament } from '../lib/types'
 import { Button, Field, GameCover, HouseTag, MetaLine, Sheet, StatusPill } from './ui'
 
@@ -12,8 +12,16 @@ export function EventCard({ t, game, entrants }: { t: Tournament; game: Game; en
       : t.status === 'upcoming' && t.reg_opens_at ? `OPENS ${fmtShort(t.reg_opens_at)}`
         : t.starts_at ? fmtShort(t.starts_at) : null
   return (
-    <Link to={`/e/${t.slug}`} className="game-card" aria-label={`${t.title}, ${t.status}`}>
+    <Link
+      to={`/e/${t.slug}`}
+      viewTransition
+      className="game-card holo"
+      style={{ '--hue': gameHue(game) } as CSSProperties}
+      aria-label={`${t.title}, ${t.status}`}
+    >
       <GameCover game={game} />
+      <span className="holo-foil" aria-hidden />
+      <span className="holo-glare" aria-hidden />
       <StatusPill status={t.status} />
       <div className="game-card-body">
         <span className="game-card-title">{game.short || game.title}</span>

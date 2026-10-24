@@ -1,7 +1,9 @@
 import { CalendarRange, ListOrdered, Shield, Trees, UserRound } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useApi, useAuth } from '../lib/app'
+import { startFx } from '../lib/fx'
+import { SiteFooter } from './SiteFooter'
 import { Brand, Spinner } from './ui'
 
 const NAV = [
@@ -14,6 +16,8 @@ export function Shell() {
   const api = useApi()
   const { session, profile, isStaff } = useAuth()
   const loc = useLocation()
+
+  useEffect(() => startFx(), [])
 
   // A signed-in student without a profile finishes onboarding first.
   if (session && profile === null && loc.pathname !== '/welcome') {
@@ -30,7 +34,7 @@ export function Shell() {
           <Brand />
           <nav className="desk-nav" aria-label="Main">
             {NAV.map((n) => (
-              <NavLink key={n.to} to={n.to} end={n.end}>
+              <NavLink key={n.to} to={n.to} end={n.end} viewTransition>
                 {n.label}
               </NavLink>
             ))}
@@ -57,9 +61,10 @@ export function Shell() {
       <main id="main">
         <Outlet />
       </main>
+      <SiteFooter />
       <nav className="bottombar" aria-label="Main">
         {[...NAV, { to: '/me', label: 'Me', icon: UserRound, end: false }].map((n) => (
-          <NavLink key={n.to} to={n.to} end={n.end}>
+          <NavLink key={n.to} to={n.to} end={n.end} viewTransition>
             <n.icon size={20} strokeWidth={1.75} aria-hidden />
             {n.label}
           </NavLink>
