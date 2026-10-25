@@ -6,11 +6,12 @@ import { useAuth, useCatalog, useCounts } from '../../lib/app'
 import type { Tournament, TournamentStatus } from '../../lib/types'
 import { AdminEventCard } from './EventCard'
 
-const NOW: TournamentStatus[] = ['live', 'open', 'closed']
+const NOW: TournamentStatus[] = ['live', 'open']
 
 /**
  * Dashboard: who I am and what I can do, then the events as cards with their buttons.
- * Two groups only (open now, upcoming) so it reads at a glance; finished events live on Events.
+ * Open now, then Closed (only when there is one), then Upcoming; finished events live on Events.
+ * A closed event leaves Open now at once, like on the home page.
  */
 export default function Overview() {
   const { profile, isAdmin } = useAuth()
@@ -31,6 +32,7 @@ export default function Overview() {
   const byGame = (a: Tournament, b: Tournament) =>
     (cat.gameById.get(a.game_id)?.sort_order ?? 99) - (cat.gameById.get(b.game_id)?.sort_order ?? 99) || a.title.localeCompare(b.title)
   const live = cat.tournaments.filter((t) => NOW.includes(t.status)).sort((a, b) => NOW.indexOf(a.status) - NOW.indexOf(b.status) || byGame(a, b))
+  const closed = cat.tournaments.filter((t) => t.status === 'closed').sort(byGame)
   const upcoming = cat.tournaments.filter((t) => t.status === 'upcoming').sort(byGame)
   const entries = (id: string) => counts.data?.get(id)?.entries ?? 0
   const total = [...(counts.data?.values() ?? [])].reduce((n, c) => n + c.entries, 0)
@@ -85,6 +87,16 @@ export default function Overview() {
         <span className="small t3">{live.length}</span>
       </div>
       {grid(live, 'Nothing is open right now. Open an upcoming event below.')}
+
+      {closed.length > 0 && (
+        <>
+          <div className="section-head">
+            <h2>Closed</h2>
+            <span className="small t3">{closed.length} · registration closed, game coming up</span>
+          </div>
+          {grid(closed, '')}
+        </>
+      )}
 
       <div className="section-head">
         <h2>Upcoming</h2>
