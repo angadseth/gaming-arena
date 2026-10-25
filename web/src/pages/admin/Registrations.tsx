@@ -20,7 +20,7 @@ export const useRegistrations = (tournamentId: string | undefined) => {
   })
 }
 
-const INVALIDATE = [['admin-registrations'], ['standings'], ['counts'], ['house-standings']]
+const INVALIDATE = [['admin-registrations'], ['standings'], ['counts'], ['house-standings'], ['player-rankings']]
 
 export default function Registrations() {
   const { id } = useParams()
@@ -65,7 +65,7 @@ export default function Registrations() {
     for (const e of regs.data ?? []) {
       for (const m of e.members ?? []) {
         rows.push([
-          e.name, e.status, e.points_adjust, e.adjust_note ?? '', m.username, m.full_name, m.email, m.whatsapp,
+          e.name, e.status, e.points_adjust, e.adjust_note ?? '', m.username, m.full_name, m.email, m.whatsapp ?? '',
           houseCode(m.house_id), regionName(m.region_id), m.role, m.ig_id, ...extraKeys.map((k) => m.extra?.[k] ?? ''), e.created_at,
         ])
       }
@@ -141,9 +141,11 @@ export default function Registrations() {
                     </td>
                     <td className="small">
                       <div className="num">{m.email}</div>
-                      <a className="num t2" href={`https://wa.me/${m.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                        {m.whatsapp}
-                      </a>
+                      {m.whatsapp && (
+                        <a className="num t2" href={`https://wa.me/${m.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
+                          {m.whatsapp}
+                        </a>
+                      )}
                     </td>
                     <td>
                       <HouseTag id={m.house_id} />

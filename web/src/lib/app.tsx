@@ -251,7 +251,9 @@ export const useHouseStandings = (season: string | null) => {
         podiums: Number(r.podiums),
         players: Number(r.players),
       })),
-    staleTime: 60_000,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
   })
 }
 export const useMyEntries = () => {

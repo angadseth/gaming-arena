@@ -1,13 +1,11 @@
 import { Empty, ErrorBox, Flap, HouseTag, Skeleton } from '../components/ui'
-import { useAuth, useCatalog, useHouseName, useHouseStandings } from '../lib/app'
+import { useAuth, useHouseName, useHouseStandings } from '../lib/app'
 import { fmtPoints, HOUSE_META } from '../lib/format'
 
 export default function Houses() {
   const q = useHouseStandings(null)
   const houseName = useHouseName()
   const { profile } = useAuth()
-  const cat = useCatalog()
-  const completed = cat.tournaments.filter((t) => t.status === 'completed').length
   const rows = q.data ?? []
   const top = rows[0]?.points ?? 0
   const leader = top > 0 ? rows[0] : null
@@ -15,7 +13,7 @@ export default function Houses() {
   return (
     <div className="page stack" style={{ gap: 24 }}>
       <header className="page-header contour stack" style={{ gap: 8 }}>
-        <p className="tag-type t3">House standings · Season 1 · after {completed} {completed === 1 ? 'event' : 'events'}</p>
+        <p className="tag-type t3">House standings · Season 1 · live, moves with every saved result</p>
         <h1 className="display">{leader ? `${houseName(leader.house_id)} leads` : 'Twelve houses. One cup.'}</h1>
         <p className="lead" style={{ maxWidth: 620 }}>
           Every final placement earns points for the players' houses. Mixed-house teams split their points equally between each player's house.
@@ -27,7 +25,7 @@ export default function Houses() {
       ) : q.isPending ? (
         <div className="stack" style={{ gap: 2 }}>{Array.from({ length: 12 }, (_, i) => <Skeleton key={i} h={64} />)}</div>
       ) : rows.length === 0 ? (
-        <Empty title="No houses yet" text="Standings appear after the first completed event." />
+        <Empty title="No houses yet" text="Standings appear after the first saved result." />
       ) : (
         <div className="rows">
           {rows.map((r) => {

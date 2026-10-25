@@ -41,7 +41,7 @@ export default function Me() {
   const nextRename = profile.username_next_change && new Date(profile.username_next_change) > new Date() ? profile.username_next_change : null
 
   function openEdit() {
-    setForm({ username: profile!.username, full_name: profile!.full_name, whatsapp: profile!.whatsapp })
+    setForm({ username: profile!.username, full_name: profile!.full_name, whatsapp: profile!.whatsapp ?? '' })
     setEditErr(null)
     setUsernameErr(null)
     setEditOpen(true)
@@ -107,7 +107,7 @@ export default function Me() {
           <dt>Name</dt><dd>{profile.full_name}</dd>
           <dt>Email</dt><dd>{profile.email}</dd>
           <dt>WhatsApp</dt>
-          <dd className="num">{profile.whatsapp}</dd>
+          <dd className="num">{profile.whatsapp ?? 'Not added (optional)'}</dd>
           <dt>Joined</dt><dd>{fmtDate(profile.created_at, false)}</dd>
         </dl>
         {profile.status !== 'active' && <p className="error-text">Your account is {profile.status}. Contact the organisers.</p>}
@@ -227,7 +227,7 @@ export default function Me() {
           <Field label="Full name" htmlFor="ed-name" hint="As on your IITM records. Only organisers see it.">
             <input id="ed-name" className="input" autoComplete="name" maxLength={60} value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
           </Field>
-          <Field label="WhatsApp number" htmlFor="ed-wa" hint="Organisers use this to send lobby details. Nobody else sees it.">
+          <Field label="WhatsApp number" htmlFor="ed-wa" hint="Optional. Organisers use it to send lobby details. Nobody else sees it.">
             <input id="ed-wa" className="input" type="tel" inputMode="tel" autoComplete="tel" maxLength={18} value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} />
           </Field>
           {editErr && <p className="error-text" role="alert">{editErr}</p>}

@@ -8,7 +8,7 @@ import { errorCode, errorText, useApi, useAuth, useHouses, useRegions } from '..
 
 const NAME_RE = /^\p{L}[\p{L} .'-]{1,59}$/u
 
-type Errors = Partial<Record<'username' | 'full_name' | 'house' | 'region' | 'whatsapp' | 'rules' | 'form', string>>
+type Errors = Partial<Record<'username' | 'full_name' | 'house' | 'region' | 'rules' | 'form', string>>
 
 export default function Onboarding() {
   const api = useApi()
@@ -24,7 +24,6 @@ export default function Onboarding() {
   const [fullName, setFullName] = useState('')
   const [house, setHouse] = useState('')
   const [region, setRegion] = useState('')
-  const [whatsapp, setWhatsapp] = useState('')
   const [rules, setRules] = useState(false)
   const [errors, setErrors] = useState<Errors>({})
   const [busy, setBusy] = useState(false)
@@ -41,8 +40,6 @@ export default function Onboarding() {
     if (!NAME_RE.test(fullName.trim().replace(/\s+/g, ' '))) e.full_name = 'Enter your full name as on your IITM records'
     if (!house) e.house = 'Pick your house'
     if (!region) e.region = 'Pick your region'
-    const digits = whatsapp.replace(/[\s()-]/g, '')
-    if (!/^(\+91|91|0)?[6-9]\d{9}$/.test(digits) && !/^\+[1-9]\d{7,14}$/.test(digits)) e.whatsapp = 'Enter a valid WhatsApp number'
     if (!rules) e.rules = 'Please accept the rules to continue'
     return e
   }
@@ -59,7 +56,7 @@ export default function Onboarding() {
         p_full_name: fullName.trim().replace(/\s+/g, ' '),
         p_house_id: Number(house),
         p_region_id: Number(region),
-        p_whatsapp: whatsapp,
+        p_whatsapp: null,
         p_accept_rules: rules,
       })
       await qc.invalidateQueries({ queryKey: ['me'] })
@@ -70,10 +67,9 @@ export default function Onboarding() {
       const key: keyof Errors =
         code === 'USERNAME_TAKEN' || code === 'BAD_USERNAME' || code === 'USERNAME_BLOCKED' ? 'username'
           : code === 'BAD_NAME' ? 'full_name'
-            : code === 'BAD_WHATSAPP' ? 'whatsapp'
-              : code === 'BAD_HOUSE' ? 'house'
-                : code === 'BAD_REGION' ? 'region'
-                  : 'form'
+            : code === 'BAD_HOUSE' ? 'house'
+              : code === 'BAD_REGION' ? 'region'
+                : 'form'
       setErrors({ [key]: msg })
       if (code === 'PROFILE_EXISTS') await qc.invalidateQueries({ queryKey: ['me'] })
     } finally {
@@ -127,14 +123,11 @@ export default function Onboarding() {
           </Field>
         </div>
 
-        <Field label="WhatsApp number" htmlFor="wa" error={errors.whatsapp} hint="Only organisers see this, to send you lobby details.">
-          <input id="wa" className="input" type="tel" inputMode="tel" autoComplete="tel" maxLength={18} value={whatsapp} aria-invalid={!!errors.whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="98765 43210" />
-        </Field>
 
         <div className="panel row" style={{ alignItems: 'flex-start', padding: 16 }}>
           <TriangleAlert size={20} strokeWidth={1.75} className="t2" style={{ flex: 'none', marginTop: 1 }} aria-hidden />
           <p className="small t2">
-            Your <strong style={{ color: 'var(--text-1)' }}>house</strong> is permanent, so check it before you continue. You can change your username (once every 30 days), full name and WhatsApp number later from your profile. If your house or region is wrong, the organisers can correct it.
+            Your <strong style={{ color: 'var(--text-1)' }}>house</strong> is permanent, so check it before you continue. You can change your username (once every 30 days), full name and add a WhatsApp number later from your profile. If your house or region is wrong, the organisers can correct it.
           </p>
         </div>
 

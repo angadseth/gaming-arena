@@ -1,48 +1,33 @@
-import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 
-const BULBS = 24
+const RIBBON = ['GAME NIGHT', 'GAMING ARENA', 'FOR PAN IIT', 'ENTRY FREE']
 
-/** Closing credit: a marquee of bulbs lights up, then the team's names. */
+/** Slim closing strip: a neon ribbon that keeps running, then links and the team's credit. */
 export function SiteFooter() {
-  const ref = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) return
-        el.classList.add('is-in')
-        io.disconnect()
-      },
-      { threshold: 0.35 },
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [])
-
+  // Two identical halves: the track slides by one half and loops without a seam.
+  const half = Array.from({ length: 3 }, () => RIBBON).flat()
   return (
-    <footer ref={ref} className="site-footer">
-      <div className="footer-trail" aria-hidden>
-        {Array.from({ length: BULBS }, (_, i) => (
-          <span key={i} className="footer-print" style={{ animationDelay: `${i * 40}ms` }} />
-        ))}
+    <footer className="site-footer">
+      <div className="footer-ribbon" aria-hidden>
+        <div className="ribbon-track">
+          {[...half, ...half].map((w, i) => (
+            <span key={i} className="ribbon-word">
+              {w}
+              <i className="ribbon-bulb" />
+            </span>
+          ))}
+        </div>
       </div>
       <div className="footer-inner">
-        <p className="footer-word" aria-hidden>
-          <span>GAMING</span>
-          <span>ARENA</span>
-        </p>
-        <p className="footer-team">
-          Made by <b>Angad Jangir</b>, <b>Abhimanyu</b> and <b>Sagar Rathore</b>
-        </p>
         <nav className="footer-links" aria-label="Footer">
           <Link to="/rules">Rulebook</Link>
           <Link to="/privacy">Privacy</Link>
           <Link to="/request">Request a game</Link>
         </nav>
-        <p className="footer-note">Built for the students of the IIT Madras BS degree. Entry to every event is free.</p>
+        <p className="footer-note">For Pan IIT · Entry to every event is free</p>
+        <p className="footer-team">
+          Made by <b>Angad Jangir</b>, <b>Abhimanyu</b> &amp; <b>Sagar Rathore</b>
+        </p>
       </div>
     </footer>
   )

@@ -13,7 +13,7 @@ interface AdminUser {
   username: string
   full_name: string
   email: string
-  whatsapp: string
+  whatsapp: string | null
   house_id: number
   region_id: number
   status: 'active' | 'suspended' | 'banned'
@@ -136,7 +136,7 @@ function ManageSheet({ user, onClose }: { user: AdminUser; onClose: () => void }
           <dt>Email</dt>
           <dd className="num">{user.email}</dd>
           <dt>WhatsApp</dt>
-          <dd className="num">{user.whatsapp}</dd>
+          <dd className="num">{user.whatsapp ?? 'Not added'}</dd>
         </dl>
 
         <div className="section-head">

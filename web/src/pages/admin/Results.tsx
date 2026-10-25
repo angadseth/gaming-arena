@@ -1,12 +1,13 @@
 import { CircleAlert, CircleCheck, Plus, Trash2 } from 'lucide-react'
-import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { Button, Empty, ErrorBox, Field, HouseTag, Skeleton, StatusPill } from '../../components/ui'
 import { useAction, useAuth, useCatalog, useMatchResults, useStandings, useToast } from '../../lib/app'
 import { fmtDate, fmtPoints, igNorm } from '../../lib/format'
 import type { Tournament } from '../../lib/types'
 import { MentionBox, mentionables } from './MentionBox'
 import { AdjustSheet, useRegistrations } from './Registrations'
+import { SkribblScorer } from './SkribblScorer'
 import { AdminHeader, ConfirmSheet, gap, isoToIstInput, istInputToIso, pointsForRank, type AdminEntry } from './shared'
 
 interface RowIn {
@@ -30,7 +31,7 @@ interface Parsed {
   points: number | null
 }
 
-const INVALIDATE = [['match-results'], ['standings'], ['house-standings']]
+const INVALIDATE = [['match-results'], ['standings'], ['house-standings'], ['player-rankings']]
 
 function computePoints(t: Tournament, placement: number | null, kills: number, override: number | null) {
   return override ?? pointsForRank(t.placement_points, placement) + kills * Number(t.kill_points)
@@ -177,6 +178,18 @@ export default function Results() {
   const [paste, setPaste] = useState('')
   const [serverErrors, setServerErrors] = useState<{ row: number; error: string }[]>([])
   const [deleting, setDeleting] = useState<{ id: string; label: string } | null>(null)
+  const [params, setParams] = useSearchParams()
+  const [fromSkribbl, setFromSkribbl] = useState(false)
+
+  // The skribbl bookmark opens this page with ?lines=<names, winner first>; load them once.
+  useEffect(() => {
+    const filled = params.get('lines')
+    if (filled == null) return
+    setMode('quick')
+    setNames(filled.slice(0, 20000))
+    setFromSkribbl(params.get('from') === 'skribbl')
+    setParams({}, { replace: true })
+  }, [params, setParams])
 
   const entries = useMemo(() => (regs.data ?? []).filter((e) => e.status === 'active'), [regs.data])
   const entryById = useMemo(() => new Map((regs.data ?? []).map((e) => [e.entry_id, e])), [regs.data])
@@ -330,6 +343,13 @@ export default function Results() {
         }
         actions={<StatusPill status={t.status} />}
       />
+
+      {canEdit && cat.gameById.get(t.game_id)?.slug === 'skribbl' && <SkribblScorer tournamentId={t.id} />}
+      {fromSkribbl && (
+        <p className="sk-filled small" role="status">
+          Filled from skribbl: {lines.length} {lines.length === 1 ? 'name' : 'names'}, winner first. Fix any red card, then Save.
+        </p>
+      )}
 
       {mode === 'quick' ? (
         <section className="lobby-card rs-quick">

@@ -232,10 +232,10 @@ describe('results and standings', () => {
     expect(JSON.stringify(rows.rows)).not.toMatch(/whatsapp|@ds\.study|BobChess/)
   })
 
-  it('awards house points only for completed events', async () => {
+  it('awards house points while the event runs and keeps them once completed (0017)', async () => {
     await db.as(admin)
     let h = await db.query<{ house_id: number; points: string }>('select * from public.house_standings(null)')
-    expect(h.rows.every((r) => Number(r.points) === 0)).toBe(true)
+    expect(Number(h.rows.find((r) => r.house_id === 9)?.points)).toBe(1700)
     await db.rpc('admin_upsert_tournament', { p: { id: soloEvent, game_id: soloGame, slug: 'chess-blitz-1', title: 'Blitz Cup', status: 'completed' } })
     h = await db.query<{ house_id: number; points: string }>('select * from public.house_standings(null)')
     const pich = h.rows.find((r) => r.house_id === 9)

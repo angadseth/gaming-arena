@@ -151,7 +151,7 @@ export interface AdminMember {
   username: string
   full_name: string
   email: string
-  whatsapp: string
+  whatsapp: string | null
   house_id: number
   region_id: number
   role: string

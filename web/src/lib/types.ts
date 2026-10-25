@@ -148,7 +148,7 @@ export interface MyProfile {
   full_name: string
   house_id: number
   region_id: number
-  whatsapp: string
+  whatsapp: string | null
   status: 'active' | 'suspended' | 'banned'
   created_at: string
   /** Picked avatar "style:seed"; null = default robot from the username. */

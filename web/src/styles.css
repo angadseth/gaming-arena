@@ -1588,137 +1588,6 @@ table.data th.n {
   }
 }
 
-/* ---------- footer credit ---------- */
-main:has(+ .site-footer) .page {
-  padding-bottom: 48px;
-}
-.site-footer {
-  position: relative;
-  border-top: 1px solid var(--border);
-  background:
-    radial-gradient(70% 120% at 50% 120%, rgba(255, 194, 61, 0.1), transparent 70%),
-    var(--bg);
-  padding: 0 var(--gutter) calc(var(--nav-h) + 32px + env(safe-area-inset-bottom));
-  overflow: hidden;
-}
-@media (min-width: 1024px) {
-  .site-footer {
-    padding-bottom: 48px;
-  }
-}
-.footer-trail {
-  display: flex;
-  justify-content: space-between;
-  max-width: var(--max-w);
-  margin: 0 auto;
-  padding: 18px 0 0;
-  color: var(--accent);
-}
-.footer-print {
-  opacity: 0;
-}
-.footer-print:nth-child(odd) {
-  transform: rotate(90deg) translateX(-5px);
-}
-.footer-print:nth-child(even) {
-  transform: rotate(90deg) translateX(5px);
-}
-.site-footer.is-in .footer-print {
-  animation: print-in 500ms var(--ease-out) forwards;
-}
-@keyframes print-in {
-  from {
-    opacity: 0;
-    scale: 1.6;
-  }
-  to {
-    opacity: 0.7;
-    scale: 1;
-  }
-}
-.footer-inner {
-  max-width: var(--max-w);
-  margin: 0 auto;
-  display: grid;
-  gap: 18px;
-  justify-items: center;
-  text-align: center;
-  padding-top: 18px;
-}
-.footer-word {
-  font: 900 clamp(76px, 22vw, 230px)/0.8 var(--font-display);
-  letter-spacing: 0.02em;
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--border-strong);
-  user-select: none;
-  margin-bottom: -4px;
-}
-.footer-credit {
-  display: grid;
-  gap: 10px;
-  justify-items: center;
-}
-.footer-made {
-  font: 600 15px/1 var(--font-sans);
-  color: var(--text-2);
-}
-.footer-name {
-  display: inline-block;
-  font: 900 34px/1 var(--font-display);
-  color: var(--accent);
-  border-radius: var(--r-sm);
-  padding: 4px;
-}
-.footer-name .flap-ch {
-  animation-play-state: paused;
-}
-.site-footer.is-in .footer-name .flap-ch {
-  animation-play-state: running;
-}
-/* Hovering the name flips every tile again (a second, identical animation restarts it). */
-.footer-name:hover .flap-ch,
-.footer-name:focus-visible .flap-ch {
-  animation-name: flap-in-again;
-  animation-delay: calc(var(--i) * 45ms);
-}
-@keyframes flap-in-again {
-  0% {
-    transform: rotateX(-95deg);
-    opacity: 0;
-  }
-  45% {
-    opacity: 1;
-  }
-  100% {
-    transform: rotateX(0);
-  }
-}
-@media (min-width: 720px) {
-  .footer-name {
-    font-size: 48px;
-  }
-}
-.footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px 22px;
-  font: 600 15px/1 var(--font-sans);
-}
-.footer-links a {
-  color: var(--text-2);
-  padding: 8px 0;
-}
-.footer-links a:hover {
-  color: var(--text-1);
-}
-.footer-note {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--text-3);
-  max-width: 44ch;
-}
-
 /* ---------- route changes ---------- */
 ::view-transition-old(root) {
   animation: 140ms var(--ease-out) both vt-out;
@@ -1749,12 +1618,8 @@ main:has(+ .site-footer) .page {
     transform: none;
   }
   .hero .holo-foil,
-  .flap-ch,
-  .footer-name .flap-ch {
+  .flap-ch {
     animation: none;
-  }
-  .footer-print {
-    opacity: 0.7;
   }
   ::view-transition-old(root),
   ::view-transition-new(root) {
@@ -2103,82 +1968,6 @@ body {
   text-shadow: 0 0 12px rgba(255, 194, 61, 0.7);
 }
 
-/* Footer: neon sign over a marquee */
-.footer-trail {
-  padding-top: 20px;
-}
-.footer-print {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #fff1b8;
-  box-shadow: 0 0 10px 2px rgba(255, 194, 61, 0.8);
-}
-.footer-print:nth-child(odd),
-.footer-print:nth-child(even) {
-  transform: none;
-}
-.footer-print:nth-child(3n + 2) {
-  background: #ffd0e8;
-  box-shadow: 0 0 10px 2px rgba(255, 46, 147, 0.85);
-}
-.footer-print:nth-child(3n) {
-  background: #c9f8ff;
-  box-shadow: 0 0 10px 2px rgba(41, 227, 255, 0.85);
-}
-.site-footer.is-in .footer-print {
-  animation:
-    print-in 400ms var(--ease-out) forwards,
-    bulb-blink 1.2s steps(2) 1s infinite;
-}
-@keyframes bulb-blink {
-  50% {
-    opacity: 0.35;
-  }
-}
-.footer-word {
-  display: grid;
-  font: 400 clamp(48px, 12vw, 140px)/0.95 var(--font-sign);
-  color: #fff;
-  -webkit-text-stroke: 0;
-  text-shadow:
-    0 0 8px rgba(255, 46, 147, 0.95),
-    0 0 26px rgba(255, 46, 147, 0.7),
-    0 0 60px rgba(255, 46, 147, 0.45);
-  animation: neon-flicker 9s infinite;
-}
-.footer-word span + span {
-  text-shadow:
-    0 0 8px rgba(41, 227, 255, 0.95),
-    0 0 26px rgba(41, 227, 255, 0.7),
-    0 0 60px rgba(41, 227, 255, 0.45);
-}
-.footer-name:hover .flap-ch,
-.footer-name:focus-visible .flap-ch {
-  animation-name: reel-again;
-}
-@keyframes reel-again {
-  0% {
-    transform: translateY(-160%);
-    filter: blur(3px);
-    opacity: 0;
-  }
-  60% {
-    transform: translateY(12%);
-    filter: blur(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-.site-footer {
-  background:
-    radial-gradient(80% 120% at 50% 130%, rgba(255, 46, 147, 0.22), transparent 70%),
-    radial-gradient(50% 80% at 50% 120%, rgba(255, 194, 61, 0.14), transparent 70%),
-    var(--bg);
-}
-
 /* Sparkle trail */
 .paw {
   width: 14px;
@@ -2191,13 +1980,8 @@ body {
   .brand-word,
   .btn-primary::after,
   .hero::before,
-  .hero .cover::before,
-  .footer-word,
-  .site-footer.is-in .footer-print {
+  .hero .cover::before {
     animation: none;
-  }
-  .footer-print {
-    opacity: 1;
   }
 }
 
@@ -3524,15 +3308,6 @@ body {
   .rs-more { margin-left: 0; }
 }
 
-.footer-crew {
-  margin: 6px 0 0;
-  font: 500 12px/1.4 var(--font-sans);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-.footer-crew b { font-weight: 650; color: var(--text-2); }
-
 /* Event standings: the signed-in player's own position */
 .mypos {
   display: flex;
@@ -3562,17 +3337,6 @@ body {
 .mypos-pts { margin-left: auto; display: grid; text-align: right; flex: none; }
 .mypos-pts b { font-size: 22px; }
 .mypos-pts small { font-size: 12px; }
-
-.footer-team {
-  margin: 10px 0 0;
-  text-align: center;
-  font: 500 16px/1.5 var(--font-sans);
-  color: var(--text-2);
-}
-.footer-team b { font-weight: 700; color: var(--text-1); }
-@media (max-width: 480px) {
-  .footer-team { font-size: 14px; }
-}
 
 /* ---------- my rank card (LinkedIn-games style, under the top 3) ---------- */
 .myrank {
@@ -3787,4 +3551,132 @@ body {
 }
 @media (max-width: 420px) {
   .top-me-name { max-width: 64px; }
+}
+
+/* ---------- footer: slim neon ribbon + one line of links and credit (25 Oct) ---------- */
+.site-footer {
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  padding: 0 0 calc(var(--nav-h) + 8px + env(safe-area-inset-bottom));
+  overflow: hidden;
+}
+@media (min-width: 1024px) {
+  .site-footer {
+    padding-bottom: 0;
+  }
+}
+.footer-ribbon {
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, rgba(255, 46, 147, 0.12), rgba(41, 227, 255, 0.1));
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.ribbon-track {
+  display: flex;
+  width: max-content;
+  padding: 7px 0;
+  animation: ribbon-run 38s linear infinite;
+}
+.footer-ribbon:hover .ribbon-track {
+  animation-play-state: paused;
+}
+@keyframes ribbon-run {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.ribbon-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  padding-right: 18px;
+  font: 400 15px/1 var(--font-sign);
+  letter-spacing: 0.06em;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow: 0 0 6px rgba(255, 46, 147, 0.9), 0 0 14px rgba(255, 46, 147, 0.5);
+}
+.ribbon-word:nth-child(even) {
+  text-shadow: 0 0 6px rgba(41, 227, 255, 0.9), 0 0 14px rgba(41, 227, 255, 0.5);
+}
+.ribbon-bulb {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff1b8;
+  box-shadow: 0 0 8px 2px rgba(255, 194, 61, 0.8);
+}
+.footer-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 10px var(--gutter);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 18px;
+}
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+  font: 600 13px/1 var(--font-sans);
+}
+.footer-links a {
+  color: var(--text-2);
+  padding: 8px 0;
+}
+.footer-links a:hover {
+  color: var(--text-1);
+}
+.footer-note {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.footer-team {
+  margin-left: auto;
+  font: 500 13px/1.4 var(--font-sans);
+  color: var(--text-2);
+}
+.footer-team b {
+  font-weight: 700;
+  color: var(--text-1);
+}
+@media (max-width: 720px) {
+  .footer-inner {
+    justify-content: center;
+    text-align: center;
+  }
+  .footer-team {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+/* He asked for the ribbon to keep running; it is slow, and stops under the pointer. */
+@media (prefers-reduced-motion: reduce) {
+  .ribbon-track {
+    animation-duration: 40s !important;
+  }
+}
+/* The footer already clears the bottom nav, so the page above it needs only a small gap. */
+main:has(+ .site-footer) .page {
+  padding-bottom: 28px;
+}
+
+/* skribbl auto-score card (admin Results) */
+.sk-steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-2);
+}
+.sk-bm {
+  cursor: grab;
+}
+.sk-filled {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--accent-tint);
+  color: var(--text-1);
 }
