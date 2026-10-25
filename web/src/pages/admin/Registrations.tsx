@@ -27,7 +27,7 @@ export default function Registrations() {
   const cat = useCatalog()
   const regs = useRegistrations(id)
   const regionName = useRegionName()
-  const { isAdmin } = useAuth()
+  const { isAdmin, canManageEvents } = useAuth()
   const toast = useToast()
   const [q, setQ] = useState('')
   const [editing, setEditing] = useState<AdminEntry | null>(null)
@@ -92,7 +92,7 @@ export default function Registrations() {
           </>
         }
       />
-      {!isAdmin && <ReadOnlyNote />}
+      {!canManageEvents && <ReadOnlyNote />}
       <div className="row" style={{ position: 'relative' }}>
         <Search size={18} className="t3" style={{ position: 'absolute', left: 14 }} aria-hidden />
         <input
@@ -118,7 +118,7 @@ export default function Registrations() {
                 <th>House</th>
                 <th>In-game</th>
                 <th className="n">Adj.</th>
-                {isAdmin && <th />}
+                {canManageEvents && <th />}
               </tr>
             </thead>
             <tbody>
@@ -158,15 +158,17 @@ export default function Registrations() {
                       ))}
                     </td>
                     {i === 0 && <td rowSpan={e.members?.length ?? 1} className="n">{e.points_adjust ? fmtPoints(e.points_adjust) : ''}</td>}
-                    {isAdmin && i === 0 && (
+                    {canManageEvents && i === 0 && (
                       <td rowSpan={e.members?.length ?? 1}>
                         <div className="stack" style={gap(4)}>
                           <Button size="sm" kind="ghost" onClick={() => setEditing(e)}>
-                            Adjust
+                            {isAdmin ? 'Adjust' : '± Points'}
                           </Button>
-                          <Button size="sm" kind="danger" onClick={() => setRemoving(e)}>
-                            Remove
-                          </Button>
+                          {isAdmin && (
+                            <Button size="sm" kind="danger" onClick={() => setRemoving(e)}>
+                              Remove
+                            </Button>
+                          )}
                         </div>
                       </td>
                     )}
@@ -214,29 +216,39 @@ export default function Registrations() {
   )
 }
 
-function AdjustSheet({ entry, onClose }: { entry: AdminEntry; onClose: () => void }) {
+/**
+ * Points fix for one entry. The superadmin also sets the status (DQ); an admin only moves the
+ * points up or down (admin_adjust_points), as Angad asked on 25 Oct.
+ */
+export function AdjustSheet({ entry, onClose }: { entry: AdminEntry; onClose: () => void }) {
   const toast = useToast()
+  const { isAdmin } = useAuth()
   const [status, setStatus] = useState(entry.status)
   const [adjust, setAdjust] = useState(String(entry.points_adjust ?? 0))
   const [note, setNote] = useState(entry.adjust_note ?? '')
   const save = useAction(
-    (a, args: { p_entry_id: string; p_status: string; p_points_adjust: number; p_note: string }) => a.rpc('admin_set_entry', args),
+    (a, args: { p_entry_id: string; p_status: string; p_points_adjust: number; p_note: string }) =>
+      isAdmin
+        ? a.rpc('admin_set_entry', args)
+        : a.rpc('admin_adjust_points', { p_entry_id: args.p_entry_id, p_points_adjust: args.p_points_adjust, p_note: args.p_note }),
     INVALIDATE,
   )
   const n = Number(adjust)
   return (
     <Sheet open onClose={onClose} title={entry.name}>
       <div className="stack">
-        <Field label="Status" htmlFor="adj-status">
-          <select id="adj-status" className="select" value={status} onChange={(e) => setStatus(e.target.value as AdminEntry['status'])}>
-            <option value="active">Active</option>
-            <option value="disqualified">Disqualified (kept, unranked)</option>
-          </select>
-        </Field>
-        <Field label="Points adjustment" hint="Added to the total; negative for penalties, e.g. -5" error={Number.isFinite(n) ? null : 'Enter a number'} htmlFor="adj-points">
+        {isAdmin && (
+          <Field label="Status" htmlFor="adj-status">
+            <select id="adj-status" className="select" value={status} onChange={(e) => setStatus(e.target.value as AdminEntry['status'])}>
+              <option value="active">Active</option>
+              <option value="disqualified">Disqualified (kept, unranked)</option>
+            </select>
+          </Field>
+        )}
+        <Field label="Points up or down" hint="Added to the total from all games: 200 adds, -150 takes away" error={Number.isFinite(n) ? null : 'Enter a number'} htmlFor="adj-points">
           <input id="adj-points" className="input num" inputMode="decimal" value={adjust} onChange={(e) => setAdjust(e.target.value)} />
         </Field>
-        <Field label="Note (shown to admins, kept in the audit log)" htmlFor="adj-note">
+        <Field label="Why (optional, e.g. typo in Game 2)" htmlFor="adj-note">
           <input id="adj-note" className="input" value={note} onChange={(e) => setNote(e.target.value)} />
         </Field>
         <div className="row" style={{ justifyContent: 'flex-end' }}>

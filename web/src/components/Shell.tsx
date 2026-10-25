@@ -5,8 +5,9 @@ import { useApi, useAuth, useNoticeAlerts } from '../lib/app'
 import { startFireworks } from '../lib/fireworks'
 import { startFx } from '../lib/fx'
 import { Avatar, avatarKey } from './Avatar'
-import { SideGarlands, TopGarland } from './Festive'
+import { TopGarland } from './Festive'
 import { SiteFooter } from './SiteFooter'
+import { StaffBadge } from './StaffBadge'
 import { Brand, Spinner } from './ui'
 
 const NAV = [
@@ -54,6 +55,7 @@ export function Shell() {
               <NavLink to="/me" className="btn btn-secondary btn-sm">
                 {profile ? <Avatar value={avatarKey(profile.avatar, profile.username)} size={24} /> : <UserRound size={16} strokeWidth={1.75} aria-hidden />}
                 {profile?.username ?? 'Me'}
+                <StaffBadge username={profile?.username} compact />
               </NavLink>
             ) : (
               <NavLink to={`/signin?next=${encodeURIComponent(loc.pathname)}`} className="btn btn-secondary btn-sm">
@@ -64,7 +66,6 @@ export function Shell() {
         </div>
         <TopGarland />
       </header>
-      <SideGarlands />
       <main id="main">
         <Outlet />
       </main>

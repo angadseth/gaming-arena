@@ -20,7 +20,10 @@ interface AuthState {
   session: Session | null
   ready: boolean
   profile: MyProfile | null | undefined // undefined = loading, null = not onboarded
+  /** Full control (games, players, roles, event settings). Since migration 0015 only the superadmin has it. */
   isAdmin: boolean
+  /** Admin level: open or close events, fix points (superadmin + admin). */
+  canManageEvents: boolean
   isStaff: boolean
   isSuperadmin: boolean
 }
@@ -78,7 +81,8 @@ export function ApiProvider({ api, children }: { api: Api; children: ReactNode }
       ready,
       profile,
       isSuperadmin: active && roles.includes('superadmin'),
-      isAdmin: active && (roles.includes('superadmin') || roles.includes('admin')),
+      isAdmin: active && roles.includes('superadmin'),
+      canManageEvents: active && (roles.includes('superadmin') || roles.includes('admin')),
       isStaff: active && roles.length > 0,
     }
   }, [session, ready, profileQ.isPending, profileQ.data])
@@ -367,5 +371,17 @@ export function useAction<A, R>(fn: (api: Api, args: A) => Promise<R>, invalidat
     onError: (e) => {
       if (!opts.silent) toast({ kind: 'error', text: errorText(e) })
     },
+  })
+}
+
+/** Public "Super Admin" / "Admin" badges keyed by lower-case username (migration 0015). */
+export const useStaffBadges = () => {
+  const api = useApi()
+  const { profile } = useAuth()
+  // Keyed by my profile and roles: a new admin finishing onboarding refetches at once.
+  return useQuery({
+    queryKey: ['staff-badges', profile?.username ?? null, profile?.roles.join() ?? ''],
+    queryFn: async () => (await api.rpc<Record<string, 'superadmin' | 'admin'> | null>('staff_badges').catch(() => null)) ?? {},
+    staleTime: 10 * 60_000,
   })
 }

@@ -6,6 +6,7 @@ import { fmtPoints, regOpen } from '../lib/format'
 import type { Game, StandingRow, Tournament } from '../lib/types'
 import { Podium } from './Podium'
 import { Empty, ErrorBox, Flap, HouseTag, Sheet, Skeleton } from './ui'
+import { StaffBadge } from './StaffBadge'
 
 type SortKey = 'rank' | 'wins' | 'kills' | 'name'
 
@@ -142,7 +143,7 @@ export function Leaderboard({ t, game }: { t: Tournament; game: Game }) {
           <span className="rank num">{scored && mine.rank ? mine.rank : '–'}</span>
           <span className="stack" style={{ gap: 2, minWidth: 0 }}>
             <span className="tag-type t3">You</span>
-            <span className="ellipsis" style={{ fontWeight: 600 }}>{mine.name}</span>
+            <span className="ellipsis" style={{ fontWeight: 600 }}>{mine.name} <StaffBadge username={mine.name} /></span>
           </span>
           <span className="stat num">{fmtPoints(mine.points)}</span>
         </button>
@@ -179,6 +180,7 @@ function Row({
         <span className="stack" style={{ gap: 3, minWidth: 0 }} role="cell">
           <span className="ellipsis" style={{ fontWeight: 600 }}>
             {r.name}
+            <StaffBadge username={r.members?.length === 1 ? r.members[0].username : r.name} />
             {r.is_mine && <span className="tag-type t3" style={{ marginLeft: 8 }}>YOU</span>}
           </span>
           <span className="row" style={{ gap: 8 }}>
@@ -227,7 +229,7 @@ function MyPosition({ mine, rows, scored }: { mine: StandingRow; rows: StandingR
       <span className="mypos-rank num">{mine.status === 'disqualified' ? 'DQ' : scored && r ? `#${r}` : '–'}</span>
       <span className="stack" style={{ gap: 2, minWidth: 0 }}>
         <span className="tag-type t3">Your position{scored && r ? ` of ${active.length}` : ''}</span>
-        <b className="ellipsis">{mine.name}</b>
+        <b className="ellipsis">{mine.name} <StaffBadge username={mine.name} /></b>
         <small className="t3">{scored ? `${mine.matches} ${mine.matches === 1 ? 'game' : 'games'} · ${mine.wins} ${mine.wins === 1 ? 'win' : 'wins'}` : 'Ranks start after the first game'}</small>
       </span>
       <span className="mypos-pts">

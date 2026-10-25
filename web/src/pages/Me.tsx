@@ -9,6 +9,7 @@ import { UsernameField, usernameBlocksSave, useUsernameStatus } from '../compone
 import { Button, Empty, ErrorBox, Field, Flap, GameCover, HouseTag, Sheet, Skeleton, StatusPill } from '../components/ui'
 import { errorCode, errorText, useApi, useAuth, useHouseName, useMyEntries, useRegionName, useToast } from '../lib/app'
 import { fmtDate } from '../lib/format'
+import { StaffBadge } from '../components/StaffBadge'
 
 export default function Me() {
   const api = useApi()
@@ -92,6 +93,7 @@ export default function Me() {
           </button>
           <div className="stack grow" style={{ gap: 4, minWidth: 0 }}>
             <h1 className="h2 ellipsis" style={{ textTransform: 'none' }}>{profile.username}</h1>
+            <StaffBadge username={profile.username} />
             <span className="row wrap" style={{ gap: 8 }}>
               <HouseTag id={profile.house_id} />
               <span className="small t2">{houseName(profile.house_id)} · {regionName(profile.region_id)}</span>

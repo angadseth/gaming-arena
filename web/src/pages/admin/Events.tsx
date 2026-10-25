@@ -3,8 +3,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button, Empty, ErrorBox, Field, Skeleton, StatusPill } from '../../components/ui'
 import { useAction, useAuth, useCatalog, useCounts, useToast, useTournaments } from '../../lib/app'
-import { fmtDate, STATUS_LABEL } from '../../lib/format'
+import { STATUS_LABEL } from '../../lib/format'
 import type { Tournament, TournamentStatus } from '../../lib/types'
+import { AdminEventCard } from './EventCard'
 import { AdminHeader, ConfirmSheet, gap, isoToIstInput, istInputToIso, parseJson, ReadOnlyNote } from './shared'
 
 const FILTERS: (TournamentStatus | 'all')[] = ['all', 'draft', 'upcoming', 'open', 'closed', 'live', 'completed', 'cancelled']
@@ -30,7 +31,7 @@ export default function Events() {
     <>
       <AdminHeader
         title="Events"
-        sub="Tournaments players register for. Drafts are invisible to players."
+        sub="Every event as a card. Open or close registration, then Results, Players and Lobby."
         actions={
           isAdmin && (
             <Link to="/admin/events/new" className="btn btn-primary btn-sm">
@@ -52,55 +53,10 @@ export default function Events() {
       ) : list.length === 0 ? (
         <Empty title="No events here" text="Change the filter or create an event." />
       ) : (
-        <div className="table-wrap">
-          <table className="data">
-            <thead>
-              <tr>
-                <th>Event</th>
-                <th>Game</th>
-                <th>Status</th>
-                <th>Closes (IST)</th>
-                <th className="n">Entries</th>
-                <th className="n">Players</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {list.map((t) => {
-                const c = counts.data?.get(t.id)
-                return (
-                  <tr key={t.id}>
-                    <td>
-                      <Link to={`/admin/events/${t.id}`} style={{ fontWeight: 600 }}>
-                        {t.title}
-                      </Link>
-                      <div className="small t3 num">{t.slug}</div>
-                    </td>
-                    <td>{cat.gameById.get(t.game_id)?.short || cat.gameById.get(t.game_id)?.title}</td>
-                    <td>
-                      <StatusPill status={t.status} />
-                    </td>
-                    <td className="small">{fmtDate(t.reg_closes_at)}</td>
-                    <td className="n">{c?.entries ?? 0}</td>
-                    <td className="n">{c?.players ?? 0}</td>
-                    <td>
-                      <div className="row" style={gap(4)}>
-                        <Link className="icon-btn" to={`/admin/events/${t.id}/registrations`} aria-label="Registrations" title="Registrations">
-                          <ClipboardList size={18} strokeWidth={1.75} />
-                        </Link>
-                        <Link className="icon-btn" to={`/admin/events/${t.id}/results`} aria-label="Results" title="Results">
-                          <ListOrdered size={18} strokeWidth={1.75} />
-                        </Link>
-                        <Link className="icon-btn" to={`/admin/events/${t.id}/lobby`} aria-label="Lobby and notices" title="Lobby & notices">
-                          <RadioTower size={18} strokeWidth={1.75} />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+        <div className="aev-grid">
+          {list.map((t) => (
+            <AdminEventCard key={t.id} t={t} game={cat.gameById.get(t.game_id)} entries={counts.data?.get(t.id)?.entries ?? 0} />
+          ))}
         </div>
       )}
     </>

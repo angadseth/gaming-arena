@@ -170,7 +170,7 @@ export default function Lobby() {
                       <b>{r.ig_id}</b>
                       {r.ig_changes > 0 && <span className="tag-type changed" title="Name was changed after registering"> edited</span>}
                       {/[^ -~]/.test(r.ig_id) && <span className="tag-type changed" title="Has non-English or invisible characters: check closely"> odd chars</span>}
-                      <button className="link-btn small" onClick={() => setFixing({ username: r.username, ig_id: r.ig_id })}>Fix name</button>
+                      {isAdmin && <button className="link-btn small" onClick={() => setFixing({ username: r.username, ig_id: r.ig_id })}>Fix name</button>}
                     </td>
                     <td className="small">@{r.username}{r.entry !== r.username ? ` · ${r.entry}` : ''}<br /><span className="t3">{r.full_name}</span></td>
                     <td><HouseTag id={r.house_id} /></td>
@@ -188,10 +188,10 @@ export default function Lobby() {
           <h3 className="lobby-h">Room details</h3>
           <p className="small t3">Room code shows only to checked-in players.</p>
           <Field label="This event's own Meet (optional)" htmlFor="l-meet" hint={d.default_meet_url ? 'Empty = the fixed Meet link' : <a href="https://meet.google.com/new" target="_blank" rel="noopener noreferrer">Create a new Meet <ExternalLink size={11} /></a>}>
-            <input id="l-meet" className="input" placeholder="https://meet.google.com/xxx-xxxx-xxx" value={room.meet_url} onChange={(e) => setRoom({ ...room, meet_url: e.target.value })} />
+            <input id="l-meet" className="input" placeholder="https://meet.google.com/xxx-xxxx-xxx" value={room.meet_url} disabled={!isAdmin} onChange={(e) => setRoom({ ...room, meet_url: e.target.value })} />
           </Field>
           <Field label="Group chat link (optional)" htmlFor="l-chat">
-            <input id="l-chat" className="input" placeholder="https://chat.whatsapp.com/..." value={room.chat_url} onChange={(e) => setRoom({ ...room, chat_url: e.target.value })} />
+            <input id="l-chat" className="input" placeholder="https://chat.whatsapp.com/..." value={room.chat_url} disabled={!isAdmin} onChange={(e) => setRoom({ ...room, chat_url: e.target.value })} />
           </Field>
           <div className="form-grid two">
             <Field label="Room code" htmlFor="l-code" hint={`From ${gameName}: Party › Create`}>

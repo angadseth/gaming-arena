@@ -1,29 +1,28 @@
-# RESUME: Gaming Arena (25 Oct 2026, ~01:00)
+# RESUME: Gaming Arena (25 Oct 2026, ~12:40)
 TRIGGER: "game website continue" -> read this, then MEMORY.md "START HERE" if needed. He doesn't track state; I own it.
-LIVE https://angadseth.github.io/gaming-arena/ · repo github.com/angadseth/gaming-arena (last f68062c) · angadseth/pugmark = redirect-only repo (keep!)
+LIVE https://angadseth.github.io/gaming-arena/ · repo github.com/angadseth/gaming-arena · angadseth/pugmark = redirect-only repo (keep!)
 Supabase ref fehkrxssoxuiixgmfini (Mumbai). Superadmin angad_seth = 24f2004141@ds. Dev preview: cd web; npx vite --port 5199 (code 12345678).
-Migrations 0001-0013 LIVE. 0014 (allow @mg.study) PASTED in Supabase SQL tab: he must press Run (UNCONFIRMED).
-I can't press Run in Supabase (auto mode blocks): copy SQL to clipboard, paste in Monaco, he presses Run. Data edits: use admin UI.
+I can't press Run in Supabase: copy SQL to clipboard, paste in Monaco, HE presses Run. Data edits: use admin UI.
 
-STATE (what exists): Stumble Guys Season 1 = registration OPEN, closes Fri 30 Oct 20:00, starts 21:00 IST.
- Fixed Meet (all events) https://meet.google.com/gzm-enay-fab. Lobby hidden until registered; check-in auto T-45;
- room code only to checked-in. Admin Results = cards, "name, points" per line (no points = table), Edit/Delete per game.
- Event standings: "Your position" card. Footer: "Made by Angad Jangir, Abhimanyu and Sagar Rathore" (equal, his call).
- Test data on live: newbie (25f1001880) registered + DQ'd, game "stumble k chode" 1000 pts. Ask before clearing.
- Docs: docs/match-lobby.md (architecture, every name scenario, game-night runbook). Screens: web/dev/gamenight-demo.mjs.
+25 Oct session (his asks, all built):
+ - GitHub: 9sagar6 (Sagar Rathore) invited with WRITE (not admin). main is protected: PR + 1 approval; Angad (admin) can still push.
+ - Roles v2 = migration 0015 (includes 0014 mg domain): superadmin = everything; admin = open/close events, results
+   with @mentions, ± points, see registrations, run lobby; NO roles/bans/player edits/requests/logs/games/event settings.
+   Sagar 25f2003321@ds + Abhimanyu 24f3002949@mg pre-set as admin by email. Public badges: crown "Super Admin", star "Admin".
+   Tests: web/db-tests/roles-v2.test.ts (79/79 pass). He wants: admins never add staff themselves; they ask him.
+ - Results: WhatsApp-style @ autocomplete of registered players only (pages/admin/MentionBox.tsx); "@name, points".
+ - Dashboard = card "Control room" (Overview.tsx + EventCard.tsx); admin Events page = cards, no table.
+ - Home: "Open Games" + "Upcoming" sections (no All/Open/... chips). Completed events only on Leaderboards.
+ - Games: Smash Karts, Stumble, BGMI, FF, CODM, skribbl, CoC, Clash Royale, CS2, Valorant, Among Us, Extra first;
+   he said do NOT remove any game; old 7 stay after them (sort 21-27). New art in web/public/art (CREDITS.md).
+ - Diwali: toran svg (wire+bulbs+marigolds in one svg = no drift on zoom), diyas, Diwali banner with "Patakhe on/off",
+   crackers canvas BEHIND content: rockets (peony/ring/willow/crackle), anaar, chakri, kandils, tap sky to burst.
 
-OPEN QUESTIONS to Angad (ask first thing):
- a. Did you press Run for 0014 (mg emails)? 24f3002949@mg must be able to log in.
- b. One roll number = one account across ds/es/mg? (desibeer = 24f3002949@ds already exists -> could make 2 accounts.) I recommend YES.
- c. Top 3 "Verified on Meet" tick before points are final? (offered, no answer)
- d. Top Players page counts only COMPLETED events; include live events? (offered, no answer)
+STATE: see bottom of this file for whether 0015 is pasted / run and what was deployed.
+
+OPEN QUESTIONS to Angad (still unanswered from 24 Oct):
+ b. One roll number = one account across ds/es/mg? c. "Verified on Meet" tick for top 3? d. Top Players incl. live events?
  e. Abhimanyu's surname for the footer?
-
-NEXT (he said 25 Oct: "kal se aur deep cheez, website bahut zyada update karenge"):
- 1. Answer/implement a-e above. 2. Real test with a friend: register -> check-in -> room code -> results.
- 3. Supabase dashboard: Auth > URL config Site URL -> /gaming-arena/ ; SMTP sender name still "Pugmark".
- 4. Remind: rotate the Gmail app password he pasted in chat; 2FA on GitHub + IITM Google.
- 5. Later ideas: pg_cron auto status (upcoming->open->closed->live), Turnstile captcha, screenshot OCR for results.
-RULES: small boxes/cards, not text walls, not oversized; build what he names; keep versions (git tags/history);
- run a loophole-review agent before big features go live; verify live in Chrome after every deploy.
-Full history: MEMORY.md (bottom section has the old long RESUME).
+NEXT: 1. He presses Run on 0015, then I verify live (badges, admin login as Sagar). 2. Real game-night test with a friend.
+ 3. Supabase Auth Site URL -> /gaming-arena/; SMTP sender name still "Pugmark". 4. Rotate Gmail app password; 2FA.
+RULES: small cards not tables/text walls; build what he names; keep versions; loophole-review before big features; verify live in Chrome.

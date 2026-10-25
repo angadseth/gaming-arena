@@ -1,93 +1,118 @@
-import { ChevronRight } from 'lucide-react'
+import { FileClock, Gamepad2, Inbox, MapPinned, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { ErrorBox, Skeleton, StatusPill } from '../../components/ui'
+import { StaffBadge } from '../../components/StaffBadge'
+import { ErrorBox, Skeleton } from '../../components/ui'
 import { useAuth, useCatalog, useCounts } from '../../lib/app'
-import { fmtDate, STATUS_LABEL } from '../../lib/format'
-import type { TournamentStatus } from '../../lib/types'
-import { AdminHeader, gap } from './shared'
+import type { Tournament, TournamentStatus } from '../../lib/types'
+import { AdminEventCard } from './EventCard'
 
-const ORDER: TournamentStatus[] = ['live', 'open', 'upcoming', 'closed', 'draft', 'completed', 'cancelled']
+const NOW: TournamentStatus[] = ['live', 'open', 'closed']
 
+/**
+ * Dashboard: who I am and what I can do, then the events as cards with their buttons.
+ * Two groups only (open now, upcoming) so it reads at a glance; finished events live on Events.
+ */
 export default function Overview() {
-  const { profile } = useAuth()
+  const { profile, isAdmin } = useAuth()
   const cat = useCatalog()
   const counts = useCounts()
 
   if (cat.error) return <ErrorBox error={cat.error} />
   if (cat.loading) return <Skeleton h={240} />
 
-  const byStatus = new Map<TournamentStatus, number>()
-  for (const t of cat.tournaments) byStatus.set(t.status, (byStatus.get(t.status) ?? 0) + 1)
-  let entries = 0
-  let players = 0
-  counts.data?.forEach((c) => {
-    entries += c.entries
-    players += c.players
-  })
-  const active = cat.tournaments
-    .filter((t) => t.status === 'open' || t.status === 'live' || t.status === 'closed')
-    .sort((a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status))
+  const roles = profile?.roles ?? []
+  const level = isAdmin ? 'Super Admin' : roles.includes('admin') ? 'Admin' : 'Organiser'
+  const can = isAdmin
+    ? ['Everything below', 'Games, players and roles', 'Requests and the log']
+    : roles.includes('admin')
+      ? ['Open or close events', 'Add results with @names', 'Fix points up or down', 'See registrations', 'Run the lobby']
+      : ['Add results with @names', 'See registrations', 'Run the lobby']
+
+  const byGame = (a: Tournament, b: Tournament) =>
+    (cat.gameById.get(a.game_id)?.sort_order ?? 99) - (cat.gameById.get(b.game_id)?.sort_order ?? 99) || a.title.localeCompare(b.title)
+  const live = cat.tournaments.filter((t) => NOW.includes(t.status)).sort((a, b) => NOW.indexOf(a.status) - NOW.indexOf(b.status) || byGame(a, b))
+  const upcoming = cat.tournaments.filter((t) => t.status === 'upcoming').sort(byGame)
+  const entries = (id: string) => counts.data?.get(id)?.entries ?? 0
+  const total = [...(counts.data?.values() ?? [])].reduce((n, c) => n + c.entries, 0)
+
+  const grid = (list: Tournament[], empty: string) =>
+    list.length === 0 ? (
+      <p className="t3 small">{empty}</p>
+    ) : (
+      <div className="aev-grid">
+        {list.map((t) => (
+          <AdminEventCard key={t.id} t={t} game={cat.gameById.get(t.game_id)} entries={entries(t.id)} />
+        ))}
+      </div>
+    )
 
   return (
     <>
-      <AdminHeader title="Admin console" sub={`Signed in as ${profile?.username ?? ''} · ${profile?.roles.join(', ') ?? ''}`} />
-      <div className="stats">
-        <div>
-          <strong>{cat.tournaments.length}</strong>
-          <span className="tag-type t3">Events</span>
-        </div>
-        <div>
-          <strong>{counts.isPending ? '…' : entries}</strong>
-          <span className="tag-type t3">Entries</span>
-        </div>
-        <div>
-          <strong>{counts.isPending ? '…' : players}</strong>
-          <span className="tag-type t3">Players</span>
-        </div>
-      </div>
-
-      <div className="section-head">
-        <h2>Events by status</h2>
-      </div>
-      <div className="row wrap">
-        {ORDER.filter((s) => byStatus.get(s)).map((s) => (
-          <span key={s} className="row" style={gap(8)}>
-            <StatusPill status={s} />
-            <span className="num">{byStatus.get(s)}</span>
-            <span className="sr-only">{STATUS_LABEL[s]}</span>
+      <section className="dash-hello">
+        <div className="stack" style={{ gap: 6, minWidth: 0 }}>
+          <span className="tag-type t3">Control room</span>
+          <h1 className="h2 ellipsis" style={{ textTransform: 'none' }}>
+            Namaste, {profile?.username}
+          </h1>
+          <span className="row wrap" style={{ gap: 8 }}>
+            <StaffBadge username={profile?.username} />
+            {level === 'Organiser' && <span className="staff-badge is-org">Organiser</span>}
           </span>
-        ))}
-      </div>
+        </div>
+        <div className="dash-stats">
+          <span>
+            <b className="num">{live.length}</b>
+            <small>open now</small>
+          </span>
+          <span>
+            <b className="num">{upcoming.length}</b>
+            <small>upcoming</small>
+          </span>
+          <span>
+            <b className="num">{counts.isPending ? '…' : total}</b>
+            <small>registered</small>
+          </span>
+        </div>
+        <ul className="dash-can" aria-label={`What a ${level} can do`}>
+          {can.map((c) => (
+            <li key={c}>{c}</li>
+          ))}
+        </ul>
+      </section>
 
       <div className="section-head">
-        <h2>Needs attention</h2>
-        <Link to="/admin/events" className="small t2">
-          All events
-        </Link>
+        <h2>Open now</h2>
+        <span className="small t3">{live.length}</span>
       </div>
-      {active.length === 0 ? (
-        <p className="t3">No event is open, live or waiting for results.</p>
-      ) : (
-        <div className="rows">
-          {active.map((t) => {
-            const g = cat.gameById.get(t.game_id)
-            const c = counts.data?.get(t.id)
-            return (
-              <Link key={t.id} to={`/admin/events/${t.id}/results`} className="link-row">
-                <div className="grow stack" style={gap(4)}>
-                  <span className="ellipsis" style={{ fontWeight: 600 }}>
-                    {t.title}
-                  </span>
-                  <span className="small t3">
-                    {g?.title} · {c?.entries ?? 0} entries · closes {fmtDate(t.reg_closes_at)}
-                  </span>
-                </div>
-                <StatusPill status={t.status} />
-                <ChevronRight size={18} className="t3" aria-hidden />
+      {grid(live, 'Nothing is open right now. Open an upcoming event below.')}
+
+      <div className="section-head">
+        <h2>Upcoming</h2>
+        <span className="small t3">{upcoming.length}</span>
+      </div>
+      {grid(upcoming, 'No upcoming events.')}
+
+      {isAdmin && (
+        <>
+          <div className="section-head">
+            <h2>Only you</h2>
+            <span className="small t3">Super Admin tools</span>
+          </div>
+          <div className="dash-tools">
+            {[
+              { to: '/admin/games', label: 'Games', Icon: Gamepad2 },
+              { to: '/admin/players', label: 'Players & roles', Icon: Users },
+              { to: '/admin/requests', label: 'Game requests', Icon: Inbox },
+              { to: '/admin/regions', label: 'Regions', Icon: MapPinned },
+              { to: '/admin/audit', label: 'Audit log', Icon: FileClock },
+            ].map(({ to, label, Icon }) => (
+              <Link key={to} to={to} className="dash-tool">
+                <Icon size={20} strokeWidth={1.75} aria-hidden />
+                {label}
               </Link>
-            )
-          })}
-        </div>
+            ))}
+          </div>
+        </>
       )}
     </>
   )

@@ -35,6 +35,10 @@ const GAME_HUE: Record<string, string> = {
   cs2: '#f2b544',
   chess: '#e8e1cf',
   skribbl: '#6fc8ff',
+  'smash-karts': '#ff7a2e',
+  'clash-of-clans': '#f6c343',
+  'among-us': '#ff3d4f',
+  extra: '#b99cff',
 }
 /**
  * Background photo for each game's card (web/public/art, sources in CREDITS.md) and the
@@ -44,6 +48,7 @@ const GAME_ART: Record<string, string> = {
   bgmi: '75%', 'ff-max': '35%', codm: '55%', 'clash-royale': '72%', 'brawl-stars': '78%',
   'pokemon-unite': '60%', efootball: '62%', 'real-cricket': '28%', 'asphalt-legends': '50%',
   'stumble-guys': '50%', 'ludo-king': '50%', valorant: '50%', cs2: '80%', chess: '50%', skribbl: '50%',
+  'smash-karts': '50%', 'clash-of-clans': '62%', 'among-us': '50%',
 }
 export const gameArt = (slug: string | undefined) =>
   slug && slug in GAME_ART ? { src: `${import.meta.env.BASE_URL}art/${slug}.webp`, focus: GAME_ART[slug] } : null

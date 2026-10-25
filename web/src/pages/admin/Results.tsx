@@ -2,10 +2,11 @@ import { CircleAlert, CircleCheck, Plus, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Button, Empty, ErrorBox, Field, HouseTag, Skeleton, StatusPill } from '../../components/ui'
-import { useAction, useCatalog, useMatchResults, useStandings, useToast } from '../../lib/app'
+import { useAction, useAuth, useCatalog, useMatchResults, useStandings, useToast } from '../../lib/app'
 import { fmtDate, fmtPoints, igNorm } from '../../lib/format'
 import type { Tournament } from '../../lib/types'
-import { useRegistrations } from './Registrations'
+import { MentionBox, mentionables } from './MentionBox'
+import { AdjustSheet, useRegistrations } from './Registrations'
 import { AdminHeader, ConfirmSheet, gap, isoToIstInput, istInputToIso, pointsForRank, type AdminEntry } from './shared'
 
 interface RowIn {
@@ -102,6 +103,8 @@ function editDistance(a: string, b: string): number {
 
 /** What the organiser calls an entry: the in-game name for solo events, the team name otherwise. */
 const entryLabel = (e: AdminEntry) => ((e.members ?? []).length === 1 ? e.members![0].ig_id : e.name)
+/** The @mention for an entry: the site username for solo events, the team name otherwise. */
+const entryTag = (e: AdminEntry) => `@${(e.members ?? []).length === 1 ? e.members![0].username : e.name}`
 
 /**
  * Quick entry: one line per player, best first, "name, points". Points may be left out (then the
@@ -122,7 +125,12 @@ function parseLines(text: string, entries: AdminEntry[]): Line[] {
   text.split('\n').forEach((raw, idx) => {
     const line = raw.replace(/^\s*\d+\s*[.)]\s+/, '').trim()
     if (!line) return
-    const m = line.match(/^(.*?)\s*[,\t]\s*([-+]?\d+(?:\.\d+)?)\s*$/)
+    let m = line.match(/^(.*?)\s*[,\t]\s*([-+]?\d+(?:\.\d+)?)\s*$/)
+    // "@name 500" without the comma works too, when "@name" is a registered player.
+    if (!m && line.startsWith('@')) {
+      const sp = line.match(/^(.*?)\s+([-+]?\d+(?:\.\d+)?)\s*$/)
+      if (sp && byName.has(igNorm(sp[1].replace(/^@/, '')))) m = sp
+    }
     const said = (m ? m[1] : line).replace(/,\s*$/, '').trim()
     const manual = m ? Number(m[2]) : null
     const key = igNorm(said.replace(/^@/, ''))
@@ -155,6 +163,8 @@ export default function Results() {
   const matches = useMatchResults(id)
   const standings = useStandings(id)
   const toast = useToast()
+  const { canManageEvents, isAdmin } = useAuth()
+  const [fixing, setFixing] = useState<AdminEntry | null>(null)
   const t = cat.tournaments.find((x) => x.id === id)
 
   const [mode, setMode] = useState<'quick' | 'form' | 'paste'>('quick')
@@ -173,6 +183,8 @@ export default function Results() {
   const parsed = useMemo(() => parsePaste(paste, regs.data ?? []), [paste, regs.data])
   const lines = useMemo(() => parseLines(names, entries), [names, entries])
   const unknown = lines.filter((r) => !r.entry)
+  const people = useMemo(() => mentionables(entries), [entries])
+  const taken = useMemo(() => new Set(lines.flatMap((r) => (r.entry ? [r.entry.entry_id] : []))), [lines])
 
   const record = useAction(
     (a, args: { p_tournament_id: string; p_label: string; p_played_at: string | null; p_rows: unknown[]; p_replace: boolean }) =>
@@ -235,7 +247,7 @@ export default function Results() {
     setLabel(m.label)
     setReplace(true)
     setSkipUnknown(false)
-    setNames(rowsSorted.map((r) => `${entryById.get(r.entry_id) ? entryLabel(entryById.get(r.entry_id)!) : r.entry_id}, ${fmtPoints(r.points)}`).join('\n'))
+    setNames(rowsSorted.map((r) => `${entryById.get(r.entry_id) ? entryTag(entryById.get(r.entry_id)!) : r.entry_id}, ${Number(r.points)}`).join('\n'))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -287,6 +299,9 @@ export default function Results() {
   const setRow = (i: number, patch: Partial<RowIn>) => setRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...patch } : r)))
 
   const top = standings.data ?? []
+  // Mirrors public.guard_results: organisers only add; a finished event is the superadmin's alone.
+  const finished = ['completed', 'cancelled', 'draft'].includes(t.status)
+  const canEdit = isAdmin || (canManageEvents && !finished)
   const errorsBox = serverErrors.length > 0 && (
     <div className="stack server-errors" style={gap(4)} role="alert">
       {serverErrors.map((e, i) => (
@@ -322,19 +337,17 @@ export default function Results() {
             <div>
               <h3 className="lobby-h">{exists ? `Edit ${effLabel}` : `Add ${effLabel}`}</h3>
               <p className="small t3">
-                One player per line, winner first: <b>name, points</b>. No points = from the table ({Object.entries(t.placement_points ?? {}).slice(0, 3).map(([k, v]) => `${k}: ${fmtPoints(Number(v))}`).join(' · ')}…).
+                Type <b>@</b> and pick the player (only registered players show up), then the points. One line each, winner first: <b>@name, points</b>. No points = from the table ({Object.entries(t.placement_points ?? {}).slice(0, 3).map(([k, v]) => `${k}: ${fmtPoints(Number(v))}`).join(' · ')}…).
               </p>
             </div>
             <input className="input rs-label" aria-label="Game name" maxLength={60} placeholder={nextLabel} value={label} onChange={(e) => setLabel(e.target.value)} />
           </div>
-          <textarea
-            id="m-lines"
-            className="textarea rs-lines"
-            spellCheck={false}
-            aria-label="Results, one player per line"
-            placeholder={'Rahul_07, 1000\nPriya.k, 700\nAman 22, 500\nSid'}
+          <MentionBox
             value={names}
-            onChange={(e) => setNames(e.target.value)}
+            onChange={setNames}
+            people={people}
+            taken={taken}
+            placeholder={'@rahul_07, 1000\n@priya.k, 700\n@aman22, 500\n@sid'}
           />
           {lines.length > 0 && (
             <div className="rs-grid">
@@ -348,7 +361,7 @@ export default function Results() {
                       <b className="ellipsis">{r.said}</b>
                       {p ? (
                         <small className="row" style={gap(6)}>
-                          {who ? `@${who.username}` : r.entry!.name} <HouseTag id={r.entry!.house_id} />
+                          {who ? (r.said.startsWith('@') ? who.ig_id : `@${who.username}`) : r.entry!.name} <HouseTag id={r.entry!.house_id} />
                         </small>
                       ) : (
                         <small className="rcard-why">
@@ -587,10 +600,12 @@ export default function Results() {
                 </ol>
                 <div className="spread" style={gap(8)}>
                   <span className="small t3">{m.rows.length} {m.rows.length === 1 ? 'player' : 'players'}</span>
-                  <span className="row" style={gap(6)}>
-                    <Button size="sm" onClick={() => edit(m)}>Edit</Button>
-                    <Button size="sm" kind="danger" onClick={() => setDeleting({ id: m.id, label: m.label })}>Delete</Button>
-                  </span>
+                  {canEdit && (
+                    <span className="row" style={gap(6)}>
+                      <Button size="sm" onClick={() => edit(m)}>Edit</Button>
+                      <Button size="sm" kind="danger" onClick={() => setDeleting({ id: m.id, label: m.label })}>Delete</Button>
+                    </span>
+                  )}
                 </div>
               </article>
             )
@@ -620,10 +635,17 @@ export default function Results() {
               <HouseTag id={s.house_id} />
               <span className="small t3 rs-board-m">{s.matches} {s.matches === 1 ? 'game' : 'games'} · {s.wins} {s.wins === 1 ? 'win' : 'wins'}</span>
               <b className="num rs-board-pts">{fmtPoints(s.points)}</b>
+              {canEdit && entryById.get(s.entry_id) && (
+                <button className="btn btn-ghost btn-sm" title="Move this player's points up or down" onClick={() => setFixing(entryById.get(s.entry_id)!)}>
+                  ± Points
+                </button>
+              )}
             </li>
           ))}
         </ol>
       )}
+
+      {fixing && <AdjustSheet entry={fixing} onClose={() => setFixing(null)} />}
 
       {deleting && (
         <ConfirmSheet

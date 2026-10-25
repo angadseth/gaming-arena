@@ -2201,94 +2201,503 @@ body {
   }
 }
 
-/* ---------- festive: fairy lights + fireworks canvas ---------- */
+/* ---------- festive: Diwali toran, diyas, crackers canvas ---------- */
+/* The canvas sits BEHIND the content: crackers fill the empty sky, cards stay readable. */
 .fx-canvas {
   position: fixed;
   inset: 0;
-  z-index: 58;
+  z-index: 0;
   pointer-events: none;
 }
-.bulb {
-  --c: var(--accent);
-  width: 8px;
-  height: 11px;
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-  background: radial-gradient(circle at 40% 35%, #fff 0 18%, var(--c) 45%);
-  box-shadow:
-    0 0 6px 1px var(--c),
-    0 0 16px 2px color-mix(in srgb, var(--c) 55%, transparent);
+#main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+/* Toran under the top bar: wire, bulbs and marigolds share one svg (Festive.tsx). */
+.garland-top {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 40px;
+  pointer-events: none;
+  overflow: hidden;
+}
+.garland-top svg {
+  display: block;
+  overflow: visible;
+}
+.g-wire {
+  fill: none;
+  stroke: rgba(255, 246, 232, 0.4);
+  stroke-width: 1.2;
+}
+.g-cap {
+  fill: #6b5a3a;
+}
+.g-glass {
+  fill: var(--c);
+}
+.g-shine {
+  fill: #fff;
+  opacity: 0.75;
+}
+.g-bulb {
+  filter: drop-shadow(0 0 3px var(--c)) drop-shadow(0 0 7px var(--c));
   animation: twinkle 1.6s ease-in-out var(--d) infinite alternate;
+}
+.g-petal-o {
+  fill: #ff8a1f;
+}
+.g-petal-i {
+  fill: #ffb627;
+  stroke: #ff8a1f;
+  stroke-width: 1;
+  stroke-dasharray: 1.4 1.2;
+}
+.g-core {
+  fill: #b85c00;
 }
 @keyframes twinkle {
   from {
     opacity: 1;
   }
   to {
-    opacity: 0.35;
-    box-shadow: 0 0 2px var(--c);
+    opacity: 0.4;
   }
 }
-/* A sagging wire under the top bar with bulbs hanging from it. */
-.garland-top {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -14px;
-  height: 14px;
+
+/* Diya: flame flickers, glow breathes. */
+.diya {
+  display: block;
+  overflow: visible;
+}
+.diya-flame,
+.diya-flame-in {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: flame 1.3s ease-in-out var(--fd, 0s) infinite alternate;
+}
+.diya-glow {
+  animation: glow 2.2s ease-in-out var(--fd, 0s) infinite alternate;
+}
+@keyframes flame {
+  0% {
+    transform: scale(1, 1) rotate(-2deg);
+  }
+  50% {
+    transform: scale(0.92, 1.08) rotate(2deg);
+  }
+  100% {
+    transform: scale(1.04, 0.94) rotate(-1deg);
+  }
+}
+@keyframes glow {
+  from {
+    opacity: 0.65;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.diya-row {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+/* Home page Diwali strip */
+.diwali-banner {
+  position: relative;
   display: flex;
-  justify-content: space-around;
-  pointer-events: none;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  border-radius: var(--r-lg);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  background:
+    radial-gradient(120% 140% at 0% 100%, rgba(255, 138, 31, 0.22), transparent 60%),
+    radial-gradient(80% 120% at 100% 0%, rgba(255, 46, 147, 0.16), transparent 60%),
+    var(--surface-1);
   overflow: hidden;
-  background: radial-gradient(60% 9px at 50% -3px, transparent 96%, rgba(255, 246, 232, 0.35) 98%, transparent 100%) 0 0 / 46px 14px repeat-x;
 }
-.garland-top .bulb {
-  margin-top: 3px;
-  width: 6px;
-  height: 9px;
+.diwali-rangoli {
+  position: absolute;
+  right: -40px;
+  top: 50%;
+  width: 180px;
+  height: 180px;
+  translate: 0 -50%;
+  opacity: 0.16;
+  background:
+    repeating-conic-gradient(from 0deg, var(--accent) 0 10deg, transparent 10deg 20deg),
+    radial-gradient(circle, var(--magenta) 0 18%, transparent 19% 30%, var(--cyan) 31% 34%, transparent 35%);
+  -webkit-mask: radial-gradient(circle, #000 0 68%, transparent 70%);
+  mask: radial-gradient(circle, #000 0 68%, transparent 70%);
+  animation: rangoli-spin 60s linear infinite;
+  pointer-events: none;
 }
-.garland-top .bulb:nth-child(n + 23) {
-  display: none;
-}
-@media (min-width: 720px) {
-  .garland-top .bulb:nth-child(n + 23) {
-    display: block;
+@keyframes rangoli-spin {
+  to {
+    rotate: 360deg;
   }
 }
-/* Strings of lights down both sides, only where the screen has room beside the content. */
-.garland-side {
-  display: none;
+.diwali-copy {
+  display: grid;
+  gap: 2px;
+  flex: 1 1 240px;
+  min-width: 0;
 }
-@media (min-width: 1400px) {
-  .garland-side {
-    position: fixed;
-    top: calc(var(--top-h) + 24px);
-    bottom: 24px;
-    z-index: 5;
-    width: 28px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    pointer-events: none;
-    background: linear-gradient(rgba(255, 246, 232, 0.28), rgba(255, 246, 232, 0.28)) center / 1px 100% no-repeat;
-  }
-  .garland-l {
-    left: calc((100vw - var(--max-w)) / 4 - 14px);
-  }
-  .garland-r {
-    right: calc((100vw - var(--max-w)) / 4 - 14px);
-  }
-  .garland-side .bulb:nth-child(odd) {
-    transform: translateX(-7px) rotate(20deg);
-  }
-  .garland-side .bulb:nth-child(even) {
-    transform: translateX(7px) rotate(-20deg);
+.diwali-copy .tag-type {
+  color: var(--accent);
+}
+.diwali-title {
+  font: 800 22px/1.1 var(--font-display);
+  text-transform: uppercase;
+  background: var(--gold-foil);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.diwali-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--r-tag);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font: 600 13px/1 var(--font-sans);
+  cursor: pointer;
+}
+.diwali-switch[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-tint);
+}
+@media (max-width: 520px) {
+  .diwali-banner .diya-row {
+    order: 3;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .bulb {
+  .g-bulb,
+  .diya-flame,
+  .diya-flame-in,
+  .diya-glow,
+  .diwali-rangoli {
     animation: none;
   }
+  .diwali-switch {
+    display: none;
+  }
+}
+
+/* ---------- staff badges ---------- */
+.staff-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: var(--r-tag);
+  font: 700 11px/1 var(--font-sans);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--cyan);
+  background: color-mix(in srgb, var(--cyan) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cyan) 45%, transparent);
+}
+.staff-badge.is-super {
+  color: var(--on-accent);
+  background: var(--gold-foil);
+  border-color: transparent;
+  box-shadow: 0 0 10px rgba(255, 194, 61, 0.35);
+}
+.staff-badge.is-org {
+  color: var(--text-2);
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+.staff-badge.is-icon {
+  width: 20px;
+  padding: 0;
+  justify-content: center;
+}
+.podium-card .staff-badge {
+  margin-top: -2px;
+}
+
+/* ---------- results: @mention box ---------- */
+.mention {
+  position: relative;
+}
+.mention-list {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  max-height: 300px;
+  overflow: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-overlay);
+}
+.mention-list button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text-1);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.mention-list button.is-hi {
+  background: var(--accent-tint);
+}
+.mention-at {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 800;
+}
+.mention-none {
+  margin: 6px 2px 0;
+}
+
+/* ---------- admin: event cards + dashboard ---------- */
+.aev-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+}
+.aev {
+  --hue: var(--accent);
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 14px;
+  border-radius: var(--r-lg);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--hue) 14%, transparent), transparent 60px),
+    var(--surface-1);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--hue);
+  min-width: 0;
+}
+.aev-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.aev-game {
+  font: 800 13px/1 var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--hue);
+}
+.aev-title {
+  margin: 0;
+  font: 700 17px/1.25 var(--font-sans);
+}
+.aev-meta {
+  margin: 0;
+}
+.aev-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border-radius: var(--r-md);
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  background: var(--accent-tint);
+  color: var(--accent);
+  font: 700 14px/1 var(--font-sans);
+  cursor: pointer;
+}
+.aev-toggle:hover {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.aev-toggle.is-open {
+  background: var(--surface-3);
+  color: var(--text-1);
+  border-color: var(--border-strong);
+}
+.aev-toggle.is-open:hover {
+  border-color: var(--danger);
+  color: var(--text-1);
+  background: var(--danger-tint);
+}
+.aev-toggle:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.aev-warn {
+  margin: 0;
+  color: #ffb36b;
+}
+.aev-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  gap: 6px;
+}
+.aev-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 8px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  font: 600 13px/1 var(--font-sans);
+  text-decoration: none;
+}
+.aev-actions a:hover {
+  border-color: var(--hue);
+}
+.dash-hello {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(90% 140% at 100% 0%, rgba(255, 194, 61, 0.14), transparent 60%),
+    var(--surface-1);
+  border: 1px solid var(--border);
+}
+@media (min-width: 760px) {
+  .dash-hello {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+  .dash-can {
+    grid-column: 1 / -1;
+  }
+}
+.dash-stats {
+  display: flex;
+  gap: 8px;
+}
+.dash-stats span {
+  display: grid;
+  justify-items: center;
+  min-width: 78px;
+  padding: 8px 10px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.dash-stats b {
+  font: 800 24px/1 var(--font-display);
+}
+.dash-stats small {
+  color: var(--text-3);
+  font-size: 12px;
+}
+.dash-can {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dash-can li {
+  padding: 5px 10px;
+  border-radius: var(--r-tag);
+  background: var(--success-tint);
+  color: var(--text-1);
+  font-size: 13px;
+}
+.dash-can li::before {
+  content: '✓ ';
+  color: var(--success);
+  font-weight: 700;
+}
+.dash-tools {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr));
+}
+.dash-tool {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  font-weight: 600;
+  text-decoration: none;
+}
+.dash-tool:hover {
+  border-color: var(--accent);
+}
+
+/* ---------- home: Open Games / Upcoming sections ---------- */
+.ev-section {
+  display: grid;
+  gap: 14px;
+}
+.ev-section-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.ev-section-head .h2 {
+  margin: 0;
+}
+.ev-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--r-tag);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 800;
+  font-size: 14px;
+}
+#upcoming-h + .ev-count {
+  background: var(--surface-3);
+  color: var(--text-1);
+}
+.ev-section-sub {
+  margin-left: auto;
 }
 
 /* ---------- avatars ---------- */

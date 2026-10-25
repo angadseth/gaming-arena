@@ -7,6 +7,7 @@ import { Empty, ErrorBox, Flap, GameCover, HouseTag, MetaLine, Skeleton, StatusP
 import { useCatalog, useCounts, usePlayerRankings } from '../lib/app'
 import { fmtPoints, fmtShort, teamSizeLabel } from '../lib/format'
 import type { RankFormat, TournamentStatus } from '../lib/types'
+import { StaffBadge } from '../components/StaffBadge'
 
 const ORDER: Partial<Record<TournamentStatus, number>> = { live: 0, closed: 1, open: 2, completed: 3, upcoming: 4 }
 
@@ -125,7 +126,7 @@ function TopPlayers() {
                   <span className="row" style={{ gap: 10, minWidth: 0 }}>
                     <Avatar value={r.avatar} size={34} />
                     <span className="stack" style={{ gap: 3, minWidth: 0 }}>
-                      <span className="ellipsis" style={{ fontWeight: 600 }}>{r.username}</span>
+                      <span className="ellipsis" style={{ fontWeight: 600 }}>{r.username} <StaffBadge username={r.username} /></span>
                       <HouseTag id={r.house_id} />
                     </span>
                   </span>

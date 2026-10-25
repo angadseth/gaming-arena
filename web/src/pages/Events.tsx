@@ -1,26 +1,21 @@
 import { ChevronRight, MessageSquarePlus, Users } from 'lucide-react'
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useMemo, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { EventCard } from '../components/event'
-import { Empty, ErrorBox, GameCover, MetaLine, Skeleton, StatusPill } from '../components/ui'
+import { DiwaliBanner } from '../components/Festive'
+import { ErrorBox, GameCover, MetaLine, Skeleton, StatusPill } from '../components/ui'
 import { useAuth, useCatalog, useCounts, useMyEntries } from '../lib/app'
 import { fmtShort, gameHue, regOpen, relative, teamSizeLabel, urgency } from '../lib/format'
 import type { Tournament, TournamentStatus } from '../lib/types'
 
-const FILTERS: { key: 'all' | TournamentStatus; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'open', label: 'Open' },
-  { key: 'live', label: 'Live' },
-  { key: 'upcoming', label: 'Upcoming' },
-  { key: 'completed', label: 'Completed' },
-]
+/** "Open Games" = registration open, closed for the night or live; "Upcoming" = announced. */
+const OPEN_NOW: TournamentStatus[] = ['live', 'open', 'closed']
 
 export default function Events() {
   const cat = useCatalog()
   const counts = useCounts()
   const mine = useMyEntries()
   const { session } = useAuth()
-  const [filter, setFilter] = useState<'all' | TournamentStatus>('all')
 
   const visible = useMemo(
     () =>
@@ -40,7 +35,10 @@ export default function Events() {
     return pick ? { t: pick, mine: false } : null
   }, [visible, mine.data])
 
-  const shown = filter === 'all' ? visible : visible.filter((t) => t.status === filter)
+  const byGame = (a: Tournament, b: Tournament) =>
+    (cat.gameById.get(a.game_id)?.sort_order ?? 99) - (cat.gameById.get(b.game_id)?.sort_order ?? 99)
+  const openNow = visible.filter((t) => OPEN_NOW.includes(t.status)).sort(byGame)
+  const upcoming = visible.filter((t) => t.status === 'upcoming').sort(byGame)
   const openCount = visible.filter((t) => regOpen(t)).length
 
   return (
@@ -53,6 +51,8 @@ export default function Events() {
         </p>
       </section>
 
+      <DiwaliBanner />
+
       {cat.error ? (
         <ErrorBox error={cat.error} />
       ) : cat.loading ? (
@@ -61,27 +61,21 @@ export default function Events() {
         hero && <Hero t={hero.t} mine={hero.mine} entrants={counts.data?.get(hero.t.id)?.entries} signedIn={!!session} />
       )}
 
-      <div className="chips" role="group" aria-label="Filter events">
-        {FILTERS.map((f) => (
-          <button key={f.key} className="chip" aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>
-            {f.label}
-          </button>
-        ))}
-      </div>
-
       {cat.loading ? (
         <div className="game-grid">
           {Array.from({ length: 8 }, (_, i) => <div key={i} className="skel" style={{ aspectRatio: '4 / 5', borderRadius: 16 }} />)}
         </div>
-      ) : shown.length ? (
-        <div className="game-grid">
-          {shown.map((t) => {
-            const g = cat.gameById.get(t.game_id)
-            return g ? <EventCard key={t.id} t={t} game={g} entrants={counts.data?.get(t.id)?.entries} /> : null
-          })}
-        </div>
       ) : (
-        <Empty title="Nothing here yet" text="No events with this status right now. Check the other filters." />
+        <>
+          <EventSection
+            id="open-games"
+            title="Open Games"
+            sub="Registration open or game on now"
+            list={openNow}
+            empty="Nothing is open right now. The next ones are just below."
+          />
+          <EventSection id="upcoming" title="Upcoming" sub="Announced, opening soon" list={upcoming} empty="No upcoming events right now." />
+        </>
       )}
 
       <div className="rows">
@@ -103,6 +97,32 @@ export default function Events() {
         </Link>
       </div>
     </div>
+  )
+}
+
+function EventSection({ id, title, sub, list, empty }: { id: string; title: string; sub: string; list: Tournament[]; empty: string }) {
+  const cat = useCatalog()
+  const counts = useCounts()
+  return (
+    <section className="ev-section" aria-labelledby={`${id}-h`}>
+      <div className="ev-section-head">
+        <h2 id={`${id}-h`} className="h2">
+          {title}
+        </h2>
+        <span className="ev-count num">{list.length}</span>
+        <span className="small t3 ev-section-sub">{sub}</span>
+      </div>
+      {list.length ? (
+        <div className="game-grid">
+          {list.map((t) => {
+            const g = cat.gameById.get(t.game_id)
+            return g ? <EventCard key={t.id} t={t} game={g} entrants={counts.data?.get(t.id)?.entries} /> : null
+          })}
+        </div>
+      ) : (
+        <p className="t3 small">{empty}</p>
+      )}
+    </section>
   )
 }
 

@@ -144,7 +144,7 @@ export function AdminHeader({ title, sub, actions }: { title: string; sub?: Reac
 }
 
 export function ReadOnlyNote() {
-  return <p className="hint">You are an organiser: this view is read-only.</p>
+  return <p className="hint">View only. Ask Angad (Super Admin) to change this.</p>
 }
 
 export interface AdminMember {

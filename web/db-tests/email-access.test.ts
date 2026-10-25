@@ -71,7 +71,7 @@ describe('roles by email (superadmin only)', () => {
 
 describe('bans by email', () => {
   it('a banned email can never create an account', async () => {
-    await db.as(alice) // admin
+    await db.as(su)
     const r = await db.rpc<{ registered: boolean }>('admin_set_email_ban', { p_email: '21f1000666@ds.study.iitm.ac.in', p_banned: true, p_note: 'cheating' })
     expect(r.registered).toBe(false)
     await db.as('postgres')
@@ -80,26 +80,26 @@ describe('bans by email', () => {
     await expect(db.newUser('21f1000666@ds.study.iitm.ac.in')).rejects.toThrow(/IIT Madras/)
   })
   it('banning a registered player locks them out of every action', async () => {
-    await db.as(alice)
+    await db.as(su)
     await db.rpc('admin_set_email_ban', { p_email: '23f1000002@ds.study.iitm.ac.in', p_banned: true, p_note: 'smurfing' })
     await db.as(bob)
     const me = await db.rpc<{ status: string }>('get_my_profile')
     expect(me.status).toBe('banned')
     await expectHint(db.rpc('request_game', { p_game_name: 'Ludo', p_platform: 'mobile', p_note: null }), 'ACCOUNT_BLOCKED')
-    await db.as(alice)
+    await db.as(su)
     await db.rpc('admin_set_email_ban', { p_email: '23f1000002@ds.study.iitm.ac.in', p_banned: false, p_note: null })
     await db.as(bob)
     expect((await db.rpc<{ status: string }>('get_my_profile')).status).toBe('active')
   })
-  it('an admin cannot ban the superadmin, another admin, or themselves', async () => {
+  it('an admin cannot ban, unban or suspend anyone (superadmin only since 0015)', async () => {
     await db.as(su)
     await db.rpc('superadmin_set_email_role', { p_email: '23f1000002@ds.study.iitm.ac.in', p_role: 'admin' })
     await db.as(alice)
     await expectHint(db.rpc('admin_set_email_ban', { p_email: '24f2004141@ds.study.iitm.ac.in', p_banned: true, p_note: null }), 'FORBIDDEN')
     await expectHint(db.rpc('admin_set_email_ban', { p_email: '23f1000002@ds.study.iitm.ac.in', p_banned: true, p_note: null }), 'FORBIDDEN')
+    await expectHint(db.rpc('admin_set_email_ban', { p_email: '21f1000777@ds.study.iitm.ac.in', p_banned: true, p_note: null }), 'FORBIDDEN')
     await expectHint(db.rpc('admin_set_user_status', { p_user_id: bob, p_status: 'banned', p_note: null }), 'FORBIDDEN')
     await expectHint(db.rpc('admin_set_user_status', { p_user_id: su, p_status: 'banned', p_note: null }), 'FORBIDDEN')
-    await expectHint(db.rpc('admin_set_email_ban', { p_email: '23f1000001@ds.study.iitm.ac.in', p_banned: true, p_note: null }), 'SELF')
   })
   it('the superadmin can ban an admin, which also strips their powers', async () => {
     await db.as(su)

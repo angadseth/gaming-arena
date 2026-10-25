@@ -2,6 +2,7 @@ import { Crown } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { Avatar } from './Avatar'
 import { Flap, HouseTag } from './ui'
+import { StaffBadge } from './StaffBadge'
 
 export type PodiumEntry = { key: string; rank: number; name: string; avatar: string; house_id: number | null; points: string; sub?: string; mine?: boolean }
 
@@ -25,6 +26,7 @@ export function Podium({ rows }: { rows: PodiumEntry[] }) {
             <span className="podium-label">{PLACE[r.rank].label}</span>
             <Avatar value={r.avatar} size={r.rank === 1 ? 76 : 60} ring={PLACE[r.rank].ring} />
             <strong className="podium-name ellipsis">{r.name}</strong>
+            <StaffBadge username={r.name} />
             <HouseTag id={r.house_id} />
             <span className="podium-points"><Flap value={r.points} tiles /></span>
             <span className="podium-sub">{r.sub ?? 'points'}</span>
