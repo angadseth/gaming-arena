@@ -3670,3 +3670,14 @@ main:has(+ .site-footer) .page {
 #main {
   flex: 1 0 auto;
 }
+
+/* Avatar picker sections (Girls / Boys / Fun) */
+.avatar-group + .avatar-group {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.avatar-group-h {
+  font: 400 18px/1 var(--font-sign);
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}

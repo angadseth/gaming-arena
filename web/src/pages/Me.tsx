@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Check, ChevronRight, LogOut, MessageCircle, PencilLine, Shield, Shuffle } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Avatar, AVATAR_STYLES, avatarKey } from '../components/Avatar'
+import { Avatar, AVATAR_GROUPS, avatarKey } from '../components/Avatar'
 import { EntryPanel } from '../components/event'
 import { PlayerCard } from '../components/PlayerCard'
 import { UsernameField, usernameBlocksSave, useUsernameStatus } from '../components/UsernameField'
@@ -183,22 +183,27 @@ export default function Me() {
       <Sheet open={picOpen} onClose={() => setPicOpen(false)} title="Profile picture">
         <div className="stack">
           <p className="small t2">Pick any avatar. It shows on leaderboards and the top-player cards.</p>
-          {AVATAR_STYLES.map((st) => (
-            <div key={st.key} className="stack" style={{ gap: 8 }}>
-              <span className="tag-type t3">{st.label}</span>
-              <div className="avatar-grid">
-                {Array.from({ length: 6 }, (_, i) => {
-                  const key = `${st.key}:${picSeed}${i}`
-                  const current = profile.avatar === key
-                  return (
-                    <button key={key} className="avatar-pick" aria-pressed={current} aria-label={`${st.label} avatar ${i + 1}`} disabled={!!picBusy} onClick={() => pickAvatar(key)}>
-                      <Avatar value={key} size={56} />
-                      {(current || picBusy === key) && <span className="avatar-check" aria-hidden><Check size={14} /></span>}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+          {AVATAR_GROUPS.map((grp) => (
+            <section key={grp.title} className="avatar-group stack" style={{ gap: 10 }}>
+              <h3 className="avatar-group-h">{grp.title}</h3>
+              {grp.styles.map((st) => (
+                <div key={st.key} className="stack" style={{ gap: 8 }}>
+                  <span className="tag-type t3">{st.label}</span>
+                  <div className="avatar-grid">
+                    {Array.from({ length: 6 }, (_, i) => {
+                      const key = `${st.key}:${picSeed}${i}`
+                      const current = profile.avatar === key
+                      return (
+                        <button key={key} className="avatar-pick" aria-pressed={current} aria-label={`${grp.title} ${st.label} avatar ${i + 1}`} disabled={!!picBusy} onClick={() => pickAvatar(key)}>
+                          <Avatar value={key} size={56} />
+                          {(current || picBusy === key) && <span className="avatar-check" aria-hidden><Check size={14} /></span>}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </section>
           ))}
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <Button kind="ghost" onClick={() => setPicSeed(Math.random().toString(36).slice(2, 6))}>
@@ -206,6 +211,7 @@ export default function Me() {
             </Button>
             {profile.avatar && <Button kind="ghost" onClick={() => pickAvatar('')}>Use default</Button>}
           </div>
+          <p className="small t3">Avatars by DiceBear: Adventurer by Lisa Wischofsky (CC BY 4.0), Avataaars and Bottts by Pablo Stanley.</p>
         </div>
       </Sheet>
 
