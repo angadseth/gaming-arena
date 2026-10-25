@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { Button, Empty, ErrorBox, Field, HouseTag, Skeleton, StatusPill } from '../../components/ui'
 import { useAction, useAuth, useCatalog, useMatchResults, useStandings, useToast } from '../../lib/app'
-import { fmtDate, fmtPoints, igNorm } from '../../lib/format'
+import { cleanIgName, fmtDate, fmtPoints, igNorm } from '../../lib/format'
 import type { Tournament } from '../../lib/types'
 import { MentionBox, mentionables } from './MentionBox'
 import { AdjustSheet, useRegistrations } from './Registrations'
@@ -79,7 +79,7 @@ function parsePaste(text: string, entries: AdminEntry[]): { rows: Parsed[]; erro
   return { rows, error: null }
 }
 
-interface Line {
+export interface Line {
   idx: number
   said: string
   manual: number | null
@@ -112,14 +112,35 @@ const entryTag = (e: AdminEntry) => `@${(e.members ?? []).length === 1 ? e.membe
  * event's points table decides from the position). Names match like public.ig_key: case, spaces and
  * colour tags are ignored; @username and team names work too.
  */
-function parseLines(text: string, entries: AdminEntry[]): Line[] {
+/** Letters and digits only: skribbl drops most punctuation from names (. , & ' % $ " < > / + #). */
+const looseKey = (s: string) => cleanIgName(s.normalize('NFKC')).toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')
+
+export function parseLines(text: string, entries: AdminEntry[]): Line[] {
   const byName = new Map<string, AdminEntry>()
+  // Fallback for names a game has stripped or cut short; null = two entries share the key.
+  const byLoose = new Map<string, AdminEntry | null>()
+  const addLoose = (k: string, e: AdminEntry) => {
+    if (k) byLoose.set(k, byLoose.has(k) && byLoose.get(k) !== e ? null : e)
+  }
   for (const e of entries) {
     byName.set(igNorm(e.name), e)
+    addLoose(looseKey(e.name), e)
     for (const m of e.members ?? []) {
       byName.set(igNorm(m.username), e)
       byName.set(igNorm(m.ig_id), e)
+      addLoose(looseKey(m.username), e)
+      addLoose(looseKey(m.ig_id), e)
     }
+  }
+  const looseMatch = (said: string): AdminEntry | null => {
+    const k = looseKey(said)
+    if (!k) return null
+    if (byLoose.has(k)) return byLoose.get(k) ?? null
+    // skribbl cuts long names: a cut name of 8+ characters matches the one entry it starts.
+    if (k.length < 8) return null
+    const hits = new Set<AdminEntry>()
+    for (const [key, e] of byLoose) if (e && key.startsWith(k)) hits.add(e)
+    return hits.size === 1 ? [...hits][0] : null
   }
   const seen = new Set<string>()
   const out: Line[] = []
@@ -135,7 +156,7 @@ function parseLines(text: string, entries: AdminEntry[]): Line[] {
     const said = (m ? m[1] : line).replace(/,\s*$/, '').trim()
     const manual = m ? Number(m[2]) : null
     const key = igNorm(said.replace(/^@/, ''))
-    const entry = byName.get(key) ?? null
+    const entry = byName.get(key) ?? looseMatch(said.replace(/^@/, ''))
     let suggest: string | null = null
     let problem: string | null = null
     if (!entry) {
