@@ -234,6 +234,7 @@ export const usePlayerRankings = (format: RankFormat) => {
         events: Number(r.events),
         podiums: Number(r.podiums),
         firsts: Number(r.firsts),
+        total: Number(r.total ?? 0),
       })),
     staleTime: 60_000,
   })

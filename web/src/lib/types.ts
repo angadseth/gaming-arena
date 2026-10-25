@@ -185,6 +185,8 @@ export interface PlayerRank {
   podiums: number
   firsts: number
   is_me: boolean
+  /** Players ranked in total (migration 0015); 0 before it runs. */
+  total: number
 }
 
 export interface HouseStanding {

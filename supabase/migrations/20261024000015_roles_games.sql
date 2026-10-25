@@ -12,11 +12,12 @@
 --    From this migration is_admin() / require_admin() mean "superadmin":
 --    every older admin_* RPC behind them is now superadmin-only. Admin
 --    powers are spelled out below with can_manage_events().
--- 2. Public staff badges: "Super Admin" and "Admin ★" next to a username.
+-- 2. Public staff badges: plain "Super Admin" and "Admin" next to a username.
 -- 3. Sagar and Abhimanyu become admins (by email, so it also works before
 --    they first sign in), plus the @mg.study domain from 0014.
 -- 4. New games on top: Smash Karts, Stumble Guys, BGMI, Free Fire, CODM,
 --    skribbl, Clash of Clans, Clash Royale, CS2, Valorant, Among Us, Extra.
+-- 5. Top players: top 3 plus my own rank, with the total count.
 -- Safe to run twice.
 -- =====================================================================
 
@@ -326,6 +327,64 @@ select g.id, g.slug || '-s1', coalesce(nullif(g.short, ''), g.title) || ' Season
 from public.games g
 where g.slug in ('smash-karts', 'clash-of-clans', 'among-us', 'extra')
 on conflict (slug) do nothing;
+
+-- ---------------------------------------------------------------------
+-- 5. Top players = top 3 cards + my own rank card (Angad, 25 Oct): return
+--    only the top 3 plus me, and how many players are ranked in total.
+-- ---------------------------------------------------------------------
+drop function if exists public.player_rankings(text, text);
+create function public.player_rankings(p_format text default 'all', p_season text default null)
+returns table (
+  rank bigint, username text, avatar text, house_id smallint,
+  points numeric, events bigint, podiums bigint, firsts bigint, is_me boolean, total bigint
+)
+language sql stable security definer set search_path = '' as $$
+  with done as (
+    select t.id, t.house_points
+    from public.tournaments t join public.games g on g.id = t.game_id
+    where t.status = 'completed' and (p_season is null or t.season = p_season)
+      and case p_format
+            when 'solo' then g.team_size = 1
+            when 'small' then g.team_size between 2 and 3
+            when 'squad' then g.team_size >= 4
+            else true
+          end
+  ), agg as (
+    select e.id as entry_id, e.tournament_id,
+           coalesce(sum(r.points), 0) + e.points_adjust as points,
+           count(*) filter (where r.placement = 1) as wins,
+           coalesce(sum(r.kills), 0) as kills, min(r.placement) as best
+    from public.entries e join done d on d.id = e.tournament_id
+    left join public.match_results r on r.entry_id = e.id
+    where e.status = 'active' group by e.id
+  ), placed as (
+    select a.tournament_id, a.entry_id,
+           rank() over (partition by a.tournament_id
+                        order by a.points desc, a.wins desc, a.kills desc, a.best asc nulls last) as rnk
+    from agg a
+  ), scored as (
+    select pl.entry_id, pl.rnk, coalesce(public.points_for_rank(d.house_points, pl.rnk::int), 0) as pts
+    from placed pl join done d on d.id = pl.tournament_id
+  ), per as (
+    select m.user_id, sum(s.pts) as points, count(*) as events,
+           count(*) filter (where s.rnk <= 3) as podiums, count(*) filter (where s.rnk = 1) as firsts
+    from scored s
+    join public.entry_members m on m.entry_id = s.entry_id and m.role <> 'sub'
+    join public.profiles p on p.id = m.user_id and p.status <> 'banned'
+    group by m.user_id
+  ), ranked as (
+    select rank() over (order by per.points desc, per.firsts desc, per.podiums desc) as rnk, per.*
+    from per
+  )
+  select r.rnk, p.username,
+         coalesce(p.avatar, 'bottts:' || left(regexp_replace(lower(p.username), '[^a-z0-9]', '', 'g'), 16)),
+         p.house_id, round(r.points, 2), r.events, r.podiums, r.firsts,
+         coalesce(p.id = auth.uid(), false), (select count(*) from ranked)
+  from ranked r join public.profiles p on p.id = r.user_id
+  where r.rnk <= 3 or p.id = auth.uid()
+  order by r.rnk, p.username
+$$;
+grant execute on function public.player_rankings(text, text) to anon, authenticated;
 
 -- ---------------------------------------------------------------------
 -- Grants

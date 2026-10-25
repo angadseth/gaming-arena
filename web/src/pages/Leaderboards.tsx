@@ -1,13 +1,12 @@
 import { ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Avatar } from '../components/Avatar'
+import { MyRankCard, type MyRank } from '../components/MyRankCard'
 import { Podium } from '../components/Podium'
-import { Empty, ErrorBox, Flap, GameCover, HouseTag, MetaLine, Skeleton, StatusPill } from '../components/ui'
+import { Empty, ErrorBox, GameCover, MetaLine, Skeleton, StatusPill } from '../components/ui'
 import { useCatalog, useCounts, usePlayerRankings } from '../lib/app'
 import { fmtPoints, fmtShort, teamSizeLabel } from '../lib/format'
 import type { RankFormat, TournamentStatus } from '../lib/types'
-import { StaffBadge } from '../components/StaffBadge'
 
 const ORDER: Partial<Record<TournamentStatus, number>> = { live: 0, closed: 1, open: 2, completed: 3, upcoming: 4 }
 
@@ -28,7 +27,7 @@ export default function Leaderboards() {
     <div className="page stack" style={{ gap: 20 }}>
       <section className="stack" style={{ gap: 6 }}>
         <h1 className="h1">Leaderboards</h1>
-        <p className="t2">Top players across every finished event, then the standings for each event.</p>
+        <p className="t2">The top 3 of every board, and your own rank right under them.</p>
       </section>
 
       <TopPlayers />
@@ -79,13 +78,31 @@ const FORMATS: { key: RankFormat; label: string }[] = [
   { key: 'squad', label: 'Squads & 5v5' },
 ]
 
-/** Overall player rankings: podium of three, the rest as rows, and my own rank pinned. */
+/** Overall player rankings: the top 3 as cards, then my own rank card (rank of N, top %, points). */
 function TopPlayers() {
   const [format, setFormat] = useState<RankFormat>('all')
   const q = usePlayerRankings(format)
   const rows = q.data ?? []
-  const me = rows.find((r) => r.is_me)
-  const rest = rows.filter((r) => r.rank > 3 && r.rank <= 100)
+  const mine = rows.find((r) => r.is_me)
+  // Before migration 0015 the server sends no total: fall back to the rows it sent.
+  const total = rows[0]?.total || rows.length
+  const above = mine && mine.rank > 1 ? rows.filter((r) => r.rank < mine.rank).sort((a, b) => b.rank - a.rank)[0] : undefined
+  const me: MyRank | null = mine
+    ? {
+        rank: mine.rank,
+        total,
+        points: mine.points,
+        above: above && above.rank === mine.rank - 1 ? { rank: above.rank, points: above.points } : null,
+        second: mine.rank === 1 ? (rows.find((r) => r.rank === 2)?.points ?? null) : null,
+        name: mine.username,
+        avatar: mine.avatar,
+        stats: [
+          { label: 'events', value: mine.events },
+          { label: 'podiums', value: mine.podiums },
+          { label: 'wins', value: mine.firsts },
+        ],
+      }
+    : null
   return (
     <section className="stack" style={{ gap: 14 }}>
       <div className="section-head"><h2>Top players</h2></div>
@@ -103,38 +120,23 @@ function TopPlayers() {
       ) : (
         <>
           <Podium
-            rows={rows.map((r) => ({
-              key: r.username, rank: r.rank, name: r.username, avatar: r.avatar, house_id: r.house_id,
-              points: fmtPoints(r.points), sub: `${r.firsts} wins · ${r.podiums} podiums`, mine: r.is_me,
-            }))}
+            rows={rows
+              .filter((r) => r.rank <= 3)
+              .map((r) => ({
+                key: r.username, rank: r.rank, name: r.username, avatar: r.avatar, house_id: r.house_id,
+                points: fmtPoints(r.points), sub: `${r.firsts} wins · ${r.podiums} podiums`, mine: r.is_me,
+              }))}
           />
-          {me && (
-            <div className="my-rank" aria-live="polite">
-              <Avatar value={me.avatar} size={44} />
-              <span className="grow stack" style={{ gap: 2 }}>
-                <span className="small t2">Your rank</span>
-                <strong className="my-rank-num">#{me.rank}</strong>
+          <MyRankCard
+            me={me}
+            board="the IITM BS Top Players"
+            empty={
+              <span className="stack" style={{ gap: 4 }}>
+                <b>No rank yet</b>
+                <span className="small t2">Finish an event and your own rank card shows up here.</span>
               </span>
-              <span className="stat"><Flap value={fmtPoints(me.points)} tiles /><small>{me.events} events</small></span>
-            </div>
-          )}
-          {rest.length > 0 && (
-            <div className="rows">
-              {rest.map((r) => (
-                <div key={r.username} className={`lrow${r.is_me ? ' mine' : ''}`}>
-                  <span className="rank num">{r.rank}</span>
-                  <span className="row" style={{ gap: 10, minWidth: 0 }}>
-                    <Avatar value={r.avatar} size={34} />
-                    <span className="stack" style={{ gap: 3, minWidth: 0 }}>
-                      <span className="ellipsis" style={{ fontWeight: 600 }}>{r.username} <StaffBadge username={r.username} /></span>
-                      <HouseTag id={r.house_id} />
-                    </span>
-                  </span>
-                  <span className="stat"><Flap value={fmtPoints(r.points)} /><small>{r.firsts} W · {r.podiums} POD</small></span>
-                </div>
-              ))}
-            </div>
-          )}
+            }
+          />
         </>
       )}
     </section>
