@@ -51,6 +51,10 @@ STATE 25 Oct ~13:30: 0015 + 0016 RUN by him (Success). Verified live: Team & acc
  - 25 Oct ~17:40 (he: "close turant nahi hua", footer floats on short pages): admin toggle is optimistic (flips in
    ~70 ms), home Open Games = open+live only (closed -> Upcoming), live batch 150 ms, #root flex column so footer
    sticks to the bottom. Pushed + deployed; live footer verified at viewport bottom.
+ - 25 Oct ~17:40 he said 2 new accounts registered but names not in admin. Checked live: 'entries' ping arrives
+   (<1 s) and a second admin tab refetches admin_registrations on it. DB has NO registrations from new accounts after
+   17:26 (only desibeer -> skribbl 17:31); Players list has no new profiles. Asked him which emails/event. Added 5 s
+   polling on admin registrations as backup. (Did 2 no-op saves of newbie +100 for the test: audit shows entry.points 100->100.)
 
 OPEN QUESTIONS to Angad (still unanswered from 24 Oct):
  b. One roll number = one account across ds/es/mg? c. "Verified on Meet" tick for top 3? d. Top Players incl. live events?
