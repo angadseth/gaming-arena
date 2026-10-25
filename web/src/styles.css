@@ -2438,10 +2438,10 @@ body {
   background: var(--surface-3);
   border-color: var(--border-strong);
 }
-.staff-badge.is-icon {
-  width: 20px;
-  padding: 0;
-  justify-content: center;
+.staff-badge.is-compact {
+  height: 18px;
+  padding: 0 6px;
+  font-size: 10px;
 }
 .podium-card .staff-badge {
   margin-top: -2px;
