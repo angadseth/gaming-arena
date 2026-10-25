@@ -24,14 +24,14 @@ I can't press Run in Supabase: copy SQL to clipboard, paste in Monaco, HE presse
  - Diwali: toran svg (wire+bulbs+marigolds in one svg = no drift on zoom), diyas, Diwali banner with "Patakhe on/off",
    crackers canvas BEHIND content: rockets (peony/ring/willow/crackle), anaar, chakri, kandils, tap sky to burst.
 
-STATE 25 Oct ~13:15: frontend LIVE (6b95677, Team & access verified live). 0015 + 0016 BOTH PASTED in one Supabase SQL tab
- (26854 chars), he must press Run (NOT run as of 13:15: results pane still "Click Run"). Until then: no new games, no badges, open/close button errors. Old version = git tag before-roles-v2.
+STATE 25 Oct ~13:30: 0015 + 0016 RUN by him (Success). Verified live: Team & access shows angad_seth Super Admin 11/11,
+ sagar + abhimanyu Admin 5/11 (both signed up); home = 1 open + 18 upcoming = 19 games. Until then: no new games, no badges, open/close button errors. Old version = git tag before-roles-v2.
  His PC has Windows animations OFF (prefers-reduced-motion) -> crackers were hidden; now the banner switch overrides it
  (turned ON in his Chrome). Pushing to main works for angadseth (admin bypass of protection; "must be PR" text is just a notice).
 
 OPEN QUESTIONS to Angad (still unanswered from 24 Oct):
  b. One roll number = one account across ds/es/mg? c. "Verified on Meet" tick for top 3? d. Top Players incl. live events?
  e. Abhimanyu's surname for the footer?
-NEXT: 1. He presses Run on 0015+0016 (then Team & access shows Angad + Sagar + Abhimanyu), then I verify live (badges, admin login as Sagar). 2. Real game-night test with a friend.
+NEXT: 1. (done) Run 0015+0016. Offered: GitHub Action to auto-apply future migrations (needs his Supabase token as a secret). then I verify live (badges, admin login as Sagar). 2. Real game-night test with a friend.
  3. Supabase Auth Site URL -> /gaming-arena/; SMTP sender name still "Pugmark". 4. Rotate Gmail app password; 2FA.
 RULES: small cards not tables/text walls; build what he names; keep versions; loophole-review before big features; verify live in Chrome.
