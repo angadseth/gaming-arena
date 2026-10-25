@@ -5,7 +5,8 @@
  *  - a few sky lanterns (kandil) drifting up,
  *  - tap or click on any empty spot to launch a cracker there,
  *  - confetti poppers from the bottom corners on celebrate().
- * Off under prefers-reduced-motion or when the viewer switches "Patakhe" off; paused while hidden.
+ * The viewer's "Patakhe" switch wins; without a choice it follows prefers-reduced-motion
+ * (Angad's own PC has Windows animations off, which hid every cracker). Paused while hidden.
  */
 const COLOURS = ['#ffc23d', '#ff2e93', '#29e3ff', '#c6ff3d', '#ff7a45', '#b99cff', '#ffffff']
 const GOLD = ['#ffd56a', '#ffc23d', '#ffb347']
@@ -23,13 +24,20 @@ let pop: (() => void) | null = null
 let restart: (() => void) | null = null
 let stop: (() => void) | null = null
 
+const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
 export function festiveOn(): boolean {
+  let v: string | null = null
   try {
-    return localStorage.getItem(KEY) !== 'off'
+    v = localStorage.getItem(KEY)
   } catch {
-    return true
+    /* storage blocked: follow the system setting */
   }
+  return v === 'on' || (v !== 'off' && !reduced())
 }
+
+/** html.fx-on lets the CSS animations (bulbs, diya flames) run even under reduced motion. */
+const markRoot = (on: boolean) => document.documentElement.classList.toggle('fx-on', on)
 
 /** Viewer switch for the crackers (kept in this browser only). */
 export function setFestive(on: boolean) {
@@ -38,6 +46,7 @@ export function setFestive(on: boolean) {
   } catch {
     /* storage blocked: the switch still works for this visit */
   }
+  markRoot(on)
   if (on) restart?.()
   else stop?.()
 }
@@ -50,7 +59,6 @@ export function celebrate() {
 const INTERACTIVE = 'a,button,input,textarea,select,label,summary,video,[role="button"],[role="tab"],[role="option"],[contenteditable]'
 
 export function startFireworks(): () => void {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return () => {}
   let canvas: HTMLCanvasElement | null = null
   let ctx: CanvasRenderingContext2D
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
@@ -320,11 +328,12 @@ export function startFireworks(): () => void {
   document.addEventListener('click', onClick)
   restart = begin
   stop = end
+  markRoot(festiveOn())
   if (festiveOn()) begin()
 
   // One popper per browser session, as a welcome.
   try {
-    if (!sessionStorage.getItem('ga-popped')) {
+    if (festiveOn() && !sessionStorage.getItem('ga-popped')) {
       sessionStorage.setItem('ga-popped', '1')
       setTimeout(() => pop?.(), 600)
     }

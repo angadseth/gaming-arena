@@ -2385,16 +2385,28 @@ body {
     order: 3;
   }
 }
+/* Reduced motion keeps the lights still, unless the viewer turned Patakhe on (html.fx-on). */
 @media (prefers-reduced-motion: reduce) {
-  .g-bulb,
-  .diya-flame,
-  .diya-flame-in,
-  .diya-glow,
-  .diwali-rangoli {
+  :root:not(.fx-on) .g-bulb,
+  :root:not(.fx-on) .diya-flame,
+  :root:not(.fx-on) .diya-flame-in,
+  :root:not(.fx-on) .diya-glow,
+  :root:not(.fx-on) .diwali-rangoli {
     animation: none;
   }
-  .diwali-switch {
-    display: none;
+  /* Beat the global 0ms rule when Patakhe is on. */
+  :root.fx-on .g-bulb {
+    animation-duration: 1.6s !important;
+  }
+  :root.fx-on .diya-flame,
+  :root.fx-on .diya-flame-in {
+    animation-duration: 1.3s !important;
+  }
+  :root.fx-on .diya-glow {
+    animation-duration: 2.2s !important;
+  }
+  :root.fx-on .diwali-rangoli {
+    animation-duration: 60s !important;
   }
 }
 
