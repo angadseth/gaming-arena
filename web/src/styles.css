@@ -2321,7 +2321,8 @@ body {
     radial-gradient(120% 140% at 0% 100%, rgba(255, 138, 31, 0.22), transparent 60%),
     radial-gradient(80% 120% at 100% 0%, rgba(255, 46, 147, 0.16), transparent 60%),
     var(--surface-1);
-  overflow: hidden;
+  /* clip, not hidden: a hidden box can still scroll sideways when the switch takes focus. */
+  overflow: clip;
 }
 .diwali-rangoli {
   position: absolute;
