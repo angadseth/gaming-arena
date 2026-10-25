@@ -1,4 +1,4 @@
-import { FileClock, Gamepad2, Inbox, MapPinned, Users } from 'lucide-react'
+import { FileClock, Gamepad2, Inbox, MapPinned, ShieldCheck, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { StaffBadge } from '../../components/StaffBadge'
 import { ErrorBox, Skeleton } from '../../components/ui'
@@ -100,8 +100,9 @@ export default function Overview() {
           </div>
           <div className="dash-tools">
             {[
+              { to: '/admin/access', label: 'Team & access', Icon: ShieldCheck },
               { to: '/admin/games', label: 'Games', Icon: Gamepad2 },
-              { to: '/admin/players', label: 'Players & roles', Icon: Users },
+              { to: '/admin/players', label: 'Players', Icon: Users },
               { to: '/admin/requests', label: 'Game requests', Icon: Inbox },
               { to: '/admin/regions', label: 'Regions', Icon: MapPinned },
               { to: '/admin/audit', label: 'Audit log', Icon: FileClock },

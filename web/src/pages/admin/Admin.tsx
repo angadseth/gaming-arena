@@ -1,8 +1,9 @@
-import { FileClock, Gamepad2, Inbox, LayoutDashboard, MapPinned, Trophy, Users } from 'lucide-react'
+import { FileClock, Gamepad2, Inbox, LayoutDashboard, MapPinned, ShieldCheck, Trophy, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth } from '../../lib/app'
 import { Empty } from '../../components/ui'
+import Access from './Access'
 import Audit from './Audit'
 import Events, { EventEditor } from './Events'
 import Games, { GameEditor } from './Games'
@@ -20,6 +21,7 @@ export default function Admin() {
     { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true, show: true },
     { to: '/admin/events', label: 'Events', icon: Trophy, show: true },
     { to: '/admin/games', label: 'Games', icon: Gamepad2, show: isAdmin },
+    { to: '/admin/access', label: 'Team & access', icon: ShieldCheck, show: isAdmin },
     { to: '/admin/players', label: 'Players', icon: Users, show: isAdmin },
     { to: '/admin/requests', label: 'Game requests', icon: Inbox, show: isAdmin },
     { to: '/admin/regions', label: 'Regions', icon: MapPinned, show: isAdmin },
@@ -50,6 +52,7 @@ export default function Admin() {
             <Route path="games" element={<SuperOnly><Games /></SuperOnly>} />
             <Route path="games/new" element={<SuperOnly><GameEditor /></SuperOnly>} />
             <Route path="games/:id" element={<SuperOnly><GameEditor /></SuperOnly>} />
+            <Route path="access" element={<SuperOnly><Access /></SuperOnly>} />
             <Route path="players" element={<SuperOnly><Players /></SuperOnly>} />
             <Route path="requests" element={<SuperOnly><Requests /></SuperOnly>} />
             <Route path="regions" element={<SuperOnly><Regions /></SuperOnly>} />

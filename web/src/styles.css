@@ -3685,3 +3685,106 @@ body {
   border-radius: var(--r-lg);
   border: 1px dashed var(--border-strong);
 }
+
+/* ---------- admin: team & access ---------- */
+.chip.is-danger[aria-pressed='true'] {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+.acc-grid {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+}
+.acc {
+  --hue: var(--border-strong);
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 14px;
+  border-radius: var(--r-lg);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--hue) 16%, transparent), transparent 56px),
+    var(--surface-1);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--hue) 70%, transparent);
+}
+.acc.is-super { --hue: var(--accent); }
+.acc.is-admin { --hue: var(--cyan); }
+.acc.is-org { --hue: var(--text-3); }
+.acc.is-banned { --hue: var(--danger); }
+.acc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.acc-tag {
+  flex: none;
+  height: 20px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--r-tag);
+  font: 700 11px/1 var(--font-sans);
+  color: var(--text-2);
+  background: var(--surface-3);
+}
+.acc-tag.is-banned {
+  color: #fff;
+  background: var(--danger);
+}
+.acc-perms {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 10px;
+  font-size: 12.5px;
+}
+.acc-perms li {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  gap: 6px;
+  min-width: 0;
+}
+.acc-perms li.yes { color: var(--text-1); }
+.acc-perms li.yes svg { color: var(--success); flex: none; }
+.acc-perms li.no { color: var(--text-3); opacity: 0.6; }
+.acc-perms li.no svg { flex: none; }
+.acc-ban {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--r-md, 10px);
+  color: var(--danger);
+  background: var(--danger-tint);
+}
+.acc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 400px) {
+  .acc-perms { grid-template-columns: 1fr; }
+}
+
+/* Phone top bar: my name + "Super Admin" tag pushed the page sideways (480px at 390). */
+.top-me-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 599px) {
+  .top-actions .staff-badge { display: none; }
+  .top-me-name { max-width: 96px; }
+}
+@media (max-width: 420px) {
+  .top-me-name { max-width: 64px; }
+}

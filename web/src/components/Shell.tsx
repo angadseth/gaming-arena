@@ -54,7 +54,7 @@ export function Shell() {
             {session ? (
               <NavLink to="/me" className="btn btn-secondary btn-sm">
                 {profile ? <Avatar value={avatarKey(profile.avatar, profile.username)} size={24} /> : <UserRound size={16} strokeWidth={1.75} aria-hidden />}
-                {profile?.username ?? 'Me'}
+                <span className="top-me-name">{profile?.username ?? 'Me'}</span>
                 <StaffBadge username={profile?.username} compact />
               </NavLink>
             ) : (
