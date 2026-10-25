@@ -97,7 +97,7 @@ export default function Onboarding() {
           }}
           status={uStatus}
           error={errors.username}
-          hint="Lowercase letters, numbers and _. Shown publicly."
+          hint="Lowercase letters, numbers and _. Shown publicly. Choose well: it can never be changed."
         />
 
         <Field label="Full name" htmlFor="fullname" error={errors.full_name} hint="Only organisers see this.">

@@ -28,40 +28,30 @@ beforeAll(async () => {
 }, 60_000)
 
 describe('players edit their own profile', () => {
-  it('changes username, full name and WhatsApp together', async () => {
-    await edit(ravi, ' RaviPlays ', 'Ravi  Kumar Sharma', '91234 56789')
+  it('changes full name and WhatsApp; the username stays as chosen', async () => {
+    await edit(ravi, ' Ravi ', 'Ravi  Kumar Sharma', '91234 56789')
     const p = await me(ravi)
-    expect(p.username).toBe('raviplays')
+    expect(p.username).toBe('ravi')
     expect(p.full_name).toBe('Ravi Kumar Sharma')
     expect(p.whatsapp).toBe('+919123456789')
-    expect(p.username_next_change).not.toBeNull()
   })
-  it('allows one username change every 30 days', async () => {
-    await expectHint(edit(ravi, 'ravi_again', 'Ravi Kumar Sharma', '91234 56789'), 'RENAME_COOLDOWN')
+  it('never changes a username, even to a free one (0022)', async () => {
+    await expectHint(edit(ravi, 'raviplays', 'Ravi Kumar Sharma', '91234 56789'), 'USERNAME_LOCKED')
     await db.as('postgres')
-    await db.exec(`update public.profiles set username_changed_at = now() - interval '31 days' where id = '${ravi}'`)
-    await edit(ravi, 'ravi_again', 'Ravi Kumar Sharma', '91234 56789')
-    expect((await me(ravi)).username).toBe('ravi_again')
-  })
-  it('keeps the onboarding rules for usernames', async () => {
-    await expectHint(edit(meera, 'ravi_again', 'Meera Sharma', '98765 43210'), 'USERNAME_TAKEN')
-    await expectHint(edit(meera, 'pugmark_admin', 'Meera Sharma', '98765 43210'), 'USERNAME_TAKEN')
-    await expectHint(edit(meera, '9lives', 'Meera Sharma', '98765 43210'), 'BAD_USERNAME')
-    await expectHint(edit(meera, 'meera', 'M3era!', '98765 43210'), 'BAD_NAME')
+    await db.exec(`update public.profiles set username_changed_at = now() - interval '365 days' where id = '${ravi}'`)
+    await expectHint(edit(ravi, 'raviplays', 'Ravi Kumar Sharma', '91234 56789'), 'USERNAME_LOCKED')
+    await expectHint(edit(meera, 'ravi', 'Meera Sharma', '98765 43210'), 'USERNAME_LOCKED')
+    expect((await me(ravi)).username).toBe('ravi')
     expect((await me(meera)).username).toBe('meera')
+  })
+  it('still checks the full name', async () => {
+    await expectHint(edit(meera, 'meera', 'M3era!', '98765 43210'), 'BAD_NAME')
   })
   it('limits full-name changes to 3 in 30 days', async () => {
     await edit(meera, 'meera', 'Meera A Sharma', '98765 43210')
     await edit(meera, 'meera', 'Meera B Sharma', '98765 43210')
     await edit(meera, 'meera', 'Meera C Sharma', '98765 43210')
     await expectHint(edit(meera, 'meera', 'Meera D Sharma', '98765 43210'), 'RATE_LIMITED')
-  })
-  it('audits every rename with the old and new name', async () => {
-    await db.as('postgres')
-    const r = await db.query<{ details: { from: string; to: string } }>(
-      `select details from public.audit_log where action = 'profile.username' order by id`,
-    )
-    expect(r.rows.map((x) => `${x.details.from}>${x.details.to}`)).toEqual(['ravi>raviplays', 'raviplays>ravi_again'])
   })
   it('a username can still not be changed by a direct update', async () => {
     await db.as('postgres')

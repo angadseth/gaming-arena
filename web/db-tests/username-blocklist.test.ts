@@ -38,8 +38,8 @@ describe('offensive usernames', () => {
     expect(await available('madarchod')).toBe(false)
     expect(await available('neha_plays')).toBe(true)
   })
-  it('refuses a rename to a blocked name', async () => {
-    await expectHint(db.rpc('update_my_profile', { p_username: 'harami_x', p_full_name: 'Test Player', p_whatsapp: '98765 43210' }), 'USERNAME_BLOCKED')
+  it('refuses a rename to a blocked name (any rename, since 0022)', async () => {
+    await expectHint(db.rpc('update_my_profile', { p_username: 'harami_x', p_full_name: 'Test Player', p_whatsapp: '98765 43210' }), 'USERNAME_LOCKED')
   })
   it('keeps the word list private', async () => {
     await db.as(arjun)

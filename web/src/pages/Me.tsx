@@ -1,13 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Check, ChevronRight, LogOut, MessageCircle, PencilLine, Shield, Shuffle } from 'lucide-react'
+import { Check, ChevronRight, Lock, LogOut, MessageCircle, PencilLine, Shield, Shuffle } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Avatar, AVATAR_GROUPS, avatarKey } from '../components/Avatar'
 import { EntryPanel } from '../components/event'
 import { PlayerCard } from '../components/PlayerCard'
-import { UsernameField, usernameBlocksSave, useUsernameStatus } from '../components/UsernameField'
 import { Button, Empty, ErrorBox, Field, Flap, GameCover, HouseTag, Sheet, Skeleton, StatusPill } from '../components/ui'
-import { errorCode, errorText, useApi, useAuth, useHouseName, useMyEntries, useRegionName, useToast } from '../lib/app'
+import { errorText, useApi, useAuth, useHouseName, useMyEntries, useRegionName, useToast } from '../lib/app'
 import { fmtDate } from '../lib/format'
 import { StaffBadge } from '../components/StaffBadge'
 
@@ -21,14 +20,12 @@ export default function Me() {
   const houseName = useHouseName()
   const regionName = useRegionName()
   const [editOpen, setEditOpen] = useState(false)
-  const [form, setForm] = useState({ username: '', full_name: '', whatsapp: '' })
+  const [form, setForm] = useState({ full_name: '', whatsapp: '' })
   const [editErr, setEditErr] = useState<string | null>(null)
-  const [usernameErr, setUsernameErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [picOpen, setPicOpen] = useState(false)
   const [picSeed, setPicSeed] = useState(() => Math.random().toString(36).slice(2, 6))
   const [picBusy, setPicBusy] = useState<string | null>(null)
-  const uStatus = useUsernameStatus(form.username, profile?.username)
 
   if (!profile) return <div className="page"><Skeleton h={160} /></div>
 
@@ -37,13 +34,9 @@ export default function Me() {
   const past = list.filter((e) => ['completed', 'cancelled'].includes(e.tournament.status))
   const captains = list.filter((e) => e.is_captain && e.game.team_size > 1).length
 
-  // A username change is allowed once every 30 days; the server enforces it too.
-  const nextRename = profile.username_next_change && new Date(profile.username_next_change) > new Date() ? profile.username_next_change : null
-
   function openEdit() {
-    setForm({ username: profile!.username, full_name: profile!.full_name, whatsapp: profile!.whatsapp ?? '' })
+    setForm({ full_name: profile!.full_name, whatsapp: profile!.whatsapp ?? '' })
     setEditErr(null)
-    setUsernameErr(null)
     setEditOpen(true)
   }
 
@@ -64,20 +57,17 @@ export default function Me() {
   }
 
   async function saveProfile() {
-    if (usernameBlocksSave(uStatus)) return
     setBusy(true)
     setEditErr(null)
     try {
-      await api.rpc('update_my_profile', { p_username: form.username, p_full_name: form.full_name, p_whatsapp: form.whatsapp })
+      await api.rpc('update_my_profile', { p_username: profile!.username, p_full_name: form.full_name, p_whatsapp: form.whatsapp })
       await qc.invalidateQueries({ queryKey: ['me'] })
       await qc.invalidateQueries({ queryKey: ['my-entries'] })
       await qc.invalidateQueries({ queryKey: ['standings'] })
       setEditOpen(false)
       toast({ kind: 'success', text: 'Profile saved' })
     } catch (e) {
-      // Username problems belong under the username box, everything else at the bottom.
-      if (/^(BAD_USERNAME|USERNAME_TAKEN|USERNAME_BLOCKED|RENAME_COOLDOWN|RENAME_LIVE)$/.test(errorCode(e))) setUsernameErr(errorText(e))
-      else setEditErr(errorText(e))
+      setEditErr(errorText(e))
     } finally {
       setBusy(false)
     }
@@ -217,19 +207,12 @@ export default function Me() {
 
       <Sheet open={editOpen} onClose={() => setEditOpen(false)} title="Edit profile">
         <form className="stack" onSubmit={(e) => { e.preventDefault(); saveProfile() }} noValidate>
-          <UsernameField
-            id="ed-username"
-            value={form.username}
-            onChange={(v) => {
-              setForm({ ...form, username: v })
-              setUsernameErr(null)
-            }}
-            status={uStatus}
-            current={profile.username}
-            disabled={!!nextRename}
-            error={usernameErr}
-            hint={nextRename ? `You changed it recently. Next change allowed on ${fmtDate(nextRename, false)}.` : 'Shown publicly on leaderboards. You can change it once every 30 days.'}
-          />
+          <Field label="Username" htmlFor="ed-username" hint="Fixed for good once chosen, so every board and result stays yours.">
+            <div className="input row" id="ed-username" aria-readonly style={{ gap: 8, opacity: 0.75 }}>
+              <Lock size={16} aria-hidden />
+              <span className="ellipsis">{profile.username}</span>
+            </div>
+          </Field>
           <Field label="Full name" htmlFor="ed-name" hint="As on your IITM records. Only organisers see it.">
             <input id="ed-name" className="input" autoComplete="name" maxLength={60} value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
           </Field>
@@ -239,7 +222,7 @@ export default function Me() {
           {editErr && <p className="error-text" role="alert">{editErr}</p>}
           <div className="row" style={{ justifyContent: 'flex-end' }}>
             <Button kind="ghost" type="button" onClick={() => setEditOpen(false)}>Cancel</Button>
-            <Button kind="primary" type="submit" busy={busy} disabled={usernameBlocksSave(uStatus)}>Save changes</Button>
+            <Button kind="primary" type="submit" busy={busy}>Save changes</Button>
           </div>
         </form>
       </Sheet>
