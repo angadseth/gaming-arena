@@ -45,7 +45,7 @@ STATE 25 Oct ~13:30: 0015 + 0016 RUN by him (Success). Verified live: Team & acc
  - 25 Oct ~17:25 LIVE UPDATES (he: "instant update ho jaye, bacche refresh kar rahe"): 0018_live_updates = statement
    triggers -> realtime.send(kind) on public topic 'arena' (no data); client useLiveUpdates (lib/app.tsx) batches 0.4 s
    and invalidates queries; 60 s polling fallback. Frontend PUSHED + deployed; public channel verified (2-client test).
-   0018 SQL copied to his clipboard: WAITING for his Run. After Run: listen on 'arena' + have him save a result.
+   0018 RUN by him ~17:25; VERIFIED live: listener on 'arena' got PING events after a real event change (11:56 UTC).
  - Mediator answer: results are staff-only already (Organiser can ADD results, Admin can edit/delete); give a
    trusted person the Organiser role from Team & access; kids never see the skribbl card.
 
