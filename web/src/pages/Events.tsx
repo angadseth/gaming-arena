@@ -9,11 +9,10 @@ import { fmtShort, gameHue, regOpen, relative, teamSizeLabel, urgency } from '..
 import type { Tournament, TournamentStatus } from '../lib/types'
 
 /**
- * "Open Games" = registration open or game on now. A closed event moves down to "Upcoming"
- * (Angad, 25 Oct: closing it must visibly take it out of Open Games at once).
+ * "Open Games" = registration open or game on now. Closing an event flips its card into
+ * "Closed" just below (Angad, 25 Oct: it must visibly leave Open Games at once).
  */
 const OPEN_NOW: TournamentStatus[] = ['live', 'open']
-const LATER: TournamentStatus[] = ['upcoming', 'closed']
 
 export default function Events() {
   const cat = useCatalog()
@@ -42,7 +41,8 @@ export default function Events() {
   const byGame = (a: Tournament, b: Tournament) =>
     (cat.gameById.get(a.game_id)?.sort_order ?? 99) - (cat.gameById.get(b.game_id)?.sort_order ?? 99)
   const openNow = visible.filter((t) => OPEN_NOW.includes(t.status)).sort(byGame)
-  const upcoming = visible.filter((t) => LATER.includes(t.status)).sort(byGame)
+  const closed = visible.filter((t) => t.status === 'closed').sort(byGame)
+  const upcoming = visible.filter((t) => t.status === 'upcoming').sort(byGame)
   const openCount = visible.filter((t) => regOpen(t)).length
 
   return (
@@ -78,7 +78,10 @@ export default function Events() {
             list={openNow}
             empty="Nothing is open right now. The next ones are just below."
           />
-          <EventSection id="upcoming" title="Upcoming" sub="Announced, or registration closed" list={upcoming} empty="No upcoming events right now." />
+          {closed.length > 0 && (
+            <EventSection id="closed" title="Closed" sub="Registration closed, game coming up" list={closed} empty="" />
+          )}
+          <EventSection id="upcoming" title="Upcoming" sub="Announced, registration opens soon" list={upcoming} empty="No upcoming events right now." />
         </>
       )}
 

@@ -1,12 +1,23 @@
 import { Copy, Crown, LogOut, RefreshCw, Share2, UserMinus } from 'lucide-react'
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { useAction, useToast } from '../lib/app'
 import { fmtShort, gameHue, regOpen, teamSizeLabel } from '../lib/format'
 import type { ExtraField, Game, MyEntry, Tournament } from '../lib/types'
 import { Button, Field, GameCover, HouseTag, MetaLine, Sheet, StatusPill } from './ui'
 
+/** Last status each card was shown with, so a card that changes status (open -> closed) flips once. */
+const seenStatus = new Map<string, Tournament['status']>()
+
 export function EventCard({ t, game, entrants }: { t: Tournament; game: Game; entrants?: number }) {
+  const [flip] = useState(() => {
+    const before = seenStatus.get(t.id)
+    return before !== undefined && before !== t.status
+  })
+  useEffect(() => {
+    seenStatus.set(t.id, t.status)
+  }, [t.id, t.status])
+  const closed = t.status === 'closed'
   const when =
     t.status === 'open' && t.reg_closes_at ? `CLOSES ${fmtShort(t.reg_closes_at)}`
       : t.status === 'upcoming' && t.reg_opens_at ? `OPENS ${fmtShort(t.reg_opens_at)}`
@@ -15,7 +26,7 @@ export function EventCard({ t, game, entrants }: { t: Tournament; game: Game; en
     <Link
       to={`/e/${t.slug}`}
       viewTransition
-      className="game-card holo"
+      className={`game-card holo${closed ? ' is-closed' : ''}${flip ? ' flip-in' : ''}`}
       style={{ '--hue': gameHue(game) } as CSSProperties}
       aria-label={`${t.title}, ${t.status}`}
     >
@@ -23,6 +34,7 @@ export function EventCard({ t, game, entrants }: { t: Tournament; game: Game; en
       <span className="holo-foil" aria-hidden />
       <span className="holo-glare" aria-hidden />
       <StatusPill status={t.status} />
+      {closed && <span className="closed-stamp" aria-hidden>Reg closed</span>}
       <div className="game-card-body">
         <span className="game-card-title">{game.short || game.title}</span>
         <MetaLine parts={[teamSizeLabel(game), entrants ? `${entrants} IN` : null, when]} />

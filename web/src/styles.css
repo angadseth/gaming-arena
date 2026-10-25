@@ -883,6 +883,44 @@ p {
     font-size: 30px;
   }
 }
+/* Closed: the art dims and a stamp says so; the game colour stays in the frame. */
+.game-card.is-closed .cover-art {
+  filter: grayscale(0.85) brightness(0.55);
+}
+.closed-stamp {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  z-index: 2;
+  transform: translate(-50%, -50%) rotate(-10deg);
+  padding: 6px 12px;
+  border: 3px solid var(--danger);
+  border-radius: 8px;
+  color: var(--danger);
+  background: rgba(0, 0, 0, 0.45);
+  font: 900 22px/1 var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* One flip when a card changes status (open -> closed or back). Runs even with reduced motion:
+   it is the only sign that the change happened. */
+.game-card.flip-in {
+  animation: card-flip 0.7s cubic-bezier(0.3, 0.7, 0.2, 1) both;
+}
+@keyframes card-flip {
+  from {
+    transform: perspective(900px) rotateY(-180deg);
+  }
+  to {
+    transform: perspective(900px) rotateY(0deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-card.flip-in {
+    animation-duration: 0.7s !important;
+  }
+}
 .cover {
   position: absolute;
   inset: 0;
