@@ -3680,3 +3680,12 @@ main:has(+ .site-footer) .page {
   background: var(--accent-tint);
   color: var(--text-1);
 }
+/* Footer always at the bottom of the screen, even on a short page (Angad, 25 Oct). */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+#main {
+  flex: 1 0 auto;
+}

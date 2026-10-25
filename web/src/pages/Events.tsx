@@ -8,8 +8,12 @@ import { useAuth, useCatalog, useCounts, useMyEntries } from '../lib/app'
 import { fmtShort, gameHue, regOpen, relative, teamSizeLabel, urgency } from '../lib/format'
 import type { Tournament, TournamentStatus } from '../lib/types'
 
-/** "Open Games" = registration open, closed for the night or live; "Upcoming" = announced. */
-const OPEN_NOW: TournamentStatus[] = ['live', 'open', 'closed']
+/**
+ * "Open Games" = registration open or game on now. A closed event moves down to "Upcoming"
+ * (Angad, 25 Oct: closing it must visibly take it out of Open Games at once).
+ */
+const OPEN_NOW: TournamentStatus[] = ['live', 'open']
+const LATER: TournamentStatus[] = ['upcoming', 'closed']
 
 export default function Events() {
   const cat = useCatalog()
@@ -38,7 +42,7 @@ export default function Events() {
   const byGame = (a: Tournament, b: Tournament) =>
     (cat.gameById.get(a.game_id)?.sort_order ?? 99) - (cat.gameById.get(b.game_id)?.sort_order ?? 99)
   const openNow = visible.filter((t) => OPEN_NOW.includes(t.status)).sort(byGame)
-  const upcoming = visible.filter((t) => t.status === 'upcoming').sort(byGame)
+  const upcoming = visible.filter((t) => LATER.includes(t.status)).sort(byGame)
   const openCount = visible.filter((t) => regOpen(t)).length
 
   return (
@@ -74,7 +78,7 @@ export default function Events() {
             list={openNow}
             empty="Nothing is open right now. The next ones are just below."
           />
-          <EventSection id="upcoming" title="Upcoming" sub="Announced, opening soon" list={upcoming} empty="No upcoming events right now." />
+          <EventSection id="upcoming" title="Upcoming" sub="Announced, or registration closed" list={upcoming} empty="No upcoming events right now." />
         </>
       )}
 

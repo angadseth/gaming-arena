@@ -46,7 +46,7 @@ const LIVE_KEYS: Record<string, string[]> = {
 
 /**
  * Admin saves a result -> every open page updates within ~1 s, no refresh.
- * Pings are batched for 0.4 s, so a burst of saves (or someone spamming the
+ * Pings are batched for 0.15 s, so a burst of saves (or someone spamming the
  * public channel) costs one refetch, not hundreds.
  */
 function useLiveUpdates(api: Api, qc: ReturnType<typeof useQueryClient>) {
@@ -61,7 +61,7 @@ function useLiveUpdates(api: Api, qc: ReturnType<typeof useQueryClient>) {
         const keys = [...pending]
         pending.clear()
         keys.forEach((k) => qc.invalidateQueries({ queryKey: [k] }))
-      }, 400)
+      }, 150)
     })
     return () => {
       off()
