@@ -22,6 +22,10 @@ STATE: migrations 0001-0020 all RUN + 0021 (0022 pending) + verified live. Tree 
  ~19:05 he: "username ek baar fix to wahi rahe": commit e4856c0 (Me sheet shows locked username, sign-up warns),
  migration 0022_username_locked (update_my_profile -> USERNAME_LOCKED) copied to clipboard -> WAITING on Run, then
  verify live. Tag before-username-lock. 96/96 tests.
+ ~19:20 he picked "Flip + Closed section": home = Open Games / Closed (dim art + REG CLOSED stamp) / Upcoming; a card
+ whose status changed flips once (seenStatus map in components/event.tsx; runs under reduced motion). LIVE (tag
+ before-closed-section). Live check 19:25: 0022 NOT run yet (rpc still says BAD_USERNAME, not USERNAME_LOCKED);
+ SQL re-copied to his clipboard. Verify by calling update_my_profile with p_username 'x' -> expect USERNAME_LOCKED.
 WAITING ON HIM: which step fixed his mouse (18:15); which 2 accounts "registered but not in admin" (none in DB).
 OPEN QUESTIONS (since 24 Oct): b. one roll = one account across ds/es/mg? c. "Verified on Meet" tick for top 3?
  d. Top Players incl. live events? e. Abhimanyu's surname for the footer?
