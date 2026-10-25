@@ -34,6 +34,42 @@ export const useAuth = () => {
   return a
 }
 
+/** What each live ping from 0018 makes stale. Only queries on screen refetch. */
+const LIVE_KEYS: Record<string, string[]> = {
+  results: ['standings', 'match-results', 'house-standings', 'player-rankings', 'player-card'],
+  entries: ['counts', 'standings', 'house-standings', 'player-rankings', 'player-card', 'my-entries', 'admin-registrations', 'lobby', 'admin-lobby'],
+  events: ['tournaments', 'counts', 'lobby', 'admin-lobby'],
+  games: ['games'],
+  notices: ['inbox', 'lobby', 'admin-lobby'],
+  lobby: ['lobby', 'admin-lobby'],
+}
+
+/**
+ * Admin saves a result -> every open page updates within ~1 s, no refresh.
+ * Pings are batched for 0.4 s, so a burst of saves (or someone spamming the
+ * public channel) costs one refetch, not hundreds.
+ */
+function useLiveUpdates(api: Api, qc: ReturnType<typeof useQueryClient>) {
+  useEffect(() => {
+    const pending = new Set<string>()
+    let timer: ReturnType<typeof setTimeout> | null = null
+    const off = api.onLive((kind) => {
+      for (const k of LIVE_KEYS[kind] ?? []) pending.add(k)
+      if (timer || pending.size === 0) return
+      timer = setTimeout(() => {
+        timer = null
+        const keys = [...pending]
+        pending.clear()
+        keys.forEach((k) => qc.invalidateQueries({ queryKey: [k] }))
+      }, 400)
+    })
+    return () => {
+      off()
+      if (timer) clearTimeout(timer)
+    }
+  }, [api, qc])
+}
+
 export function ApiProvider({ api, children }: { api: Api; children: ReactNode }) {
   const qc = useQueryClient()
   const [session, setSession] = useState<Session | null>(null)
@@ -64,6 +100,8 @@ export function ApiProvider({ api, children }: { api: Api; children: ReactNode }
       off()
     }
   }, [api, qc])
+
+  useLiveUpdates(api, qc)
 
   const profileQ = useQuery({
     queryKey: ['me', session?.userId],

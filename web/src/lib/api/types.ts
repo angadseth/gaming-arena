@@ -6,6 +6,8 @@ export interface Api {
   kind: 'supabase' | 'pglite'
   getSession(): Promise<Session | null>
   onAuthChange(cb: (s: Session | null) => void): () => void
+  /** Live pings from the database (migration 0018): the kind of thing that changed, never data. */
+  onLive(cb: (kind: string) => void): () => void
   sendCode(email: string, captchaToken?: string): Promise<void>
   verifyCode(email: string, code: string): Promise<void>
   signOut(): Promise<void>

@@ -101,6 +101,10 @@ export async function createPgliteApi(): Promise<Api> {
       listeners.add(cb)
       return () => listeners.delete(cb)
     },
+    // The local preview has no Realtime; pages fall back to their timed refresh.
+    onLive() {
+      return () => {}
+    },
     async sendCode(email) {
       const ok = await db.query<{ ok: boolean }>('select public.email_domain_allowed($1) as ok', [email])
       if (!ok.rows[0]?.ok) throw new ApiError('Only IIT Madras BS student emails can sign in.', 'BAD_DOMAIN')

@@ -33,6 +33,15 @@ export function createSupabaseApi(url: string, key: string): Api {
       const { data } = sb.auth.onAuthStateChange((_e, s) => cb(toSession(s)))
       return () => data.subscription.unsubscribe()
     },
+    onLive(cb) {
+      const ch = sb
+        .channel('arena')
+        .on('broadcast', { event: '*' }, (m) => cb(String(m.event)))
+        .subscribe()
+      return () => {
+        void sb.removeChannel(ch)
+      }
+    },
     async sendCode(email, captchaToken) {
       const { error } = await sb.auth.signInWithOtp({
         email,
