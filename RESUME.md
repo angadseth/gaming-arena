@@ -7,7 +7,7 @@ Supabase ref fehkrxssoxuiixgmfini (Mumbai). Superadmin angad_seth = 24f2004141@d
 SQL: I copy to clipboard, he pastes + presses Run. NEVER navigate/close the Supabase SQL tab after pasting
  ("Leave site?" dialog froze his mouse once). Data edits: use admin UI.
 
-STATE: migrations 0001-0020 all RUN (0021 pending) + verified live. Tree clean after bffa1b4 + this file.
+STATE: migrations 0001-0020 all RUN + 0021 (0022 pending) + verified live. Tree clean after bffa1b4 + this file.
  Built 25 Oct: roles v2, Team & access, @mention results, card dashboard, Open Games/Upcoming home, top-3 + my-rank
  leaderboards, per-game-night boards, Diwali (toran, kandils, crackers always on), slim ribbon footer, live updates
  (realtime 'arena' topic + 60 s poll), optimistic open/close, Girls/Boys avatars, skribbl auto-score bookmark.
@@ -18,8 +18,10 @@ STATE: migrations 0001-0020 all RUN (0021 pending) + verified live. Tree clean a
 25 Oct ~18:50 (he: "bina sign in kuch nahi dikhna chahiye", incognito opened #/leaderboards): commit 4379f8c LIVE:
  every route except /signin, /rules, /privacy needs a session (RequireAuth around the Shell children), next= returns
  the visitor to the link after sign-in. Verified live signed-out. Migration 0021_signed_in_only (anon loses all tables
- + functions) copied to his clipboard -> WAITING for him to Run, then verify with curl anon key = permission denied.
- Old version: tag before-signin-only.
+ + functions) RUN by him + VERIFIED (curl with site key: tables + RPCs = 42501). Tag before-signin-only.
+ ~19:05 he: "username ek baar fix to wahi rahe": commit e4856c0 (Me sheet shows locked username, sign-up warns),
+ migration 0022_username_locked (update_my_profile -> USERNAME_LOCKED) copied to clipboard -> WAITING on Run, then
+ verify live. Tag before-username-lock. 96/96 tests.
 WAITING ON HIM: which step fixed his mouse (18:15); which 2 accounts "registered but not in admin" (none in DB).
 OPEN QUESTIONS (since 24 Oct): b. one roll = one account across ds/es/mg? c. "Verified on Meet" tick for top 3?
  d. Top Players incl. live events? e. Abhimanyu's surname for the footer?
