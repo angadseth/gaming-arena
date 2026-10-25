@@ -26,6 +26,8 @@ STATE: migrations 0001-0020 all RUN + 0021 (0022 pending) + verified live. Tree 
  whose status changed flips once (seenStatus map in components/event.tsx; runs under reduced motion). LIVE (tag
  before-closed-section). Live check 19:25: 0022 NOT run yet (rpc still says BAD_USERNAME, not USERNAME_LOCKED);
  SQL re-copied to his clipboard. Verify by calling update_my_profile with p_username 'x' -> expect USERNAME_LOCKED.
+ ~19:35 his screenshots (18:56, old build): admin dashboard listed CLOSED events under "Open now" ("2 open now").
+ Fixed in Overview.tsx: Open now = open+live, own Closed group; LIVE + bundle verified.
 WAITING ON HIM: which step fixed his mouse (18:15); which 2 accounts "registered but not in admin" (none in DB).
 OPEN QUESTIONS (since 24 Oct): b. one roll = one account across ds/es/mg? c. "Verified on Meet" tick for top 3?
  d. Top Players incl. live events? e. Abhimanyu's surname for the footer?
