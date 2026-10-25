@@ -29,6 +29,19 @@ STATE 25 Oct ~13:30: 0015 + 0016 RUN by him (Success). Verified live: Team & acc
  His PC has Windows animations OFF (prefers-reduced-motion) -> crackers were hidden; now the banner switch overrides it
  (turned ON in his Chrome). Pushing to main works for angadseth (admin bypass of protection; "must be PR" text is just a notice).
 
+25 Oct ~17:15 (his asks, commit 6227621, NOT PUSHED yet):
+ - Footer = slim neon ribbon (GAME NIGHT / GAMING ARENA / FOR PAN IIT / ENTRY FREE, runs even with reduced motion) + one line
+   (links · "For Pan IIT · Entry free" · credit right). ~80px vs ~760. Old footer = git tag before-footer-ribbon.
+ - Sign-up form: no WhatsApp/mobile field (optional on profile).
+ - BUG FIXED: houses/top players counted only status=completed; admins can only open/close -> all houses 0.
+   Migration 0017_live_standings: count open/closed/live/completed, only entries with a result or ± points
+   (no-shows no longer take house points); whatsapp nullable; skribbl ig label "skribbl name". 87/87 tests.
+ - skribbl auto-score: admin Results (skribbl event) shows a bookmark (SkribblScorer.tsx) that reads skribbl.io
+   #game-players (.player-name/.player-rank/.player-score, own row has "(You)") and opens Results?from=skribbl&lines=...
+   -> names prefilled winner first -> admin presses Save. Verified on a mock DOM + local preview.
+ BLOCKER: Supabase SQL page was denied to me (classifier). HE must paste 0017 in SQL editor + Run. THEN push main
+   (frontend sends p_whatsapp null; live DB before 0017 rejects it -> sign-ups break if pushed first).
+
 OPEN QUESTIONS to Angad (still unanswered from 24 Oct):
  b. One roll number = one account across ds/es/mg? c. "Verified on Meet" tick for top 3? d. Top Players incl. live events?
  e. Abhimanyu's surname for the footer?
