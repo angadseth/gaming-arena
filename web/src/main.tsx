@@ -61,31 +61,40 @@ const router = createHashRouter([
       {
         element: <Shell />,
         children: [
-          { path: '/', element: <Events /> },
-          { path: '/e/:slug', element: <EventPage /> },
-          { path: '/e/:slug/register', element: <RequireAuth><Register /></RequireAuth> },
-          { path: '/join/:code?', element: <RequireAuth><JoinTeam /></RequireAuth> },
-          { path: '/leaderboards', element: <Leaderboards /> },
-          { path: '/houses', element: <Houses /> },
-          { path: '/me', element: <RequireAuth><Me /></RequireAuth> },
-          { path: '/inbox', element: <RequireAuth><Inbox /></RequireAuth> },
-          { path: '/welcome', element: <RequireAuth><Onboarding /></RequireAuth> },
-          { path: '/request', element: <RequireAuth><RequestGame /></RequireAuth> },
+          // The rulebook and privacy note stay open: the sign-in page links to them.
           { path: '/rules', element: <Rulebook /> },
           { path: '/privacy', element: <Privacy /> },
           {
-            path: '/admin/*',
+            // Everything else needs a signed-in student: no events, boards or houses for visitors.
             element: (
               <RequireAuth>
-                <RequireStaff>
-                  <Suspense fallback={<Spinner />}>
-                    <Admin />
-                  </Suspense>
-                </RequireStaff>
+                <Outlet />
               </RequireAuth>
             ),
+            children: [
+              { path: '/', element: <Events /> },
+              { path: '/e/:slug', element: <EventPage /> },
+              { path: '/e/:slug/register', element: <Register /> },
+              { path: '/join/:code?', element: <JoinTeam /> },
+              { path: '/leaderboards', element: <Leaderboards /> },
+              { path: '/houses', element: <Houses /> },
+              { path: '/me', element: <Me /> },
+              { path: '/inbox', element: <Inbox /> },
+              { path: '/welcome', element: <Onboarding /> },
+              { path: '/request', element: <RequestGame /> },
+              {
+                path: '/admin/*',
+                element: (
+                  <RequireStaff>
+                    <Suspense fallback={<Spinner />}>
+                      <Admin />
+                    </Suspense>
+                  </RequireStaff>
+                ),
+              },
+              { path: '*', element: <NotFound /> },
+            ],
           },
-          { path: '*', element: <NotFound /> },
         ],
       },
     ],

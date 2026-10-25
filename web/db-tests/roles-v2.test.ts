@@ -46,7 +46,7 @@ describe('roles v2', () => {
     expect((await db.rpc<{ roles: string[] }>('get_my_profile')).roles).toEqual(['admin'])
   })
   it('badges: Super Admin and Admin are public, organisers and players get none', async () => {
-    await db.as(null)
+    await db.as(bob)
     const b = await db.rpc<Record<string, string>>('staff_badges')
     expect(b).toMatchObject({ angad: 'superadmin', sagar: 'admin', abhimanyu: 'admin' })
     expect(b.orgy).toBeUndefined()
@@ -130,7 +130,7 @@ describe('roles v2', () => {
     await expect(db.query(`insert into public.user_roles (user_id, role) values ($1, 'superadmin')`, [sagar])).rejects.toThrow(/one_superadmin|duplicate/)
   })
   it('the twelve games come first, in Angad\'s order, and no game was removed', async () => {
-    await db.as(null)
+    await db.as(bob)
     const g = await db.query<{ slug: string }>(`select slug from public.games order by sort_order, slug`)
     expect(g.rows.slice(0, 12).map((r) => r.slug)).toEqual([
       'smash-karts', 'stumble-guys', 'bgmi', 'ff-max', 'codm', 'skribbl', 'clash-of-clans', 'clash-royale', 'cs2', 'valorant', 'among-us', 'extra',

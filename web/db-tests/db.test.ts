@@ -88,6 +88,17 @@ describe('row level security', () => {
     await expect(db.query('select * from public.profiles')).rejects.toThrow(/permission denied/)
     await expect(db.rpc('my_entries')).rejects.toThrow(/permission denied/)
   })
+  it('anon reads nothing at all: no events, games, houses, boards or rankings (0021)', async () => {
+    await db.as(null)
+    for (const t of ['tournaments', 'games', 'houses', 'regions', 'matches']) {
+      await expect(db.query(`select * from public.${t}`)).rejects.toThrow(/permission denied/)
+    }
+    for (const sql of [
+      `select public.house_standings('all')`, `select * from public.player_rankings('all', null)`,
+      `select public.tournament_counts()`, `select public.boards_index()`, `select public.staff_badges()`,
+      `select public.player_card('alice')`,
+    ]) await expect(db.query(sql)).rejects.toThrow(/permission denied/)
+  })
   it('a player sees only their own profile row', async () => {
     await db.as(alice)
     const r = await db.query<{ username: string }>('select username from public.profiles')
@@ -187,7 +198,6 @@ describe('events and registration', () => {
     await db.as(dave)
     await expectHint(db.rpc('register_solo', { p_tournament_id: draft, p_ig_id: 'DaveC' }), 'NOT_FOUND')
     await expectHint(db.rpc('register_solo', { p_tournament_id: closed, p_ig_id: 'DaveC' }), 'REG_CLOSED')
-    await db.as(null)
     const r = await db.query<{ slug: string }>('select slug from public.tournaments')
     expect(r.rows.map((x) => x.slug)).not.toContain('chess-draft')
   })
@@ -251,10 +261,10 @@ describe('results and standings', () => {
     expect(r.rows[0].avatar).toBe('bottts:bob')
     const squads = await db.query(`select * from public.player_rankings('squad', null)`)
     expect(squads.rows).toHaveLength(0)
-    await db.as(null)
-    const anon = await db.query<{ is_me: boolean }>(`select * from public.player_rankings('all', null)`)
-    expect(anon.rows).toHaveLength(2)
-    expect(JSON.stringify(anon.rows)).not.toMatch(/whatsapp|@ds\.study|full_name/)
+    await db.as(dave)
+    const other = await db.query<{ is_me: boolean }>(`select * from public.player_rankings('all', null)`)
+    expect(other.rows).toHaveLength(2)
+    expect(JSON.stringify(other.rows)).not.toMatch(/whatsapp|@ds\.study|full_name/)
   })
 
   it('players pick an avatar from the generated set only', async () => {

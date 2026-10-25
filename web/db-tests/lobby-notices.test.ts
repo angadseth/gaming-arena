@@ -34,7 +34,7 @@ beforeAll(async () => {
 
 describe('play links', () => {
   it('Stumble Guys ships with browser, Play Store, App Store and Steam links and join steps', async () => {
-    await db.as(null)
+    await db.as(ravi)
     const r = await db.query<{ play_links: { kind: string; url: string }[]; join_steps: string[] }>(
       `select play_links, join_steps from public.games where slug = 'stumble-guys'`)
     expect(r.rows[0].play_links.map((l) => l.kind)).toEqual(['web', 'android', 'ios', 'pc'])
@@ -167,7 +167,7 @@ describe('check-in and the fixed Meet link', () => {
 describe('player card', () => {
   type Card = { xp: number; level: string; next_level_at: number; badges: { key: string; have: boolean }[] }
   it('turns games and check-ins into XP, a level and badges', async () => {
-    await db.as(null)
+    await db.as(ravi)
     const c = await db.rpc<Card>('player_card', { p_username: 'ravi' })
     expect(c.xp).toBe(1100) // won one game (1000) + one check-in (100)
     expect(c.level).toBe('Bronze')
