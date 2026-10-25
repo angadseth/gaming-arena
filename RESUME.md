@@ -1,4 +1,4 @@
-# RESUME: Gaming Arena (25 Oct 2026, ~12:40)
+# RESUME: Gaming Arena (25 Oct 2026, ~13:15)
 TRIGGER: "game website continue" -> read this, then MEMORY.md "START HERE" if needed. He doesn't track state; I own it.
 LIVE https://angadseth.github.io/gaming-arena/ · repo github.com/angadseth/gaming-arena · angadseth/pugmark = redirect-only repo (keep!)
 Supabase ref fehkrxssoxuiixgmfini (Mumbai). Superadmin angad_seth = 24f2004141@ds. Dev preview: cd web; npx vite --port 5199 (code 12345678).
@@ -17,17 +17,21 @@ I can't press Run in Supabase: copy SQL to clipboard, paste in Monaco, HE presse
    he said do NOT remove any game; old 7 stay after them (sort 21-27). New art in web/public/art (CREDITS.md).
  - Leaderboards (event + Top players): ONLY top 3 podium cards + "my rank" card (LinkedIn Zip style: #rank of N,
    top %, points, stats, gap to next, share). Full list only on admin Results. Badges plain text (no crown/star, his call).
+ - Team & access page (/admin/access, Super Admin only, nav + dashboard tile): email/roll + chips Make Admin/
+   Organiser/Remove role/Ban/Unban; a card per person with role tag + tick list of every power; quick buttons.
+   Data = migration 0016 superadmin_access_list() (falls back to admin_email_access until run). Players page
+   now just links there. Also fixed phone top bar overflow (name + Super Admin tag = 480px page at 390).
  - Diwali: toran svg (wire+bulbs+marigolds in one svg = no drift on zoom), diyas, Diwali banner with "Patakhe on/off",
    crackers canvas BEHIND content: rockets (peony/ring/willow/crackle), anaar, chakri, kandils, tap sky to burst.
 
-STATE 25 Oct ~14:00: frontend LIVE (dc28c02, verified in his Chrome). 0015 PASTED in Supabase SQL tab, he must press Run
- (UNCONFIRMED). Until then: no new games, no badges, open/close button errors. Old version = git tag before-roles-v2.
+STATE 25 Oct ~13:15: frontend LIVE (6b95677, Team & access verified live). 0015 + 0016 BOTH PASTED in one Supabase SQL tab
+ (26854 chars), he must press Run (NOT run as of 13:15: results pane still "Click Run"). Until then: no new games, no badges, open/close button errors. Old version = git tag before-roles-v2.
  His PC has Windows animations OFF (prefers-reduced-motion) -> crackers were hidden; now the banner switch overrides it
  (turned ON in his Chrome). Pushing to main works for angadseth (admin bypass of protection; "must be PR" text is just a notice).
 
 OPEN QUESTIONS to Angad (still unanswered from 24 Oct):
  b. One roll number = one account across ds/es/mg? c. "Verified on Meet" tick for top 3? d. Top Players incl. live events?
  e. Abhimanyu's surname for the footer?
-NEXT: 1. He presses Run on 0015, then I verify live (badges, admin login as Sagar). 2. Real game-night test with a friend.
+NEXT: 1. He presses Run on 0015+0016 (then Team & access shows Angad + Sagar + Abhimanyu), then I verify live (badges, admin login as Sagar). 2. Real game-night test with a friend.
  3. Supabase Auth Site URL -> /gaming-arena/; SMTP sender name still "Pugmark". 4. Rotate Gmail app password; 2FA.
 RULES: small cards not tables/text walls; build what he names; keep versions; loophole-review before big features; verify live in Chrome.
