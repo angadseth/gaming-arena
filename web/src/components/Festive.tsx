@@ -1,6 +1,4 @@
-import { Sparkles } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { festiveOn, setFestive } from '../lib/fireworks'
 
 const COLOURS = ['#ffc23d', '#ff2e93', '#29e3ff', '#c6ff3d', '#ff7a45', '#b99cff']
 const H = 40 // garland height in px
@@ -105,9 +103,8 @@ export function DiyaRow({ n = 5, size = 30 }: { n?: number; size?: number }) {
   )
 }
 
-/** Home page strip that sets the Diwali mood and tells people they can burst crackers. */
+/** Home page strip that sets the Diwali mood; the crackers always run (no switch). */
 export function DiwaliBanner() {
-  const [on, setOn] = useState(festiveOn)
   return (
     <section className="diwali-banner" aria-label="Diwali season">
       <div className="diwali-rangoli" aria-hidden />
@@ -117,16 +114,6 @@ export function DiwaliBanner() {
         <span className="small t2">Game nights every week. Tap the sky anywhere to burst a cracker.</span>
       </div>
       <DiyaRow />
-      <button
-        className="diwali-switch"
-        aria-pressed={on}
-        onClick={() => {
-          setFestive(!on)
-          setOn(!on)
-        }}
-      >
-        <Sparkles size={14} aria-hidden /> Patakhe {on ? 'on' : 'off'}
-      </button>
     </section>
   )
 }

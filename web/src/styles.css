@@ -2146,25 +2146,6 @@ body {
   background-clip: text;
   color: transparent;
 }
-.diwali-switch {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 36px;
-  padding: 0 12px;
-  border-radius: var(--r-tag);
-  border: 1px solid var(--border-strong);
-  background: var(--surface-2);
-  color: var(--text-2);
-  font: 600 13px/1 var(--font-sans);
-  cursor: pointer;
-}
-.diwali-switch[aria-pressed='true'] {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-tint);
-}
 @media (max-width: 520px) {
   .diwali-banner .diya-row {
     order: 3;

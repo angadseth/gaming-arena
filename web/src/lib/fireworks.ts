@@ -5,9 +5,11 @@
  *  - a few sky lanterns (kandil) drifting up,
  *  - tap or click on any empty spot to launch a cracker there,
  *  - confetti poppers from the bottom corners on celebrate().
- * The viewer's "Patakhe" switch wins; without a choice it follows prefers-reduced-motion
- * (Angad's own PC has Windows animations off, which hid every cracker). Paused while hidden.
+ * Always on in the Diwali season, even with Windows animations off (Angad, 25 Oct: no switch).
+ * Paused while the tab is hidden. Sky lanterns are Jaipuri kandils (lib/kandil.ts).
  */
+import { KANDILS, kandilSprite, SPRITE_RES } from './kandil'
+
 const COLOURS = ['#ffc23d', '#ff2e93', '#29e3ff', '#c6ff3d', '#ff7a45', '#b99cff', '#ffffff']
 const GOLD = ['#ffd56a', '#ffc23d', '#ffb347']
 
@@ -17,39 +19,17 @@ type P = {
   x: number; y: number; vx: number; vy: number; life: number; max: number
   c: string; size: number; kind: Kind; rot: number; vr: number; target?: number; shell?: Shell; drag?: number; g?: number
 }
-type Lantern = { x: number; y: number; vx: number; vy: number; s: number; sway: number; ph: number }
+type Lantern = { x: number; y: number; vx: number; vy: number; s: number; sway: number; ph: number; v: number }
 
-const KEY = 'ga-patakhe'
 let pop: (() => void) | null = null
-let restart: (() => void) | null = null
-let stop: (() => void) | null = null
-
-const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
+/** Crackers always run in the Diwali season (Angad, 25 Oct: no on/off switch). */
 export function festiveOn(): boolean {
-  let v: string | null = null
-  try {
-    v = localStorage.getItem(KEY)
-  } catch {
-    /* storage blocked: follow the system setting */
-  }
-  return v === 'on' || (v !== 'off' && !reduced())
+  return true
 }
 
 /** html.fx-on lets the CSS animations (bulbs, diya flames) run even under reduced motion. */
 const markRoot = (on: boolean) => document.documentElement.classList.toggle('fx-on', on)
 
-/** Viewer switch for the crackers (kept in this browser only). */
-export function setFestive(on: boolean) {
-  try {
-    localStorage.setItem(KEY, on ? 'on' : 'off')
-  } catch {
-    /* storage blocked: the switch still works for this visit */
-  }
-  markRoot(on)
-  if (on) restart?.()
-  else stop?.()
-}
 
 /** Confetti from both corners: call after something worth celebrating. */
 export function celebrate() {
@@ -139,29 +119,34 @@ export function startFireworks(): () => void {
   }
 
   const addLantern = (y = h + rand(20, 200)) =>
-    lanterns.push({ x: rand(w * 0.04, w * 0.96), y, vx: rand(-0.08, 0.08), vy: -rand(0.18, 0.32), s: rand(0.75, 1.15), sway: rand(6, 14), ph: rand(0, 6) })
+    lanterns.push({
+      x: rand(w * 0.04, w * 0.96), y, vx: rand(-0.08, 0.08), vy: -rand(0.18, 0.32),
+      s: rand(0.62, 0.92) * (narrow() ? 0.8 : 1), sway: rand(6, 14), ph: rand(0, 6), v: Math.floor(rand(0, KANDILS.length)),
+    })
 
+  const sprites = KANDILS.map(kandilSprite)
   const drawLantern = (l: Lantern, t: number) => {
     const x = l.x + Math.sin(t / 1400 + l.ph) * l.sway
     const s = l.s
     const flick = 0.85 + Math.sin(t / 130 + l.ph * 3) * 0.08
-    const g = ctx.createRadialGradient(x, l.y, 2, x, l.y, 34 * s)
-    g.addColorStop(0, `rgba(255, 196, 90, ${0.42 * flick})`)
+    // Warm halo first, then the painted kandil, gently rocking on its string.
+    const g = ctx.createRadialGradient(x, l.y, 2, x, l.y, 46 * s)
+    g.addColorStop(0, `rgba(255, 196, 90, ${0.38 * flick})`)
     g.addColorStop(1, 'rgba(255, 140, 40, 0)')
     ctx.fillStyle = g
     ctx.beginPath()
-    ctx.arc(x, l.y, 34 * s, 0, Math.PI * 2)
+    ctx.arc(x, l.y, 46 * s, 0, Math.PI * 2)
     ctx.fill()
-    ctx.fillStyle = `rgba(255, 168, 70, ${0.9 * flick})`
-    ctx.beginPath()
-    ctx.moveTo(x - 7 * s, l.y - 10 * s)
-    ctx.lineTo(x + 7 * s, l.y - 10 * s)
-    ctx.lineTo(x + 9 * s, l.y + 9 * s)
-    ctx.lineTo(x - 9 * s, l.y + 9 * s)
-    ctx.closePath()
-    ctx.fill()
-    ctx.fillStyle = `rgba(255, 244, 199, ${0.95 * flick})`
-    ctx.fillRect(x - 3 * s, l.y + 2 * s, 6 * s, 5 * s)
+    const sp = sprites[l.v]
+    const dw = (sp.width / SPRITE_RES) * s
+    const dh = (sp.height / SPRITE_RES) * s
+    ctx.save()
+    ctx.translate(x, l.y - 48 * s)
+    ctx.rotate(Math.sin(t / 1100 + l.ph) * 0.06)
+    ctx.globalAlpha = Math.min(1, 0.9 + (flick - 0.85) * 0.8)
+    ctx.drawImage(sp, -dw / 2, 0, dw, dh)
+    ctx.restore()
+    ctx.globalAlpha = 1
   }
 
   const tick = (now: number) => {
@@ -326,8 +311,6 @@ export function startFireworks(): () => void {
   window.addEventListener('resize', resize)
   document.addEventListener('visibilitychange', onVis)
   document.addEventListener('click', onClick)
-  restart = begin
-  stop = end
   markRoot(festiveOn())
   if (festiveOn()) begin()
 
@@ -346,8 +329,6 @@ export function startFireworks(): () => void {
     window.removeEventListener('resize', resize)
     document.removeEventListener('visibilitychange', onVis)
     document.removeEventListener('click', onClick)
-    restart = null
-    stop = null
   }
 }
 
