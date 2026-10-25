@@ -59,6 +59,11 @@ STATE 25 Oct ~13:30: 0015 + 0016 RUN by him (Success). Verified live: Team & acc
    night chips, Tonight default), Jaipuri kandils (lib/kandil.ts; tag before-jaipuri-kandil) + crackers always on
    (no switch), avatars Girls (pookie, queen) / Boys (boy, dude) (0020). 96/96 tests. 0019+0020 RUN by him ~18:05 + verified live (boards_index, game_board, Leaderboards page).
    Photo upload offered, not built (needs admin remove button first).
+ - 25 Oct ~18:15 his PC "mouse click kaam nahi kar raha": CPU/RAM fine, nothing hung. Killed 4 leftover vite servers
+   (5199-5202). Likely cause = "Leave site?" dialog in the Supabase SQL tab (unsaved query) from my earlier navigate.
+   Told him: press Leave/Esc, Ctrl+Alt+Del > Cancel, replug mouse, quit Wispr Flow. Waiting on which step fixed it.
+   LESSON: never navigate/close the Supabase SQL tab after pasting (open a NEW tab); kill my vite servers when done.
+ All code committed + pushed (e4ac75e), tree clean.
 
 OPEN QUESTIONS to Angad (still unanswered from 24 Oct):
  b. One roll number = one account across ds/es/mg? c. "Verified on Meet" tick for top 3? d. Top Players incl. live events?
