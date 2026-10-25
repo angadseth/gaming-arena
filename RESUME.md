@@ -57,8 +57,8 @@ STATE 25 Oct ~13:30: 0015 + 0016 RUN by him (Success). Verified live: Team & acc
    polling on admin registrations as backup. (Did 2 no-op saves of newbie +100 for the test: audit shows entry.points 100->100.)
  - 25 Oct ~18:00 PUSHED: Game boards (0019 night_of/boards_index/game_board; Leaderboards: game chips, Overall + per
    night chips, Tonight default), Jaipuri kandils (lib/kandil.ts; tag before-jaipuri-kandil) + crackers always on
-   (no switch), avatars Girls (pookie, queen) / Boys (boy, dude) (0020). 96/96 tests. 0019+0020 COMBINED SQL in his
-   clipboard: WAITING for Run (boards hidden + new avatars refused until then). Photo upload offered, not built.
+   (no switch), avatars Girls (pookie, queen) / Boys (boy, dude) (0020). 96/96 tests. 0019+0020 RUN by him ~18:05 + verified live (boards_index, game_board, Leaderboards page).
+   Photo upload offered, not built (needs admin remove button first).
 
 OPEN QUESTIONS to Angad (still unanswered from 24 Oct):
  b. One roll number = one account across ds/es/mg? c. "Verified on Meet" tick for top 3? d. Top Players incl. live events?
