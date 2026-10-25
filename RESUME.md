@@ -15,10 +15,12 @@ I can't press Run in Supabase: copy SQL to clipboard, paste in Monaco, HE presse
  - Home: "Open Games" + "Upcoming" sections (no All/Open/... chips). Completed events only on Leaderboards.
  - Games: Smash Karts, Stumble, BGMI, FF, CODM, skribbl, CoC, Clash Royale, CS2, Valorant, Among Us, Extra first;
    he said do NOT remove any game; old 7 stay after them (sort 21-27). New art in web/public/art (CREDITS.md).
+ - Leaderboards (event + Top players): ONLY top 3 podium cards + "my rank" card (LinkedIn Zip style: #rank of N,
+   top %, points, stats, gap to next, share). Full list only on admin Results. Badges plain text (no crown/star, his call).
  - Diwali: toran svg (wire+bulbs+marigolds in one svg = no drift on zoom), diyas, Diwali banner with "Patakhe on/off",
    crackers canvas BEHIND content: rockets (peony/ring/willow/crackle), anaar, chakri, kandils, tap sky to burst.
 
-STATE 25 Oct ~13:20: frontend LIVE (d68f9d6, verified in his Chrome). 0015 PASTED in Supabase SQL tab, he must press Run
+STATE 25 Oct ~14:00: frontend LIVE (dc28c02, verified in his Chrome). 0015 PASTED in Supabase SQL tab, he must press Run
  (UNCONFIRMED). Until then: no new games, no badges, open/close button errors. Old version = git tag before-roles-v2.
  His PC has Windows animations OFF (prefers-reduced-motion) -> crackers were hidden; now the banner switch overrides it
  (turned ON in his Chrome). Pushing to main works for angadseth (admin bypass of protection; "must be PR" text is just a notice).
