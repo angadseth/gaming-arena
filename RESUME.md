@@ -42,6 +42,12 @@ STATE 25 Oct ~13:30: 0015 + 0016 RUN by him (Success). Verified live: Team & acc
  DONE: he ran 0017, pushed, live verified (footer 79px + ribbon, Houses: Wayanad 1000 / Pichavaram 700, skribbl card on
    admin Results). Supabase SQL page is blocked for me even to open: he pastes SQL himself (I copy it to clipboard).
  TODO: test the skribbl bookmark in a real skribbl.io private room before game night.
+ - 25 Oct ~17:25 LIVE UPDATES (he: "instant update ho jaye, bacche refresh kar rahe"): 0018_live_updates = statement
+   triggers -> realtime.send(kind) on public topic 'arena' (no data); client useLiveUpdates (lib/app.tsx) batches 0.4 s
+   and invalidates queries; 60 s polling fallback. Frontend PUSHED + deployed; public channel verified (2-client test).
+   0018 SQL copied to his clipboard: WAITING for his Run. After Run: listen on 'arena' + have him save a result.
+ - Mediator answer: results are staff-only already (Organiser can ADD results, Admin can edit/delete); give a
+   trusted person the Organiser role from Team & access; kids never see the skribbl card.
 
 OPEN QUESTIONS to Angad (still unanswered from 24 Oct):
  b. One roll number = one account across ds/es/mg? c. "Verified on Meet" tick for top 3? d. Top Players incl. live events?
