@@ -17,6 +17,10 @@ export const useRegistrations = (tournamentId: string | undefined) => {
         points_adjust: Number(e.points_adjust),
       })),
     enabled: !!tournamentId,
+    // Backup for the live pings: a player who registers shows up here within 5 s even if this
+    // device's live connection dropped (phone asleep, Wi-Fi switch). Only staff pages poll.
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: false,
   })
 }
 
