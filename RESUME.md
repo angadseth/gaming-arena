@@ -48,6 +48,9 @@ STATE 25 Oct ~13:30: 0015 + 0016 RUN by him (Success). Verified live: Team & acc
    0018 RUN by him ~17:25; VERIFIED live: listener on 'arena' got PING events after a real event change (11:56 UTC).
  - Mediator answer: results are staff-only already (Organiser can ADD results, Admin can edit/delete); give a
    trusted person the Organiser role from Team & access; kids never see the skribbl card.
+ - 25 Oct ~17:40 (he: "close turant nahi hua", footer floats on short pages): admin toggle is optimistic (flips in
+   ~70 ms), home Open Games = open+live only (closed -> Upcoming), live batch 150 ms, #root flex column so footer
+   sticks to the bottom. Pushed + deployed; live footer verified at viewport bottom.
 
 OPEN QUESTIONS to Angad (still unanswered from 24 Oct):
  b. One roll number = one account across ds/es/mg? c. "Verified on Meet" tick for top 3? d. Top Players incl. live events?
