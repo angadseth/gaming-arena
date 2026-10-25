@@ -18,7 +18,10 @@ I can't press Run in Supabase: copy SQL to clipboard, paste in Monaco, HE presse
  - Diwali: toran svg (wire+bulbs+marigolds in one svg = no drift on zoom), diyas, Diwali banner with "Patakhe on/off",
    crackers canvas BEHIND content: rockets (peony/ring/willow/crackle), anaar, chakri, kandils, tap sky to burst.
 
-STATE: see bottom of this file for whether 0015 is pasted / run and what was deployed.
+STATE 25 Oct ~13:20: frontend LIVE (d68f9d6, verified in his Chrome). 0015 PASTED in Supabase SQL tab, he must press Run
+ (UNCONFIRMED). Until then: no new games, no badges, open/close button errors. Old version = git tag before-roles-v2.
+ His PC has Windows animations OFF (prefers-reduced-motion) -> crackers were hidden; now the banner switch overrides it
+ (turned ON in his Chrome). Pushing to main works for angadseth (admin bypass of protection; "must be PR" text is just a notice).
 
 OPEN QUESTIONS to Angad (still unanswered from 24 Oct):
  b. One roll number = one account across ds/es/mg? c. "Verified on Meet" tick for top 3? d. Top Players incl. live events?
