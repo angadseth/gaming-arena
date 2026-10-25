@@ -3,7 +3,7 @@ import { CircleAlert, CircleCheck, Info, X } from 'lucide-react'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ApiError, type Api } from './api'
 import type {
-  Game, House, HouseStanding, Inbox, Lobby, MatchResultRow, MyEntry, MyProfile, PlayerRank, RankFormat, Region, Session, StandingRow, Tournament, TournamentCount,
+  BoardGame, Game, GameBoard, House, HouseStanding, Inbox, Lobby, MatchResultRow, MyEntry, MyProfile, PlayerRank, RankFormat, Region, Session, StandingRow, Tournament, TournamentCount,
 } from './types'
 
 // ---------------------------------------------------------------------
@@ -36,8 +36,8 @@ export const useAuth = () => {
 
 /** What each live ping from 0018 makes stale. Only queries on screen refetch. */
 const LIVE_KEYS: Record<string, string[]> = {
-  results: ['standings', 'match-results', 'house-standings', 'player-rankings', 'player-card'],
-  entries: ['counts', 'standings', 'house-standings', 'player-rankings', 'player-card', 'my-entries', 'admin-registrations', 'lobby', 'admin-lobby'],
+  results: ['standings', 'match-results', 'house-standings', 'player-rankings', 'player-card', 'boards-index', 'game-board'],
+  entries: ['counts', 'standings', 'house-standings', 'player-rankings', 'player-card', 'game-board', 'my-entries', 'admin-registrations', 'lobby', 'admin-lobby'],
   events: ['tournaments', 'counts', 'lobby', 'admin-lobby'],
   games: ['games'],
   notices: ['inbox', 'lobby', 'admin-lobby'],
@@ -257,6 +257,36 @@ export const useMatchResults = (tournamentId: string | undefined) => {
     queryKey: ['match-results', tournamentId],
     queryFn: () => api.rpc<MatchResultRow[]>('tournament_match_results', { p_tournament_id: tournamentId }),
     enabled: !!tournamentId,
+  })
+}
+/** Games with saved results and their nights (0019). */
+export const useBoardsIndex = () => {
+  const api = useApi()
+  return useQuery({
+    queryKey: ['boards-index'],
+    queryFn: async () => (await api.rpc<BoardGame[] | null>('boards_index')) ?? [],
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
+  })
+}
+/** One game's board: a night ('YYYY-MM-DD') or Overall (null). Top 3 + me + the place above me. */
+export const useGameBoard = (gameId: string | null, night: string | null) => {
+  const api = useApi()
+  const { session } = useAuth()
+  return useQuery({
+    queryKey: ['game-board', gameId, night, session?.userId],
+    queryFn: async () => {
+      const b = await api.rpc<GameBoard>('game_board', { p_game_id: gameId, p_night: night })
+      return {
+        total: Number(b?.total ?? 0),
+        rows: (b?.rows ?? []).map((r) => ({ ...r, rank: Number(r.rank), points: Number(r.points), games: Number(r.games), wins: Number(r.wins) })),
+      }
+    },
+    enabled: !!gameId,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
   })
 }
 export const usePlayerRankings = (format: RankFormat) => {

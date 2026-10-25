@@ -175,6 +175,33 @@ export interface StandingRow {
 }
 
 export type RankFormat = 'all' | 'solo' | 'small' | 'squad'
+/** boards_index() (migration 0019): games with saved games and their nights. */
+export interface BoardNight {
+  night: string
+  n: number
+  games: number
+  players: number
+}
+export interface BoardGame {
+  game_id: string
+  last_at: string
+  nights: BoardNight[]
+}
+export interface BoardRow {
+  rank: number
+  username: string
+  house_id: number | null
+  avatar: string
+  points: number
+  games: number
+  wins: number
+  is_me: boolean
+}
+export interface GameBoard {
+  total: number
+  rows: BoardRow[]
+}
+
 export interface PlayerRank {
   rank: number
   username: string
